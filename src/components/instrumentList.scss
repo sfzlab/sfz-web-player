@@ -1,0 +1,11 @@
+.instrumentList {
+  background-color: #e8f2e8;
+}
+
+.instrumentListItem {
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fff;
+  }
+}

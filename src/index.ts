@@ -1,7 +1,15 @@
+import InstrumentList from "./components/InstrumentList";
 import "./index.scss";
 
-function init() {
-  console.log("Sfz web player!");
+class Index {
+  el: DocumentFragment = document.createDocumentFragment();
+
+  render(): DocumentFragment {
+    this.el.appendChild(new InstrumentList().render());
+    return this.el;
+  }
 }
 
-init();
+document.body.appendChild(new Index().render());
+
+export default Index;
