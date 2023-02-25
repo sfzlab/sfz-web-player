@@ -1,0 +1,32 @@
+
+name: Test
+
+on:
+  push:
+
+jobs:
+  test_code:
+    name: Test code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install
+        run: |
+          npm install
+      - name: Audit
+        run: |
+          npm audit
+      - name: Lint
+        run: |
+          npm run lint
+      - name: Test
+        run: |
+          npm run test
+      - name: Build
+        run: |
+          npm run build
+          ls ./dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
