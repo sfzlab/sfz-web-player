@@ -1,0 +1,11 @@
+.fileList {
+  background-color: #e8f2e8;
+}
+
+.fileList {
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fff;
+  }
+}

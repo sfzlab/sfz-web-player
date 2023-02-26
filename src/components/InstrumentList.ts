@@ -1,9 +1,9 @@
+import Component from "./component";
 import "./InstrumentList.scss";
 import * as instruments from "../data/instruments.json";
 import { PluginEntry, PluginInterface, PluginPack } from "../types/instruments";
 
-class InstrumentList {
-  el: DocumentFragment = document.createDocumentFragment();
+class InstrumentList extends Component {
   plugins: PluginPack = instruments.objects;
 
   pluginLatest(pluginId: string): PluginInterface {
@@ -11,7 +11,7 @@ class InstrumentList {
     return pluginEntry.versions[pluginEntry.version];
   }
 
-  render(): DocumentFragment {
+  render() {
     const ul: HTMLUListElement = document.createElement("ul");
     ul.className = "instrumentList";
     Object.keys(this.plugins).forEach((pluginId: string) => {
@@ -23,7 +23,6 @@ class InstrumentList {
       ul.appendChild(li);
     });
     this.el.appendChild(ul);
-    return this.el;
   }
 
   onClick(e: MouseEvent) {
@@ -31,6 +30,7 @@ class InstrumentList {
       (e.target as HTMLLIElement).getAttribute("data-id") || "";
     console.log(this.pluginLatest(pluginId));
     window.alert(this.pluginLatest(pluginId).description);
+    this.dispatchEvent("click", pluginId);
   }
 }
 
