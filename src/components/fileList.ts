@@ -1,5 +1,5 @@
 import Component from "./component";
-import "./FileList.scss";
+import "./fileList.scss";
 
 class FileList extends Component {
   private files = [];

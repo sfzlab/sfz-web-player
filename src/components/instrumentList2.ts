@@ -1,5 +1,5 @@
 import Component from "./component";
-import "./InstrumentList.scss";
+import "./instrumentList.scss";
 import * as instruments from "../data/instruments.json";
 import { PluginEntry, PluginInterface, PluginPack } from "../types/instruments";
 
