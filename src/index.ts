@@ -10,15 +10,11 @@ class Index extends Component {
   }
 
   render() {
-    const instrumentList: InstrumentList = new InstrumentList();
-    instrumentList.addEvent("click", this.loadFiles);
     const fileList: FileList = new FileList();
+    const instrumentList: InstrumentList = new InstrumentList();
+    instrumentList.addEvent("click", fileList.fileLoad);
     this.getEl().appendChild(instrumentList.getEl());
     this.getEl().appendChild(fileList.getEl());
-  }
-
-  loadFiles(data: any) {
-    console.log("loadFiles", data.data.name);
   }
 }
 

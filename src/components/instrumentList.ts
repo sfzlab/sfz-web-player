@@ -11,11 +11,6 @@ class InstrumentList extends Component {
     this.render();
   }
 
-  pluginLatest(pluginId: string): PluginInterface {
-    const pluginEntry: PluginEntry = this.plugins[pluginId];
-    return pluginEntry.versions[pluginEntry.version];
-  }
-
   render() {
     const ul: HTMLUListElement = document.createElement("ul");
     ul.className = "instrumentList";
@@ -29,6 +24,11 @@ class InstrumentList extends Component {
       ul.appendChild(li);
     });
     this.getEl().appendChild(ul);
+  }
+
+  pluginLatest(pluginId: string): PluginInterface {
+    const pluginEntry: PluginEntry = this.plugins[pluginId];
+    return pluginEntry.versions[pluginEntry.version];
   }
 }
 

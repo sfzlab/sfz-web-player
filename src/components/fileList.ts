@@ -1,3 +1,4 @@
+import { EventData } from "../types/event";
 import Component from "./component";
 import "./fileList.scss";
 
@@ -16,19 +17,16 @@ class FileList extends Component {
       const li: HTMLLIElement = document.createElement("li");
       li.className = "fileListItem";
       li.innerHTML = "";
-      li.setAttribute("data-id", fileId);
-      li.addEventListener("click", this.onClick.bind(this));
+      li.addEventListener("click", () => {
+        this.dispatchEvent("click", fileId);
+      });
       ul.appendChild(li);
     });
     this.getEl().appendChild(ul);
   }
 
-  onClick(e: MouseEvent) {
-    const fileId: string =
-      (e.target as HTMLLIElement).getAttribute("data-id") || "";
-    console.log(fileId);
-    window.alert(fileId);
-    this.dispatchEvent("click", fileId);
+  fileLoad(eventData: EventData) {
+    console.log(eventData.data.repo);
   }
 }
 

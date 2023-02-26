@@ -1,7 +1,7 @@
-type EventFunc = (data: any) => void;
+import { EventFunc, EventList } from "../types/event";
 
 class Event {
-  events: { [type: string]: EventFunc[] } = {};
+  events: EventList = {};
 
   addEvent(type: string, func: EventFunc) {
     if (!this.events[type]) {
