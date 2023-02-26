@@ -2,7 +2,12 @@ import Component from "./component";
 import "./FileList.scss";
 
 class FileList extends Component {
-  files = [];
+  private files = [];
+
+  constructor() {
+    super();
+    this.render();
+  }
 
   render() {
     const ul: HTMLUListElement = document.createElement("ul");
@@ -15,7 +20,7 @@ class FileList extends Component {
       li.addEventListener("click", this.onClick.bind(this));
       ul.appendChild(li);
     });
-    this.el.appendChild(ul);
+    this.getEl().appendChild(ul);
   }
 
   onClick(e: MouseEvent) {

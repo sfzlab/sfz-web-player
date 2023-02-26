@@ -4,18 +4,25 @@ import FileList from "./components/fileList";
 import "./index.scss";
 
 class Index extends Component {
+  constructor() {
+    super();
+    this.render();
+  }
+
   render() {
     const instrumentList: InstrumentList = new InstrumentList();
-    instrumentList.render();
+    instrumentList.addEvent("click", this.loadFiles);
     const fileList: FileList = new FileList();
-    fileList.render();
-    this.el.appendChild(instrumentList.el);
-    this.el.appendChild(fileList.el);
+    this.getEl().appendChild(instrumentList.getEl());
+    this.getEl().appendChild(fileList.getEl());
+  }
+
+  loadFiles(data: any) {
+    console.log("loadFiles", data.data.name);
   }
 }
 
 const index: Index = new Index();
-index.render();
-document.body.appendChild(index.el);
+document.body.appendChild(index.getEl());
 
 export default Index;

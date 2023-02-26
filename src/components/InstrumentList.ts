@@ -4,7 +4,12 @@ import * as instruments from "../data/instruments.json";
 import { PluginEntry, PluginInterface, PluginPack } from "../types/instruments";
 
 class InstrumentList extends Component {
-  plugins: PluginPack = instruments.objects;
+  private plugins: PluginPack = instruments.objects;
+
+  constructor() {
+    super();
+    this.render();
+  }
 
   pluginLatest(pluginId: string): PluginInterface {
     const pluginEntry: PluginEntry = this.plugins[pluginId];
@@ -18,19 +23,12 @@ class InstrumentList extends Component {
       const li: HTMLLIElement = document.createElement("li");
       li.className = "instrumentListItem";
       li.innerHTML = this.pluginLatest(pluginId).name;
-      li.setAttribute("data-id", pluginId);
-      li.addEventListener("click", this.onClick.bind(this));
+      li.addEventListener("click", () => {
+        this.dispatchEvent("click", this.pluginLatest(pluginId));
+      });
       ul.appendChild(li);
     });
-    this.el.appendChild(ul);
-  }
-
-  onClick(e: MouseEvent) {
-    const pluginId: string =
-      (e.target as HTMLLIElement).getAttribute("data-id") || "";
-    console.log(this.pluginLatest(pluginId));
-    window.alert(this.pluginLatest(pluginId).description);
-    this.dispatchEvent("click", pluginId);
+    this.getEl().appendChild(ul);
   }
 }
 

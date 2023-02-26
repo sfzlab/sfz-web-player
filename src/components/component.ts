@@ -1,7 +1,11 @@
 import Event from "./event";
 
 class Component extends Event {
-  el: DocumentFragment = document.createDocumentFragment();
+  private el: DocumentFragment = document.createDocumentFragment();
+
+  getEl() {
+    return this.el;
+  }
 }
 
 export default Component;
