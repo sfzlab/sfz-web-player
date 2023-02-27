@@ -7,16 +7,14 @@ class InstrumentList extends Component {
   private plugins: PluginPack = instruments.objects;
 
   constructor() {
-    super();
+    super("instrumentList");
     this.render();
   }
 
   render() {
     const ul: HTMLUListElement = document.createElement("ul");
-    ul.className = "instrumentList";
     Object.keys(this.plugins).forEach((pluginId: string) => {
       const li: HTMLLIElement = document.createElement("li");
-      li.className = "instrumentListItem";
       li.innerHTML = this.pluginLatest(pluginId).name;
       li.addEventListener("click", () => {
         this.dispatchEvent("click", this.pluginLatest(pluginId));

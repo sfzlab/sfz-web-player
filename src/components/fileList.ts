@@ -1,32 +1,39 @@
 import { EventData } from "../types/event";
+import { FileItem, FileTree } from "../types/files";
 import Component from "./component";
 import "./fileList.scss";
 
 class FileList extends Component {
-  private files = [];
+  private files: FileItem[] = [];
 
   constructor() {
-    super();
+    super("fileList");
     this.render();
   }
 
   render() {
     const ul: HTMLUListElement = document.createElement("ul");
-    ul.className = "fileList";
-    this.files.forEach((fileId: string) => {
+    this.files.forEach((fileItem: FileItem) => {
+      console.log(fileItem);
       const li: HTMLLIElement = document.createElement("li");
-      li.className = "fileListItem";
-      li.innerHTML = "";
+      li.innerHTML = fileItem.path;
       li.addEventListener("click", () => {
-        this.dispatchEvent("click", fileId);
+        this.dispatchEvent("click", fileItem.path);
       });
       ul.appendChild(li);
     });
+    this.getEl().replaceChildren();
     this.getEl().appendChild(ul);
   }
 
-  fileLoad(eventData: EventData) {
-    console.log(eventData.data.repo);
+  async fileLoad(eventData: EventData) {
+    const response: any = await fetch(
+      `https://api.github.com/repos/${eventData.data.repo}/git/trees/main?recursive=1`
+    );
+    const githubTree: FileTree = await response.json();
+    this.files = githubTree.tree;
+    console.log(eventData.data.repo, githubTree.tree);
+    this.render();
   }
 }
 
