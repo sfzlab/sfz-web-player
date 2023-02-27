@@ -4,7 +4,7 @@ import { PluginInterface } from "../types/instruments";
 declare class InstrumentList extends Component {
     private plugins;
     constructor();
-    pluginLatest(pluginId: string): PluginInterface;
     render(): void;
+    pluginLatest(pluginId: string): PluginInterface;
 }
 export default InstrumentList;

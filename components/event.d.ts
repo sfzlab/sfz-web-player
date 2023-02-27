@@ -1,8 +1,6 @@
-type EventFunc = (data: any) => void;
+import { EventFunc, EventList } from "../types/event";
 declare class Event {
-    events: {
-        [type: string]: EventFunc[];
-    };
+    events: EventList;
     addEvent(type: string, func: EventFunc): void;
     removeEvent(type: string, func: EventFunc): void;
     dispatchEvent(type: string, data: any): void;
