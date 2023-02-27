@@ -6,6 +6,10 @@ interface FileItem {
   url: string;
 }
 
+interface FilesNested {
+  [key: string]: FilesNested;
+}
+
 interface FileTree {
   sha: string;
   url: string;
@@ -13,4 +17,4 @@ interface FileTree {
   truncated: boolean;
 }
 
-export { FileItem, FileTree };
+export { FileItem, FilesNested, FileTree };
