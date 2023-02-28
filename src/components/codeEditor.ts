@@ -2,7 +2,7 @@ import Component from "./component";
 import * as ace from "ace-builds";
 import * as modelist from "ace-builds/src-noconflict/ext-modelist";
 import "ace-builds/webpack-resolver";
-var Mode = require("../lib/mode-sfz").Mode;
+const Mode = require("../lib/mode-sfz").Mode;
 
 class CodeEditor extends Component {
   private editor: any;
