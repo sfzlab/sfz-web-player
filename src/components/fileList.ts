@@ -16,26 +16,35 @@ class FileList extends Component {
   render() {
     const div: HTMLDivElement = document.createElement("div");
     div.innerHTML = this.instrument.repo;
-    const ul: HTMLUListElement = this.createTree(this.filesNested);
+    const ul: HTMLUListElement = this.createTree("", this.filesNested);
     ul.className = "tree";
     div.appendChild(ul);
     this.getEl().replaceChildren();
     this.getEl().appendChild(div);
   }
 
-  createTree(filesNested: FilesNested) {
+  createTree(path: string, filesNested: FilesNested) {
     const ul: HTMLUListElement = document.createElement("ul");
     for (const key in filesNested) {
+      const fileUrl: string = `https://raw.githubusercontent.com/${this.instrument.repo}/main/${path}/${key}`;
       const li: HTMLLIElement = document.createElement("li");
       if (Object.keys(filesNested[key]).length > 0) {
         const details: HTMLDetailsElement = document.createElement("details");
         const summary: HTMLElement = document.createElement("summary");
         summary.innerHTML = key;
+        summary.addEventListener("click", () => {
+          this.dispatchEvent("click", fileUrl);
+        });
         details.appendChild(summary);
-        details.appendChild(this.createTree(filesNested[key]));
+        details.appendChild(
+          this.createTree(`${path}/${key}`, filesNested[key])
+        );
         li.appendChild(details);
       } else {
         li.innerHTML = key;
+        li.addEventListener("click", () => {
+          this.dispatchEvent("click", fileUrl);
+        });
       }
       ul.appendChild(li);
     }
@@ -54,7 +63,6 @@ class FileList extends Component {
         .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesNested)
     );
     this.instrument = eventData.data;
-    console.log();
     this.render();
   }
 }
