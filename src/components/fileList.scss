@@ -2,17 +2,28 @@
   --spacing : 1rem;
   --radius  : 10px;
   font-size: var(--spacing);
+  flex-basis: 25%;
+  overflow: scroll;
+}
+
+.fileList ul {
+  margin: 0;
+  padding: 0;
+}
+
+.fileList li {
+  cursor: pointer;
+  padding: .25rem .5rem;
+
+  &:hover {
+    background-color: #fff;
+  }
 }
 
 .fileList li{
   display      : block;
   position     : relative;
   padding-left : calc(2 * var(--spacing) - var(--radius) - 2px);
-}
-
-.fileList ul{
-  margin-left  : calc(var(--radius) - var(--spacing));
-  padding-left : 0;
 }
 
 .fileList ul li{

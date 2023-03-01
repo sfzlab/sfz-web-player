@@ -55,8 +55,14 @@ class FileList extends Component {
     const response: any = await fetch(
       `https://api.github.com/repos/${eventData.data.repo}/git/trees/main?recursive=1`
     );
+    if (!response.ok) {
+      window.alert("Repo does not have a `main` branch");
+      return;
+    }
+    console.log(response);
     const githubTree: FileTree = await response.json();
     this.files = githubTree.tree;
+    this.filesNested = {};
     this.files.forEach((p) =>
       p.path
         .split("/")

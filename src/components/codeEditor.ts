@@ -1,3 +1,4 @@
+import "./codeEditor.scss";
 import Component from "./component";
 import * as ace from "ace-builds";
 import * as modelist from "ace-builds/src-noconflict/ext-modelist";
@@ -18,8 +19,6 @@ class CodeEditor extends Component {
   constructor() {
     super("codeEditor");
     this.editor = ace.edit(this.getEl(), {
-      maxLines: 50,
-      minLines: 10,
       theme: "ace/theme/monokai",
     });
   }
