@@ -8,7 +8,7 @@ declare class FileList extends Component {
     private instrument;
     constructor();
     render(): void;
-    createTree(filesNested: FilesNested): HTMLUListElement;
+    createTree(path: string, filesNested: FilesNested): HTMLUListElement;
     fileLoad(eventData: EventData): Promise<void>;
 }
 export default FileList;
