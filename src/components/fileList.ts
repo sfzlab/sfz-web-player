@@ -52,14 +52,14 @@ class FileList extends Component {
   }
 
   async fileLoad(eventData: EventData) {
-    const response: any = await fetch(
+    let response: any = await fetch(
       `https://api.github.com/repos/${eventData.data.repo}/git/trees/main?recursive=1`
     );
     if (!response.ok) {
-      window.alert("Repo does not have a `main` branch");
-      return;
+      response = await fetch(
+        `https://api.github.com/repos/${eventData.data.repo}/git/trees/master?recursive=1`
+      );
     }
-    console.log(response);
     const githubTree: FileTree = await response.json();
     this.files = githubTree.tree;
     this.filesNested = {};
