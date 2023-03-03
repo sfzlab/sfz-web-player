@@ -4,6 +4,7 @@ import FileList from "./components/fileList";
 import "./index.scss";
 import { EventData } from "./types/event";
 import CodeEditor from "./components/codeEditor";
+import SfzPlayer from "./components/sfzPlayer";
 
 class Index extends Component {
   constructor() {
@@ -25,10 +26,17 @@ class Index extends Component {
     const instrumentList: InstrumentList = new InstrumentList();
     instrumentList.addEvent("click", (eventData: EventData) => {
       fileList.fileLoad(eventData);
+      // sfzPlayer.loadUI('https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml');
     });
+
+    // Sfz player
+    const sfzPlayer: SfzPlayer = new SfzPlayer();
+    sfzPlayer.loadInstrument("./instrument/Black And Green Guitars.bank.xml");
+
     this.getEl().appendChild(instrumentList.getEl());
     this.getEl().appendChild(fileList.getEl());
     this.getEl().appendChild(codeEditor.getEl());
+    this.getEl().appendChild(sfzPlayer.getEl());
   }
 }
 

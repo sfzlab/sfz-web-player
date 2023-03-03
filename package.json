@@ -39,6 +39,10 @@
   },
   "dependencies": {
     "ace-builds": "^1.15.2",
-    "ace-code": "^1.15.2"
+    "ace-code": "^1.15.2",
+    "buffer": "^6.0.3",
+    "stream": "^0.0.2",
+    "stream-browserify": "^3.0.0",
+    "xml-js": "^1.6.11"
   }
 }
