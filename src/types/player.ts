@@ -6,4 +6,12 @@ interface PlayerImage {
   y: string;
 }
 
-export { PlayerImage };
+interface PlayerKnob {
+  frames: string;
+  image: string;
+  param: string;
+  x: string;
+  y: string;
+}
+
+export { PlayerImage, PlayerKnob };

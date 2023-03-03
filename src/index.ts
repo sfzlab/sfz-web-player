@@ -1,3 +1,4 @@
+import "./lib/webaudio-controls";
 import Component from "./components/component";
 import InstrumentList from "./components/instrumentList";
 import FileList from "./components/fileList";
@@ -29,13 +30,16 @@ class Index extends Component {
       // sfzPlayer.loadUI('https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml');
     });
 
+    const sourceEl: HTMLDivElement = document.createElement("div");
+    sourceEl.className = "sourceEl";
+    sourceEl.appendChild(instrumentList.getEl());
+    sourceEl.appendChild(fileList.getEl());
+    sourceEl.appendChild(codeEditor.getEl());
+    this.getEl().appendChild(sourceEl);
+
     // Sfz player
     const sfzPlayer: SfzPlayer = new SfzPlayer();
     sfzPlayer.loadInstrument("./instrument/Black And Green Guitars.bank.xml");
-
-    this.getEl().appendChild(instrumentList.getEl());
-    this.getEl().appendChild(fileList.getEl());
-    this.getEl().appendChild(codeEditor.getEl());
     this.getEl().appendChild(sfzPlayer.getEl());
   }
 }
