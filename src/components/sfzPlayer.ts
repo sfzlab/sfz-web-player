@@ -47,7 +47,20 @@ class SfzPlayer extends Component {
     this.tabs.appendChild(div);
   }
 
-  async loadInstrument(url: string) {
+  async loadFile(file: File) {
+    const fileExt: string = file.name.split(".").pop() || "";
+    if (fileExt !== "xml") return;
+    this.basepath = file.name.substring(0, file.name.lastIndexOf("/") + 1);
+    const fileData: string = await file.text();
+    const fileParsed: any = xml2js(fileData);
+    this.instrument = this.findElements({}, fileParsed.elements);
+    this.setupInfo();
+    this.setupControls();
+  }
+
+  async loadUrl(url: string) {
+    const fileExt: string = url.split(".").pop() || "";
+    if (fileExt !== "xml") return;
     this.basepath = url.substring(0, url.lastIndexOf("/") + 1);
     this.instrument = await this.loadXml(url.substring(this.basepath.length));
     this.setupInfo();

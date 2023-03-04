@@ -25,7 +25,20 @@ class CodeEditor extends Component {
     });
   }
 
-  async loadFile(path: string) {
+  async loadFile(file: File) {
+    const fileExt: string = file.name.split(".").pop() || "";
+    if (!this.supportedFiles.includes(fileExt)) return;
+    const fileContents: string = await file.text();
+    if (fileExt === "sfz") {
+      this.editor.session.setMode(new Mode());
+    } else {
+      const mode: string = modelist.getModeForPath(file.name).mode;
+      this.editor.session.setMode(mode);
+    }
+    this.editor.setOption("value", fileContents);
+  }
+
+  async loadUrl(path: string) {
     const fileExt: string = path.split(".").pop() || "";
     if (!this.supportedFiles.includes(fileExt)) return;
     const response: any = await fetch(path);

@@ -20,18 +20,19 @@ class Index extends Component {
     // File list.
     const fileList: FileList = new FileList();
     fileList.addEvent("click", (eventData: EventData) => {
-      const fileExt: string = eventData.data.split(".").pop() || "";
-      codeEditor.loadFile(eventData.data);
-      if (fileExt === "xml") {
-        sfzPlayer.loadInstrument(eventData.data);
-      }
+      codeEditor.loadUrl(eventData.data);
+      sfzPlayer.loadUrl(eventData.data);
     });
 
     // Instrument list.
     const instrumentList: InstrumentList = new InstrumentList();
     instrumentList.addEvent("click", (eventData: EventData) => {
       fileList.fileLoad(eventData);
-      // sfzPlayer.loadUI('https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml');
+    });
+
+    instrumentList.addEvent("change", (eventData: EventData) => {
+      codeEditor.loadFile(eventData.data);
+      // sfzPlayer.loadFile(eventData.data);
     });
 
     const sourceEl: HTMLDivElement = document.createElement("div");

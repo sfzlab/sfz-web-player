@@ -3,7 +3,7 @@
   --radius  : 10px;
   font-size: var(--spacing);
   flex-basis: 25%;
-  overflow: scroll;
+  overflow-y: auto;
 }
 
 .fileList ul {
