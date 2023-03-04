@@ -1,3 +1,4 @@
+import "./lib/webaudio-controls";
 import Component from "./components/component";
 import "./index.scss";
 declare class Index extends Component {

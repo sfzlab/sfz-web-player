@@ -3,6 +3,7 @@ import { FilesNested } from "../types/files";
 import Component from "./component";
 import "./fileList.scss";
 declare class FileList extends Component {
+    private branch;
     private files;
     private filesNested;
     private instrument;

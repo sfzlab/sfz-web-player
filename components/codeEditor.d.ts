@@ -5,6 +5,7 @@ declare class CodeEditor extends Component {
     private editor;
     private supportedFiles;
     constructor();
-    loadFile(path: string): Promise<void>;
+    loadFile(file: File): Promise<void>;
+    loadUrl(path: string): Promise<void>;
 }
 export default CodeEditor;
