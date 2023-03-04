@@ -9,9 +9,11 @@ class CodeEditor extends Component {
   private editor: any;
   private supportedFiles: string[] = [
     "json",
+    "json",
     "md",
     "sfz",
     "txt",
+    "xml",
     "yml",
     "yaml",
   ];
@@ -25,17 +27,16 @@ class CodeEditor extends Component {
 
   async loadFile(path: string) {
     const fileExt: string = path.split(".").pop() || "";
-    if (this.supportedFiles.includes(fileExt)) {
-      const response: any = await fetch(path);
-      const fileContents: string = await response.text();
-      if (fileExt === "sfz") {
-        this.editor.session.setMode(new Mode());
-      } else {
-        const mode: string = modelist.getModeForPath(path).mode;
-        this.editor.session.setMode(mode);
-      }
-      this.editor.setOption("value", fileContents);
+    if (!this.supportedFiles.includes(fileExt)) return;
+    const response: any = await fetch(path);
+    const fileContents: string = await response.text();
+    if (fileExt === "sfz") {
+      this.editor.session.setMode(new Mode());
+    } else {
+      const mode: string = modelist.getModeForPath(path).mode;
+      this.editor.session.setMode(mode);
     }
+    this.editor.setOption("value", fileContents);
   }
 }
 

@@ -20,7 +20,11 @@ class Index extends Component {
     // File list.
     const fileList: FileList = new FileList();
     fileList.addEvent("click", (eventData: EventData) => {
+      const fileExt: string = eventData.data.split(".").pop() || "";
       codeEditor.loadFile(eventData.data);
+      if (fileExt === "xml") {
+        sfzPlayer.loadInstrument(eventData.data);
+      }
     });
 
     // Instrument list.
@@ -39,7 +43,6 @@ class Index extends Component {
 
     // Sfz player
     const sfzPlayer: SfzPlayer = new SfzPlayer();
-    sfzPlayer.loadInstrument("./instrument/Black And Green Guitars.bank.xml");
     this.getEl().appendChild(sfzPlayer.getEl());
   }
 }

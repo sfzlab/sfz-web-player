@@ -1,5 +1,92 @@
 
 .sfzPlayer {
   background-color: #000;
+  font-size: 11px;
+  font-family: Arial, Helvetica, sans-serif;
   position: relative;
+  user-select: none;
+  height: 365px;
+  width: 775px;
+}
+
+.sfzPlayer img,
+.sfzPlayer span,
+.sfzPlayer webaudio-keyboard,
+.sfzPlayer webaudio-knob,
+.sfzPlayer webaudio-slider,
+.sfzPlayer webaudio-switch {
+  position: absolute;
+  // transform: translate(-50%, -50%); 
+}
+
+.sfzPlayer img {
+  z-index: 1;
+}
+
+.sfzPlayer webaudio-keyboard,
+.sfzPlayer webaudio-knob,
+.sfzPlayer webaudio-slider,
+.sfzPlayer webaudio-switch {
+  z-index: 2;
+}
+
+.sfzPlayer span {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+.sfzPlayer webaudio-keyboard {
+  left: 0;
+  top: 359px;
+}
+
+.tabs {
+  align-content: flex-start;
+  color: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  height: 100%;
+}
+
+.radiotab {
+  position: absolute;
+  opacity: 0;
+}
+
+.label {
+  width: 100%;
+  cursor: pointer;
+  padding: .5rem 1rem;
+  text-align: center;
+}
+
+.label:hover {
+  background-color: #222;
+}
+
+.radiotab:checked + .label {
+  background-color: #333;
+}
+
+.panel {
+  background-color: #333;
+  position: relative;
+  display: none;
+  height: 100%;
+  width: 100%;
+}
+
+.radiotab:checked + .label + .panel {
+  display: block;
+}
+
+@media (min-width: 600px) {
+  .panel {
+    order: 99;
+  }
+  .label {
+    width: auto;
+  }
 }

@@ -1,10 +1,10 @@
 import { EventData } from "../types/event";
 import { FileItem, FilesNested, FileTree } from "../types/files";
-import { PluginInterface } from "../types/instruments";
 import Component from "./component";
 import "./fileList.scss";
 
 class FileList extends Component {
+  private branch: string = "main";
   private files: FileItem[] = [];
   private filesNested: FilesNested = {};
   private instrument: any = {};
@@ -26,7 +26,7 @@ class FileList extends Component {
   createTree(path: string, filesNested: FilesNested) {
     const ul: HTMLUListElement = document.createElement("ul");
     for (const key in filesNested) {
-      const fileUrl: string = `https://raw.githubusercontent.com/${this.instrument.repo}/main/${path}/${key}`;
+      const fileUrl: string = `https://raw.githubusercontent.com/${this.instrument.repo}/${this.branch}/${path}/${key}`;
       const li: HTMLLIElement = document.createElement("li");
       if (Object.keys(filesNested[key]).length > 0) {
         const details: HTMLDetailsElement = document.createElement("details");
@@ -53,11 +53,13 @@ class FileList extends Component {
 
   async fileLoad(eventData: EventData) {
     let response: any = await fetch(
-      `https://api.github.com/repos/${eventData.data.repo}/git/trees/main?recursive=1`
+      `https://api.github.com/repos/${eventData.data.repo}/git/trees/${this.branch}?recursive=1`
     );
+    // TODO write this properly.
     if (!response.ok) {
+      this.branch = "master";
       response = await fetch(
-        `https://api.github.com/repos/${eventData.data.repo}/git/trees/master?recursive=1`
+        `https://api.github.com/repos/${eventData.data.repo}/git/trees/${this.branch}?recursive=1`
       );
     }
     const githubTree: FileTree = await response.json();
