@@ -2,6 +2,7 @@ import Component from "./component";
 import "./instrumentList.scss";
 import * as instruments from "../data/instruments.json";
 import { PluginEntry, PluginInterface, PluginPack } from "../types/instruments";
+import { directoryOpen } from "browser-fs-access";
 
 declare global {
   interface Window {
@@ -36,12 +37,24 @@ class InstrumentList extends Component {
 
   addFileSelect() {
     const div: HTMLDivElement = document.createElement("div");
-    div.innerHTML = "<h3>From local file</h3>";
+    div.innerHTML = "<h3>From local</h3>";
     this.getEl().appendChild(div);
     const input: HTMLInputElement = document.createElement("input");
-    input.type = "file";
-    input.addEventListener("change", (e) => {
-      this.dispatchEvent("change", input.files ? input.files[0] : null);
+    input.type = "button";
+    input.value = "Select directory";
+    input.addEventListener("click", async (e) => {
+      try {
+        const blobs = await directoryOpen({
+          recursive: true,
+        });
+        this.dispatchEvent("change", blobs);
+        console.log(`${blobs.length} files selected.`);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          return console.error(err);
+        }
+        console.log("The user aborted a request.");
+      }
     });
     this.getEl().appendChild(input);
   }

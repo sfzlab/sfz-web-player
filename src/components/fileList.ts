@@ -1,3 +1,4 @@
+import { directoryOpen } from "browser-fs-access";
 import { EventData } from "../types/event";
 import { FileItem, FilesNested, FileTree } from "../types/files";
 import Component from "./component";
@@ -7,7 +8,7 @@ class FileList extends Component {
   private branch: string = "main";
   private files: FileItem[] = [];
   private filesNested: FilesNested = {};
-  private instrument: any = {};
+  private instrument: string = "none";
 
   constructor() {
     super("fileList");
@@ -15,7 +16,7 @@ class FileList extends Component {
 
   render() {
     const div: HTMLDivElement = document.createElement("div");
-    div.innerHTML = this.instrument.repo;
+    div.innerHTML = this.instrument;
     const ul: HTMLUListElement = this.createTree("", this.filesNested);
     ul.className = "tree";
     div.appendChild(ul);
@@ -26,7 +27,7 @@ class FileList extends Component {
   createTree(path: string, filesNested: FilesNested) {
     const ul: HTMLUListElement = document.createElement("ul");
     for (const key in filesNested) {
-      const fileUrl: string = `https://raw.githubusercontent.com/${this.instrument.repo}/${this.branch}/${path}/${key}`;
+      const fileUrl: string = `https://raw.githubusercontent.com/${this.instrument}/${this.branch}/${path}/${key}`;
       const li: HTMLLIElement = document.createElement("li");
       if (Object.keys(filesNested[key]).length > 0) {
         const details: HTMLDetailsElement = document.createElement("details");
@@ -51,7 +52,7 @@ class FileList extends Component {
     return ul;
   }
 
-  async fileLoad(eventData: EventData) {
+  async remoteUrl(eventData: EventData) {
     let response: any = await fetch(
       `https://api.github.com/repos/${eventData.data.repo}/git/trees/${this.branch}?recursive=1`
     );
@@ -70,7 +71,27 @@ class FileList extends Component {
         .split("/")
         .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesNested)
     );
-    this.instrument = eventData.data;
+    this.instrument = eventData.data.repo;
+    this.render();
+  }
+
+  localDirectory(blobs: any) {
+    if (blobs.length && !(blobs[0] instanceof File)) {
+      console.log("No files in directory.");
+      return;
+    }
+    this.filesNested = {};
+    blobs
+      .sort((a: any, b: any) => a.webkitRelativePath.localeCompare(b))
+      .forEach((blob: any) => {
+        console.log(blob.webkitRelativePath);
+        const pathElements: string[] = blob.webkitRelativePath.split("/");
+        this.instrument = pathElements.shift() || "none"; // remove root path
+        pathElements.reduce(
+          (o: any, k: string) => (o[k] = o[k] || {}),
+          this.filesNested
+        );
+      });
     this.render();
   }
 }

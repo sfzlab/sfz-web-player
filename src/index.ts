@@ -27,12 +27,10 @@ class Index extends Component {
     // Instrument list.
     const instrumentList: InstrumentList = new InstrumentList();
     instrumentList.addEvent("click", (eventData: EventData) => {
-      fileList.fileLoad(eventData);
+      fileList.remoteUrl(eventData);
     });
-
     instrumentList.addEvent("change", (eventData: EventData) => {
-      codeEditor.loadFile(eventData.data);
-      // sfzPlayer.loadFile(eventData.data);
+      fileList.localDirectory(eventData.data);
     });
 
     const sourceEl: HTMLDivElement = document.createElement("div");

@@ -40,6 +40,7 @@
   "dependencies": {
     "ace-builds": "^1.15.2",
     "ace-code": "^1.15.2",
+    "browser-fs-access": "^0.33.0",
     "buffer": "^6.0.3",
     "stream": "^0.0.2",
     "stream-browserify": "^3.0.0",
