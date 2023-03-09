@@ -2,7 +2,10 @@ import Component from "./component";
 import "./instrumentList.scss";
 import * as instruments from "../data/instruments.json";
 import { PluginEntry, PluginInterface, PluginPack } from "../types/instruments";
-import { directoryOpen } from "browser-fs-access";
+import {
+  directoryOpen,
+  FileWithDirectoryAndFileHandle,
+} from "browser-fs-access";
 
 declare global {
   interface Window {
@@ -44,7 +47,9 @@ class InstrumentList extends Component {
     input.value = "Select directory";
     input.addEventListener("click", async (e) => {
       try {
-        const blobs = await directoryOpen({
+        const blobs:
+          | FileWithDirectoryAndFileHandle[]
+          | FileSystemDirectoryHandle[] = await directoryOpen({
           recursive: true,
         });
         this.dispatchEvent("change", blobs);

@@ -20,14 +20,20 @@ class Index extends Component {
     // File list.
     const fileList: FileList = new FileList();
     fileList.addEvent("click", (eventData: EventData) => {
-      codeEditor.loadUrl(eventData.data);
-      sfzPlayer.loadUrl(eventData.data);
+      if (!eventData.data) return;
+      if (eventData.data.url) {
+        codeEditor.loadUrl(eventData.data.url);
+        sfzPlayer.loadUrl(eventData.data.url);
+      } else {
+        codeEditor.loadFile(eventData.data);
+        sfzPlayer.loadFile(eventData.data);
+      }
     });
 
     // Instrument list.
     const instrumentList: InstrumentList = new InstrumentList();
     instrumentList.addEvent("click", (eventData: EventData) => {
-      fileList.remoteUrl(eventData);
+      fileList.remoteUrl(eventData.data);
     });
     instrumentList.addEvent("change", (eventData: EventData) => {
       fileList.localDirectory(eventData.data);

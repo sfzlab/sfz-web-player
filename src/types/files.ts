@@ -1,4 +1,4 @@
-interface FileItem {
+interface FileGitHubItem {
   path: string;
   mode: string;
   type: string;
@@ -6,15 +6,19 @@ interface FileItem {
   url: string;
 }
 
+interface FilesMap {
+  [name: string]: FileGitHubItem | File;
+}
+
 interface FilesNested {
   [key: string]: FilesNested;
 }
 
-interface FileTree {
+interface FileGitHub {
   sha: string;
   url: string;
-  tree: FileItem[];
+  tree: FileGitHubItem[];
   truncated: boolean;
 }
 
-export { FileItem, FilesNested, FileTree };
+export { FileGitHub, FileGitHubItem, FilesMap, FilesNested };
