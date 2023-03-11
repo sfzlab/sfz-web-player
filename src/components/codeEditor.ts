@@ -3,6 +3,7 @@ import Component from "./component";
 import * as ace from "ace-builds";
 import * as modelist from "ace-builds/src-noconflict/ext-modelist";
 import "ace-builds/webpack-resolver";
+import { FileItem } from "../types/files";
 const Mode = require("../lib/mode-sfz").Mode;
 
 class CodeEditor extends Component {
@@ -25,31 +26,15 @@ class CodeEditor extends Component {
     });
   }
 
-  async loadFile(file: File) {
-    const fileExt: string = file.name.split(".").pop() || "";
-    if (!this.supportedFiles.includes(fileExt)) return;
-    const fileContents: string = await file.text();
-    if (fileExt === "sfz") {
+  render(file: FileItem) {
+    if (!this.supportedFiles.includes(file.ext)) return;
+    if (file.ext === "sfz") {
       this.editor.session.setMode(new Mode());
     } else {
-      const mode: string = modelist.getModeForPath(file.name).mode;
+      const mode: string = modelist.getModeForPath(file.path).mode;
       this.editor.session.setMode(mode);
     }
-    this.editor.setOption("value", fileContents);
-  }
-
-  async loadUrl(path: string) {
-    const fileExt: string = path.split(".").pop() || "";
-    if (!this.supportedFiles.includes(fileExt)) return;
-    const response: any = await fetch(path);
-    const fileContents: string = await response.text();
-    if (fileExt === "sfz") {
-      this.editor.session.setMode(new Mode());
-    } else {
-      const mode: string = modelist.getModeForPath(path).mode;
-      this.editor.session.setMode(mode);
-    }
-    this.editor.setOption("value", fileContents);
+    this.editor.setOption("value", file.contents);
   }
 }
 

@@ -7,12 +7,6 @@ import {
   FileWithDirectoryAndFileHandle,
 } from "browser-fs-access";
 
-declare global {
-  interface Window {
-    test: any;
-  }
-}
-
 class InstrumentList extends Component {
   private plugins: PluginPack = instruments.objects;
 

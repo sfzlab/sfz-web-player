@@ -10,9 +10,12 @@ import {
   PlayerSlider,
   PlayerText,
 } from "../types/player";
+import { FileGitHubItem, FileItem } from "../types/files";
+import FileLoader from "../utils/fileLoader";
 
 class SfzPlayer extends Component {
   private basepath: string = "";
+  private fileLoader: any;
   private instrument: { [name: string]: any[] } = {};
   private tabs: HTMLDivElement;
 
@@ -25,6 +28,10 @@ class SfzPlayer extends Component {
     this.addTab("Controls");
     this.getEl().appendChild(this.tabs);
     this.addKeyboard();
+  }
+
+  setFileLoader(fileLoader: FileLoader) {
+    this.fileLoader = fileLoader;
   }
 
   addTab(name: string) {
@@ -47,39 +54,33 @@ class SfzPlayer extends Component {
     this.tabs.appendChild(div);
   }
 
-  async loadFile(file: File) {
-    const fileExt: string = file.name.split(".").pop() || "";
-    if (fileExt !== "xml") return;
-    this.basepath = file.name.substring(0, file.name.lastIndexOf("/") + 1);
-    const fileData: string = await file.text();
-    const fileParsed: any = xml2js(fileData);
+  async load(file: FileItem) {
+    if (file.ext !== "xml") return;
+    this.basepath = file.path.substring(0, file.path.lastIndexOf("/") + 1);
+    const fileParsed: any = xml2js(file.contents);
     this.instrument = this.findElements({}, fileParsed.elements);
     this.setupInfo();
     this.setupControls();
   }
 
-  async loadUrl(url: string) {
-    const fileExt: string = url.split(".").pop() || "";
-    if (fileExt !== "xml") return;
-    this.basepath = url.substring(0, url.lastIndexOf("/") + 1);
-    this.instrument = await this.loadXml(url.substring(this.basepath.length));
-    this.setupInfo();
-    this.setupControls();
-  }
-
-  async loadXml(url: string) {
-    console.log("loadXml", this.basepath, url);
-    const response: any = await fetch(this.basepath + url);
-    const file: string = await response.text();
-    const fileParsed: any = xml2js(file);
+  async loadXml(path: string) {
+    console.log("loadXml", path);
+    const file: FileGitHubItem | File = this.fileLoader.getFiles()[path];
+    let fileGui: FileItem;
+    if ("url" in file) {
+      fileGui = await this.fileLoader.loadFileRemote(file);
+    } else {
+      fileGui = await this.fileLoader.loadFileLocal(file);
+    }
+    const fileParsed: any = xml2js(fileGui.contents);
     return this.findElements({}, fileParsed.elements);
   }
 
   async setupInfo() {
     const info: Element = this.tabs.getElementsByClassName("panel")[0];
     info.replaceChildren();
-    const fileGui: any = await this.loadXml(this.instrument.AriaGUI[0].path);
-    info.appendChild(this.addImage(fileGui.StaticImage[0]));
+    const fileXml: any = await this.loadXml(this.instrument.AriaGUI[0].path);
+    info.appendChild(this.addImage(fileXml.StaticImage[0]));
   }
 
   async setupControls() {

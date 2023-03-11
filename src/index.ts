@@ -6,6 +6,8 @@ import "./index.scss";
 import { EventData } from "./types/event";
 import CodeEditor from "./components/codeEditor";
 import SfzPlayer from "./components/sfzPlayer";
+import FileLoader from "./utils/fileLoader";
+import { FileItem, FileObject, FilesMap, FilesNested } from "./types/files";
 
 class Index extends Component {
   constructor() {
@@ -17,26 +19,35 @@ class Index extends Component {
     // Code editor.
     const codeEditor: CodeEditor = new CodeEditor();
 
+    // File loader.
+    const fileLoader: FileLoader = new FileLoader();
+
     // File list.
     const fileList: FileList = new FileList();
-    fileList.addEvent("click", (eventData: EventData) => {
+    fileList.addEvent("click", async (eventData: EventData) => {
       if (!eventData.data) return;
       if (eventData.data.url) {
-        codeEditor.loadUrl(eventData.data.url);
-        sfzPlayer.loadUrl(eventData.data.url);
+        const file: FileItem = await fileLoader.loadFileRemote(eventData.data);
+        codeEditor.render(file);
+        sfzPlayer.load(file);
       } else {
-        codeEditor.loadFile(eventData.data);
-        sfzPlayer.loadFile(eventData.data);
+        const file: FileItem = await fileLoader.loadFileLocal(eventData.data);
+        codeEditor.render(file);
+        sfzPlayer.load(file);
       }
     });
 
     // Instrument list.
     const instrumentList: InstrumentList = new InstrumentList();
-    instrumentList.addEvent("click", (eventData: EventData) => {
-      fileList.remoteUrl(eventData.data);
+    instrumentList.addEvent("click", async (eventData: EventData) => {
+      const { branch, directory, files, filesNested }: FileObject =
+        await fileLoader.loadDirectoryRemote(eventData.data);
+      fileList.render(branch, directory, files, filesNested);
     });
-    instrumentList.addEvent("change", (eventData: EventData) => {
-      fileList.localDirectory(eventData.data);
+    instrumentList.addEvent("change", async (eventData: EventData) => {
+      const { branch, directory, files, filesNested }: FileObject =
+        await fileLoader.loadDirectoryLocal(eventData.data);
+      fileList.render(branch, directory, files, filesNested);
     });
 
     const sourceEl: HTMLDivElement = document.createElement("div");
@@ -48,6 +59,7 @@ class Index extends Component {
 
     // Sfz player
     const sfzPlayer: SfzPlayer = new SfzPlayer();
+    sfzPlayer.setFileLoader(fileLoader);
     this.getEl().appendChild(sfzPlayer.getEl());
   }
 }

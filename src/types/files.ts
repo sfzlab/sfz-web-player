@@ -3,6 +3,7 @@ interface FileGitHubItem {
   mode: string;
   type: string;
   sha: string;
+  size?: number;
   url: string;
 }
 
@@ -21,4 +22,24 @@ interface FileGitHub {
   truncated: boolean;
 }
 
-export { FileGitHub, FileGitHubItem, FilesMap, FilesNested };
+interface FileItem {
+  ext: string;
+  contents: string;
+  path: string;
+}
+
+interface FileObject {
+  branch: string;
+  directory: string;
+  files: FilesMap;
+  filesNested: FilesNested;
+}
+
+export {
+  FileGitHub,
+  FileGitHubItem,
+  FileItem,
+  FilesMap,
+  FilesNested,
+  FileObject,
+};
