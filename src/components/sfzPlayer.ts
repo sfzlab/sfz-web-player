@@ -58,7 +58,6 @@ class SfzPlayer extends Component {
   async load(file: FileItem) {
     if (file.ext !== "xml") return;
     this.basepath = file.path.substring(0, file.path.lastIndexOf("/") + 1);
-    console.log(this.basepath);
     this.instrument = this.parseXML(file);
     this.setupInfo();
     this.setupControls();
@@ -84,6 +83,7 @@ class SfzPlayer extends Component {
   }
 
   async setupInfo() {
+    if (!this.instrument.AriaGUI) return;
     const info: Element = this.tabs.getElementsByClassName("panel")[0];
     info.replaceChildren();
     const fileXml: any = await this.loadXML(this.instrument.AriaGUI[0].path);
@@ -91,6 +91,7 @@ class SfzPlayer extends Component {
   }
 
   async setupControls() {
+    if (!this.instrument.AriaProgram) return;
     const controls: Element = this.tabs.getElementsByClassName("panel")[1];
     controls.replaceChildren();
     const fileProgram: any = await this.loadXML(
