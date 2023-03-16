@@ -1,8 +1,9 @@
 .fileList{
   --spacing : 1rem;
-  --radius  : 10px;
+  --radius  : 7px;
   font-size: var(--spacing);
   flex-basis: 25%;
+  padding: .5rem;
   overflow-y: auto;
 }
 
@@ -24,6 +25,7 @@
   display      : block;
   position     : relative;
   padding-left : calc(2 * var(--spacing) - var(--radius) - 2px);
+  white-space: nowrap;
 }
 
 .fileList ul li{
@@ -38,7 +40,7 @@
   content      : '';
   display      : block;
   position     : absolute;
-  top          : calc(var(--spacing) / -2);
+  top          : calc(var(--spacing) / -4);
   left         : -2px;
   width        : calc(var(--spacing) + 2px);
   height       : calc(var(--spacing) + 1px);
@@ -82,6 +84,8 @@
   color       : #fff;
   line-height : calc(2 * var(--radius) - 2px);
   text-align  : center;
+  left: 5px;
+  top: 7px;
 }
 
 .fileList details[open] > summary::before{
