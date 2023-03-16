@@ -1,15 +1,9 @@
-import { EventData } from "../types/event";
-import { FilesNested } from "../types/files";
+import { FilesMap, FilesNested } from "../types/files";
 import Component from "./component";
 import "./fileList.scss";
 declare class FileList extends Component {
-    private branch;
-    private files;
-    private filesNested;
-    private instrument;
     constructor();
-    render(): void;
-    createTree(path: string, filesNested: FilesNested): HTMLUListElement;
-    fileLoad(eventData: EventData): Promise<void>;
+    render(branch: string, directory: string, files: FilesMap, filesNested: FilesNested): void;
+    createTree(root: string, branch: string, directory: string, files: FilesMap, filesNested: FilesNested): HTMLUListElement;
 }
 export default FileList;
