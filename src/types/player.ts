@@ -1,12 +1,15 @@
+interface EditorOptions {
+  url?: string;
+}
+
 interface InterfaceOptions {
-  el: HTMLElement | string;
   url?: string;
 }
 
 interface PlayerOptions {
   audio?: boolean;
-  editor?: boolean;
+  editor?: EditorOptions;
   interface?: InterfaceOptions;
 }
 
-export { InterfaceOptions, PlayerOptions };
+export { EditorOptions, InterfaceOptions, PlayerOptions };

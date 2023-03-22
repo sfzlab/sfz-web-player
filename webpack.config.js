@@ -8,6 +8,7 @@ module.exports = {
     static: './dist',
     hot: true,
     port: 3000,
+    watchFiles: ["./src/*"],
   },
   mode: 'development',
   module: {

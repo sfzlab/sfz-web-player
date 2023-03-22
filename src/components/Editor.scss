@@ -1,7 +1,21 @@
-.fileList{
+
+.editor {
+  background-color: #272822;
+  color: #fff;
+  font-size: 11px;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  height: 365px;
+  width: 775px;
+}
+
+.ace {
+  flex-basis: 75%;
+}
+
+.fileList {
   --spacing : 1rem;
   --radius  : 7px;
-  font-size: var(--spacing);
   flex-basis: 25%;
   padding: .5rem;
   overflow-y: auto;
@@ -17,7 +31,7 @@
   padding: .25rem .5rem;
 
   &:hover {
-    background-color: #fff;
+    background-color: #222;
   }
 }
 
@@ -91,3 +105,4 @@
 .fileList details[open] > summary::before{
   content : '−';
 }
+

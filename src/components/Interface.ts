@@ -28,7 +28,6 @@ class Interface extends Component {
     this.addTab("Controls");
     this.getEl().appendChild(this.tabs);
     this.addKeyboard();
-    this.getElId(options.el).appendChild(this.getEl());
 
     if (options.url) this.load(options.url);
   }
@@ -128,12 +127,6 @@ class Interface extends Component {
     );
     span.innerHTML = text.text;
     return span;
-  }
-
-  getElId(value: HTMLElement | string) {
-    if (typeof value === "string")
-      return document.querySelectorAll(value)[0] as HTMLElement;
-    return value;
   }
 
   getExt(path: string) {

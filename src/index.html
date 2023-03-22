@@ -6,12 +6,14 @@
   <title>SFZ Web Player</title>
 </head>
 <body>
+  <div id="sfzPlayer"></div>
   <script src="sfz.js"></script>
   <script>
-    var sfzPlayer = new Sfz.Player({
-      audio: true,
+    var sfzPlayer = new Sfz.Player("sfzPlayer", {
+      editor: {
+        url: 'studiorack/black-and-green-guitars'
+      },
       interface: {
-        el: document.body,
         url: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
       }
     });
