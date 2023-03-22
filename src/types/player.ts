@@ -9,6 +9,7 @@ interface InterfaceOptions {
 interface PlayerOptions {
   audio?: boolean;
   editor?: EditorOptions;
+  header?: boolean;
   interface?: InterfaceOptions;
 }
 

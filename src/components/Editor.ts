@@ -13,6 +13,7 @@ import {
 import { EditorOptions } from "../types/player";
 const Mode = require("../lib/mode-sfz").Mode;
 import * as path from "path-browserify";
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 
 class Editor extends Component {
   private branch: string = "main";
@@ -39,8 +40,9 @@ class Editor extends Component {
 
     this.fileEl = document.createElement("div");
     this.fileEl.className = "fileList";
+    this.fileEl.innerHTML = "No directory selected";
     this.getEl().appendChild(this.fileEl);
-    if (options.url) this.load(options.url);
+    if (options.url) this.loadDirectoryRemote(options.url);
 
     this.aceEl = document.createElement("div");
     this.aceEl.className = "ace";
@@ -50,10 +52,38 @@ class Editor extends Component {
     this.getEl().appendChild(this.aceEl);
   }
 
-  async load(repo: string) {
-    const githubTree: FileGitHub = await this.loadJSON(
+  async loadDirectoryLocal(
+    blobs: FileWithDirectoryAndFileHandle[] | FileSystemDirectoryHandle[]
+  ) {
+    this.files = {};
+    this.filesNested = {};
+    blobs
+      .sort((a: any, b: any) => a.webkitRelativePath.localeCompare(b))
+      .forEach((blob: any) => {
+        const pathElements: string[] = blob.webkitRelativePath.split("/");
+        this.directory = pathElements.shift() || "none"; // remove root path
+        this.files[pathElements.join("/")] = blob;
+        pathElements.reduce(
+          (o: any, k: string) => (o[k] = o[k] || {}),
+          this.filesNested
+        );
+      });
+    console.log("loadDirectoryLocal", this.files, this.filesNested);
+    this.render(this.branch, this.directory, this.files, this.filesNested);
+  }
+
+  async loadDirectoryRemote(repo: string) {
+    let response: any = await fetch(
       `https://api.github.com/repos/${repo}/git/trees/${this.branch}?recursive=1`
     );
+    // TODO write this properly.
+    if (!response.ok) {
+      this.branch = "master";
+      response = await fetch(
+        `https://api.github.com/repos/${repo}/git/trees/${this.branch}?recursive=1`
+      );
+    }
+    const githubTree: FileGitHub = await response.json();
     this.files = {};
     this.filesNested = {};
     githubTree.tree.forEach((githubFile: FileGitHubItem) => {
@@ -63,18 +93,8 @@ class Editor extends Component {
         .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesNested);
     });
     this.directory = repo;
-
-    this.fileEl.replaceChildren();
-    this.fileEl.innerHTML = this.directory;
-    const ul: HTMLUListElement = this.createTree(
-      "",
-      this.branch,
-      this.directory,
-      this.files,
-      this.filesNested
-    );
-    ul.className = "tree";
-    this.fileEl.appendChild(ul);
+    console.log("loadDirectoryRemote", this.files, this.filesNested);
+    this.render(this.branch, this.directory, this.files, this.filesNested);
   }
 
   async loadJSON(path: string) {
@@ -144,6 +164,25 @@ class Editor extends Component {
       this.ace.session.setMode(mode);
     }
     this.ace.setOption("value", file.contents);
+  }
+
+  render(
+    branch: string,
+    directory: string,
+    files: FilesMap,
+    filesNested: FilesNested
+  ) {
+    this.fileEl.replaceChildren();
+    this.fileEl.innerHTML = directory;
+    const ul: HTMLUListElement = this.createTree(
+      "",
+      branch,
+      directory,
+      files,
+      filesNested
+    );
+    ul.className = "tree";
+    this.fileEl.appendChild(ul);
   }
 }
 
