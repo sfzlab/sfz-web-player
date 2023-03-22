@@ -38,8 +38,13 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'index.js',
+    filename: 'sfz.js',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
+    globalObject: 'this',
+    library: {
+      name: 'Sfz',
+      type: 'umd',
+    },
   },
 };
