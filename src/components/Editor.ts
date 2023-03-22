@@ -97,18 +97,18 @@ class Editor extends Component {
     this.render(this.branch, this.directory, this.files, this.filesNested);
   }
 
-  async loadJSON(path: string) {
-    console.log("loadJSON", path);
-    const response: any = await fetch(path);
+  async loadJSON(url: string) {
+    console.log("loadJSON", url);
+    const response: any = await fetch(url);
     return await response.json();
   }
 
-  async getFile(path: string) {
-    const response: any = await fetch(path);
+  async getFile(url: string) {
+    const response: any = await fetch(url);
     return {
-      ext: this.getExt(path),
+      ext: this.getExt(url),
       contents: await response.text(),
-      path,
+      path: url,
     };
   }
 
@@ -150,13 +150,13 @@ class Editor extends Component {
     return ul;
   }
 
-  getExt(path: string) {
-    return path.split(".").pop() || "none";
+  getExt(url: string) {
+    return url.split(".").pop() || "none";
   }
 
-  async clickFile(path: string) {
-    if (!this.supportedFiles.includes(this.getExt(path))) return;
-    const file: FileItem = await this.getFile(path);
+  async clickFile(url: string) {
+    if (!this.supportedFiles.includes(this.getExt(url))) return;
+    const file: FileItem = await this.getFile(url);
     if (file.ext === "sfz") {
       this.ace.session.setMode(new Mode());
     } else {

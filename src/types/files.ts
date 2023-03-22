@@ -24,7 +24,7 @@ interface FileGitHub {
 
 interface FileItem {
   ext: string;
-  contents: string;
+  contents: any;
   path: string;
 }
 
