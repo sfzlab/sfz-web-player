@@ -14,12 +14,14 @@ import { EditorOptions } from "../types/player";
 const Mode = require("../lib/mode-sfz").Mode;
 import * as path from "path-browserify";
 import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+import { get } from "../utils/api";
+import { pathGetExt, pathGetSubDirectories } from "../utils/utils";
 
 class Editor extends Component {
   private branch: string = "main";
   private files: FilesMap = {};
   private filesNested: FilesNested = {};
-  private directory: string = "none";
+  private root: string = "";
   private ace: any;
   private supportedFiles: string[] = [
     "json",
@@ -40,9 +42,7 @@ class Editor extends Component {
 
     this.fileEl = document.createElement("div");
     this.fileEl.className = "fileList";
-    this.fileEl.innerHTML = "No directory selected";
     this.getEl().appendChild(this.fileEl);
-    if (options.url) this.loadDirectoryRemote(options.url);
 
     this.aceEl = document.createElement("div");
     this.aceEl.className = "ace";
@@ -50,26 +50,55 @@ class Editor extends Component {
       theme: "ace/theme/monokai",
     });
     this.getEl().appendChild(this.aceEl);
+
+    if (options.root) this.root = options.root;
+    if (options.url) this.loadUrl(options.url);
   }
 
-  async loadDirectoryLocal(
-    blobs: FileWithDirectoryAndFileHandle[] | FileSystemDirectoryHandle[]
-  ) {
+  async loadUrl(url: string) {
+    if (!this.supportedFiles.includes(pathGetExt(url))) return;
+    const file: FileItem = {
+      ext: pathGetExt(url),
+      contents: await get(url),
+      path: decodeURI(url),
+    };
+    this.addFile(file);
+    this.render(this.branch, this.root, this.files, this.filesNested);
+    this.showFile(file);
+  }
+
+  showFile(file: FileItem) {
+    if (!file) return;
+    if (file.ext === "sfz") {
+      this.ace.session.setMode(new Mode());
+    } else {
+      const mode: string = modelist.getModeForPath(file.path).mode;
+      this.ace.session.setMode(mode);
+    }
+    this.ace.setOption("value", file.contents);
+  }
+
+  addFile(file: FileItem) {
+    const pathSubDir: string = pathGetSubDirectories(file.path, this.root);
+    this.files[pathSubDir] = file;
+    pathSubDir
+      .split("/")
+      .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesNested);
+  }
+
+  async loadDirectoryLocal(blobs: FileWithDirectoryAndFileHandle[]) {
+    this.root = blobs[0].webkitRelativePath.split("/").shift() || "none";
     this.files = {};
     this.filesNested = {};
-    blobs
-      .sort((a: any, b: any) => a.webkitRelativePath.localeCompare(b))
-      .forEach((blob: any) => {
-        const pathElements: string[] = blob.webkitRelativePath.split("/");
-        this.directory = pathElements.shift() || "none"; // remove root path
-        this.files[pathElements.join("/")] = blob;
-        pathElements.reduce(
-          (o: any, k: string) => (o[k] = o[k] || {}),
-          this.filesNested
-        );
+    blobs.forEach(async (file: FileWithDirectoryAndFileHandle) => {
+      this.addFile({
+        ext: pathGetExt(file.webkitRelativePath),
+        contents: await file.text(),
+        path: file.webkitRelativePath,
       });
+    });
     console.log("loadDirectoryLocal", this.files, this.filesNested);
-    this.render(this.branch, this.directory, this.files, this.filesNested);
+    this.render(this.branch, this.root, this.files, this.filesNested);
   }
 
   async loadDirectoryRemote(repo: string) {
@@ -84,6 +113,7 @@ class Editor extends Component {
       );
     }
     const githubTree: FileGitHub = await response.json();
+    this.root = repo;
     this.files = {};
     this.filesNested = {};
     githubTree.tree.forEach((githubFile: FileGitHubItem) => {
@@ -92,24 +122,8 @@ class Editor extends Component {
         .split("/")
         .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesNested);
     });
-    this.directory = repo;
     console.log("loadDirectoryRemote", this.files, this.filesNested);
-    this.render(this.branch, this.directory, this.files, this.filesNested);
-  }
-
-  async loadJSON(url: string) {
-    console.log("loadJSON", url);
-    const response: any = await fetch(url);
-    return await response.json();
-  }
-
-  async getFile(url: string) {
-    const response: any = await fetch(url);
-    return {
-      ext: this.getExt(url),
-      contents: await response.text(),
-      path: url,
-    };
+    this.render(this.branch, this.root, this.files, this.filesNested);
   }
 
   createTree(
@@ -122,17 +136,14 @@ class Editor extends Component {
     const ul: HTMLUListElement = document.createElement("ul");
     for (const key in filesNested) {
       const filePath: string = path.join(root, key);
-      const file: FileGitHubItem | File = files[filePath];
-      if (file && "url" in file) {
-        file.url = `https://raw.githubusercontent.com/${directory}/${branch}/${filePath}`;
-      }
+      const file: FileItem | FileGitHubItem | File = files[filePath];
       const li: HTMLLIElement = document.createElement("li");
       if (Object.keys(filesNested[key]).length > 0) {
         const details: HTMLDetailsElement = document.createElement("details");
         const summary: HTMLElement = document.createElement("summary");
         summary.innerHTML = key;
         summary.addEventListener("click", async () => {
-          if (file && "url" in file) await this.clickFile(file.url);
+          this.showFile(file as FileItem);
         });
         details.appendChild(summary);
         details.appendChild(
@@ -142,28 +153,12 @@ class Editor extends Component {
       } else {
         li.innerHTML = key;
         li.addEventListener("click", async () => {
-          if (file && "url" in file) await this.clickFile(file.url);
+          this.showFile(file as FileItem);
         });
       }
       ul.appendChild(li);
     }
     return ul;
-  }
-
-  getExt(url: string) {
-    return url.split(".").pop() || "none";
-  }
-
-  async clickFile(url: string) {
-    if (!this.supportedFiles.includes(this.getExt(url))) return;
-    const file: FileItem = await this.getFile(url);
-    if (file.ext === "sfz") {
-      this.ace.session.setMode(new Mode());
-    } else {
-      const mode: string = modelist.getModeForPath(file.path).mode;
-      this.ace.session.setMode(mode);
-    }
-    this.ace.setOption("value", file.contents);
   }
 
   render(

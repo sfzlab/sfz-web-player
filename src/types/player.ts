@@ -1,4 +1,5 @@
 interface EditorOptions {
+  root?: string;
   url?: string;
 }
 

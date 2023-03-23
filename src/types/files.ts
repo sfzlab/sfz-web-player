@@ -8,7 +8,7 @@ interface FileGitHubItem {
 }
 
 interface FilesMap {
-  [name: string]: FileGitHubItem | File;
+  [name: string]: FileItem | FileGitHubItem | File;
 }
 
 interface FilesNested {

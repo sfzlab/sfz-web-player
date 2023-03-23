@@ -37,11 +37,9 @@ class Player extends Component {
     input.value = "Select directory";
     input.addEventListener("click", async (e) => {
       try {
-        const blobs:
-          | FileWithDirectoryAndFileHandle[]
-          | FileSystemDirectoryHandle[] = await directoryOpen({
+        const blobs: FileWithDirectoryAndFileHandle[] = (await directoryOpen({
           recursive: true,
-        });
+        })) as FileWithDirectoryAndFileHandle[];
         console.log(`${blobs.length} files selected.`);
         if (this.editor) {
           this.editor.loadDirectoryLocal(blobs);
