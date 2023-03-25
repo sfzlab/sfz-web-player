@@ -1,37 +1,21 @@
-import "./Editor.scss";
-import Component from "./component";
 import * as ace from "ace-builds";
+import * as path from "path-browserify";
 import * as modelist from "ace-builds/src-noconflict/ext-modelist";
+import "./Editor.scss";
 import "ace-builds/webpack-resolver";
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+const Mode = require("../lib/mode-sfz").Mode;
+import Component from "./component";
 import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
 import { EditorOptions } from "../types/player";
-const Mode = require("../lib/mode-sfz").Mode;
-import * as path from "path-browserify";
-import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 import { get } from "../utils/api";
-import {
-  pathGetDirectory,
-  pathGetExt,
-  pathGetRoot,
-  pathGetSubDirectories,
-} from "../utils/utils";
+import { pathDir, pathExt, pathRoot, pathSubDir } from "../utils/utils";
 
 class Editor extends Component {
-  private branch: string = "main";
   private files: FilesMap = {};
   private filesTree: FilesTree = {};
   private directory: string = "";
   private ace: any;
-  private supportedFiles: string[] = [
-    "json",
-    "json",
-    "md",
-    "sfz",
-    "txt",
-    "xml",
-    "yml",
-    "yaml",
-  ];
 
   private aceEl: HTMLDivElement;
   private fileEl: HTMLDivElement;
@@ -62,9 +46,9 @@ class Editor extends Component {
 
   addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]) {
     if (typeof files[0] === "string") {
-      this.setDirectory(pathGetDirectory(files[0]));
+      this.setDirectory(pathDir(files[0]));
     } else {
-      this.setDirectory(pathGetRoot(files[0].webkitRelativePath));
+      this.setDirectory(pathRoot(files[0].webkitRelativePath));
     }
     this.resetFiles();
     files.forEach((file: string | FileWithDirectoryAndFileHandle) =>
@@ -78,21 +62,21 @@ class Editor extends Component {
     if (typeof file === "string") {
       if (file === this.directory) return;
       item = {
-        ext: pathGetExt(file),
+        ext: pathExt(file),
         contents: null,
         path: decodeURI(file),
       };
     } else {
       item = {
-        ext: pathGetExt(file.webkitRelativePath),
+        ext: pathExt(file.webkitRelativePath),
         contents: null,
         path: decodeURI(file.webkitRelativePath),
         handle: file,
       };
     }
-    const pathSubDir: string = pathGetSubDirectories(item.path, this.directory);
-    this.files[pathSubDir] = item;
-    pathSubDir
+    const fileKey: string = pathSubDir(item.path, this.directory);
+    this.files[fileKey] = item;
+    fileKey
       .split("/")
       .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
     return item;
@@ -101,13 +85,13 @@ class Editor extends Component {
   async loadFile(file: string | FileWithDirectoryAndFileHandle) {
     if (typeof file === "string") {
       return {
-        ext: pathGetExt(file),
+        ext: pathExt(file),
         contents: await get(file),
         path: decodeURI(file),
       } as FileRemote;
     } else {
       return {
-        ext: pathGetExt(file.webkitRelativePath),
+        ext: pathExt(file.webkitRelativePath),
         contents: await file.text(),
         path: file.webkitRelativePath,
       } as FileLocal;
@@ -121,20 +105,17 @@ class Editor extends Component {
   async showFile(file: FileLocal | FileRemote | undefined) {
     if (!file) return;
     if (typeof file === "string") {
-      const pathSubDir: string = pathGetSubDirectories(file, this.directory);
-      file = this.files[pathSubDir];
+      const fileKey: string = pathSubDir(file, this.directory);
+      file = this.files[fileKey];
     }
     if (!file.contents) {
-      const pathSubDir: string = pathGetSubDirectories(
-        file.path,
-        this.directory
-      );
+      const fileKey: string = pathSubDir(file.path, this.directory);
       if ("handle" in file) {
         file = await this.loadFile(file.handle);
-        this.files[pathSubDir] = file;
+        this.files[fileKey] = file;
       } else {
         file = await this.loadFile(file.path);
-        this.files[pathSubDir] = file;
+        this.files[fileKey] = file;
       }
     }
     if (file.ext === "sfz") {
@@ -151,12 +132,7 @@ class Editor extends Component {
     this.filesTree = {};
   }
 
-  createTree(
-    root: string,
-    branch: string,
-    files: FilesMap,
-    filesTree: FilesTree
-  ) {
+  createTree(root: string, files: FilesMap, filesTree: FilesTree) {
     const ul: HTMLUListElement = document.createElement("ul");
     for (const key in filesTree) {
       const filePath: string = path.join(root, key);
@@ -169,9 +145,7 @@ class Editor extends Component {
           await this.showFile(files[filePath]);
         });
         details.appendChild(summary);
-        details.appendChild(
-          this.createTree(filePath, branch, files, filesTree[key])
-        );
+        details.appendChild(this.createTree(filePath, files, filesTree[key]));
         li.appendChild(details);
       } else {
         li.innerHTML = key;
@@ -189,7 +163,6 @@ class Editor extends Component {
     this.fileEl.innerHTML = this.directory;
     const ul: HTMLUListElement = this.createTree(
       "",
-      this.branch,
       this.files,
       this.filesTree
     );

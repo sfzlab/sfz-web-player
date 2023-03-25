@@ -1,17 +1,17 @@
-function pathGetDirectory(pathItem: string, separator: string = "/"): string {
-  return pathItem.substring(0, pathItem.lastIndexOf(separator) + 1);
+function pathDir(item: string, separator: string = "/"): string {
+  return item.substring(0, item.lastIndexOf(separator) + 1);
 }
 
-function pathGetExt(pathItem: string): string {
-  return pathItem.substring(pathItem.lastIndexOf(".") + 1);
+function pathExt(item: string): string {
+  return item.substring(item.lastIndexOf(".") + 1);
 }
 
-function pathGetRoot(pathItem: string, separator: string = "/"): string {
-  return pathItem.substring(0, pathItem.indexOf(separator) + 1);
+function pathRoot(item: string, separator: string = "/"): string {
+  return item.substring(0, item.indexOf(separator) + 1);
 }
 
-function pathGetSubDirectories(pathItem: string, pathDir: string): string {
-  return pathItem.substring(pathDir.length);
+function pathSubDir(item: string, dir: string): string {
+  return item.substring(dir.length);
 }
 
-export { pathGetDirectory, pathGetExt, pathGetRoot, pathGetSubDirectories };
+export { pathDir, pathExt, pathRoot, pathSubDir };
