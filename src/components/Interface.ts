@@ -29,7 +29,7 @@ class Interface extends Component {
     this.getEl().appendChild(this.tabs);
     this.addKeyboard();
 
-    if (options.url) this.load(options.url);
+    if (options.file) this.load(options.file);
   }
 
   async load(path: string) {

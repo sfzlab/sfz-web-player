@@ -12,11 +12,15 @@
     var sfzPlayer = new Sfz.Player("sfzPlayer", {
       header: true,
       editor: {
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/',
-        url: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
+        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
+        directory: [
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml'
+        ]
       },
       interface: {
-        url: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
+        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
       }
     });
   </script>

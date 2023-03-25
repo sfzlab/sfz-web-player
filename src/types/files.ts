@@ -1,3 +1,5 @@
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+
 interface FileGitHubItem {
   path: string;
   mode: string;
@@ -8,11 +10,11 @@ interface FileGitHubItem {
 }
 
 interface FilesMap {
-  [name: string]: FileItem | FileGitHubItem | File;
+  [name: string]: FileLocal | FileRemote;
 }
 
-interface FilesNested {
-  [key: string]: FilesNested;
+interface FilesTree {
+  [key: string]: FilesTree;
 }
 
 interface FileGitHub {
@@ -20,6 +22,19 @@ interface FileGitHub {
   url: string;
   tree: FileGitHubItem[];
   truncated: boolean;
+}
+
+interface FileLocal {
+  ext: string;
+  contents: any;
+  path: string;
+  handle: FileWithDirectoryAndFileHandle;
+}
+
+interface FileRemote {
+  ext: string;
+  contents: any;
+  path: string;
 }
 
 interface FileItem {
@@ -32,14 +47,16 @@ interface FileObject {
   branch: string;
   directory: string;
   files: FilesMap;
-  filesNested: FilesNested;
+  filesNested: FilesTree;
 }
 
 export {
   FileGitHub,
   FileGitHubItem,
   FileItem,
+  FileLocal,
+  FileRemote,
   FilesMap,
-  FilesNested,
+  FilesTree,
   FileObject,
 };

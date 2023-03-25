@@ -1,10 +1,12 @@
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+
 interface EditorOptions {
-  root?: string;
-  url?: string;
+  directory?: string[] | FileWithDirectoryAndFileHandle[];
+  file?: string | FileWithDirectoryAndFileHandle;
 }
 
 interface InterfaceOptions {
-  url?: string;
+  file?: string;
 }
 
 interface PlayerOptions {

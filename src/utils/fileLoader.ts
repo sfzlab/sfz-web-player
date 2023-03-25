@@ -5,13 +5,13 @@ import {
   FileItem,
   FileObject,
   FilesMap,
-  FilesNested,
+  FilesTree,
 } from "../types/files";
 
 class FileLoader {
   private branch: string = "main";
   private files: FilesMap = {};
-  private filesNested: FilesNested = {};
+  private filesNested: FilesTree = {};
   private directory: string = "none";
 
   getFiles() {
@@ -75,7 +75,7 @@ class FileLoader {
     this.files = {};
     this.filesNested = {};
     githubTree.tree.forEach((githubFile: FileGitHubItem) => {
-      this.files[githubFile.path] = githubFile;
+      // this.files[githubFile.path] = githubFile;
       githubFile.path
         .split("/")
         .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesNested);

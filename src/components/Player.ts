@@ -42,7 +42,7 @@ class Player extends Component {
         })) as FileWithDirectoryAndFileHandle[];
         console.log(`${blobs.length} files selected.`);
         if (this.editor) {
-          this.editor.loadDirectoryLocal(blobs);
+          this.editor.addDirectory(blobs);
         }
       } catch (err: any) {
         if (err.name !== "AbortError") {
