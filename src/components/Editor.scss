@@ -1,7 +1,20 @@
-.fileList{
+
+.editor {
+  background-color: #272822;
+  color: #fff;
+  font-size: 11px;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  height: 365px;
+}
+
+.ace {
+  flex-basis: 75%;
+}
+
+.fileList {
   --spacing : 1rem;
   --radius  : 7px;
-  font-size: var(--spacing);
   flex-basis: 25%;
   padding: .5rem;
   overflow-y: auto;
@@ -17,7 +30,7 @@
   padding: .25rem .5rem;
 
   &:hover {
-    background-color: #fff;
+    background-color: #222;
   }
 }
 
@@ -78,9 +91,9 @@
 }
 
 .fileList summary::before{
-  content     : '+';
+  content     : '>';
   z-index     : 1;
-  background  : #696;
+  background-color: #272822;
   color       : #fff;
   line-height : calc(2 * var(--radius) - 2px);
   text-align  : center;
@@ -89,5 +102,7 @@
 }
 
 .fileList details[open] > summary::before{
-  content : '−';
+  // content : '−';
+  transform: rotate(90deg); 
 }
+

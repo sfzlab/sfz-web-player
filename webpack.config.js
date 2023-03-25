@@ -8,6 +8,7 @@ module.exports = {
     static: './dist',
     hot: true,
     port: 3000,
+    watchFiles: ["./src/*"],
   },
   mode: 'development',
   module: {
@@ -38,8 +39,13 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'index.js',
+    filename: 'sfz.js',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
+    globalObject: 'this',
+    library: {
+      name: 'Sfz',
+      type: 'umd',
+    },
   },
 };

@@ -1,43 +1,43 @@
 
-.sfzPlayer {
+.interface {
   background-color: #000;
+  color: #fff;
   font-size: 11px;
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
   user-select: none;
-  height: 365px;
-  width: 775px;
+  height: 435px;
 }
 
-.sfzPlayer img,
-.sfzPlayer span,
-.sfzPlayer webaudio-keyboard,
-.sfzPlayer webaudio-knob,
-.sfzPlayer webaudio-slider,
-.sfzPlayer webaudio-switch {
+.interface img,
+.interface span,
+.interface webaudio-keyboard,
+.interface webaudio-knob,
+.interface webaudio-slider,
+.interface webaudio-switch {
   position: absolute;
   // transform: translate(-50%, -50%); 
 }
 
-.sfzPlayer img {
+.interface img {
   z-index: 1;
 }
 
-.sfzPlayer webaudio-keyboard,
-.sfzPlayer webaudio-knob,
-.sfzPlayer webaudio-slider,
-.sfzPlayer webaudio-switch {
+.interface webaudio-keyboard,
+.interface webaudio-knob,
+.interface webaudio-slider,
+.interface webaudio-switch {
   z-index: 2;
 }
 
-.sfzPlayer span {
+.interface span {
   align-items: center;
   display: flex;
   justify-content: center;
   z-index: 3;
 }
 
-.sfzPlayer webaudio-keyboard {
+.interface webaudio-keyboard {
   left: 0;
   top: 359px;
 }
@@ -47,7 +47,6 @@
   color: #fff;
   display: flex;
   flex-wrap: wrap;
-  height: 100%;
 }
 
 .radiotab {
@@ -74,7 +73,6 @@
   background-color: #333;
   position: relative;
   display: none;
-  height: 100%;
   width: 100%;
 }
 

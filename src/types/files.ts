@@ -1,45 +1,24 @@
-interface FileGitHubItem {
-  path: string;
-  mode: string;
-  type: string;
-  sha: string;
-  size?: number;
-  url: string;
-}
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 
 interface FilesMap {
-  [name: string]: FileGitHubItem | File;
+  [name: string]: FileLocal | FileRemote;
 }
 
-interface FilesNested {
-  [key: string]: FilesNested;
+interface FilesTree {
+  [key: string]: FilesTree;
 }
 
-interface FileGitHub {
-  sha: string;
-  url: string;
-  tree: FileGitHubItem[];
-  truncated: boolean;
-}
-
-interface FileItem {
+interface FileLocal {
   ext: string;
-  contents: string;
+  contents: any;
+  path: string;
+  handle: FileWithDirectoryAndFileHandle;
+}
+
+interface FileRemote {
+  ext: string;
+  contents: any;
   path: string;
 }
 
-interface FileObject {
-  branch: string;
-  directory: string;
-  files: FilesMap;
-  filesNested: FilesNested;
-}
-
-export {
-  FileGitHub,
-  FileGitHubItem,
-  FileItem,
-  FilesMap,
-  FilesNested,
-  FileObject,
-};
+export { FileLocal, FileRemote, FilesMap, FilesTree };
