@@ -91,9 +91,9 @@
 }
 
 .fileList summary::before{
-  content     : '+';
+  content     : '>';
   z-index     : 1;
-  background  : #696;
+  background-color: #272822;
   color       : #fff;
   line-height : calc(2 * var(--radius) - 2px);
   text-align  : center;
@@ -102,6 +102,7 @@
 }
 
 .fileList details[open] > summary::before{
-  content : '−';
+  // content : '−';
+  transform: rotate(90deg); 
 }
 

@@ -72,9 +72,10 @@ class Interface extends Component {
     if (this.loader.root.startsWith("http")) {
       img.setAttribute(attribute, this.loader.root + "GUI/" + path);
     } else {
-      const file: FileLocal | FileRemote | undefined =
-        await this.loader.getFile(this.loader.root + "GUI/" + path);
-      img.setAttribute(attribute, file?.contents);
+      const file: FileRemote | undefined = this.loader.files["GUI/" + path];
+      if (file && "handle" in file) {
+        img.setAttribute(attribute, URL.createObjectURL(file.handle as Blob));
+      }
     }
   }
 

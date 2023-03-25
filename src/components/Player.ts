@@ -9,21 +9,26 @@ import {
 } from "browser-fs-access";
 import { pathDir, pathExt, pathRoot } from "../utils/utils";
 import { FileLocal, FileRemote } from "../types/files";
+import FileLoader from "../utils/fileLoader";
 
 class Player extends Component {
   private editor?: Editor;
   private interface?: Interface;
+  private loader: FileLoader;
 
   constructor(id: string, options: PlayerOptions) {
     super("player");
+    this.loader = new FileLoader();
     if (options.header) {
       this.setupHeader();
     }
     if (options.interface) {
+      options.interface.loader = this.loader;
       this.interface = new Interface(options.interface);
       this.getEl().appendChild(this.interface.getEl());
     }
     if (options.editor) {
+      options.editor.loader = this.loader;
       this.editor = new Editor(options.editor);
       this.getEl().appendChild(this.editor.getEl());
     }
@@ -44,24 +49,23 @@ class Player extends Component {
         })) as FileWithDirectoryAndFileHandle[];
         console.log(`${blobs.length} files selected.`);
         if (this.interface) {
-          this.interface.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
-          this.interface.loader.addDirectory(blobs);
-          blobs.forEach((blob) => {
+          this.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
+          this.loader.addDirectory(blobs);
+          for (const blob of blobs) {
             if (
               pathExt(blob.webkitRelativePath) === "xml" &&
-              pathDir(blob.webkitRelativePath) === this.interface?.loader.root
+              pathDir(blob.webkitRelativePath) === this.loader.root
             ) {
               const file: FileLocal | FileRemote | undefined =
-                this.interface.loader.addFile(blob);
-              this.interface.showFile(file);
-              return;
+                this.loader.addFile(blob);
+              await this.interface?.showFile(file);
             }
-          });
+          }
           this.interface.render();
         }
         if (this.editor) {
-          this.editor.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
-          this.editor.loader.addDirectory(blobs);
+          this.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
+          this.loader.addDirectory(blobs);
           this.editor.render();
         }
       } catch (err: any) {
