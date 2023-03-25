@@ -6,6 +6,30 @@
   <title>SFZ Web Player</title>
 </head>
 <body>
-  <script src="index.js"></script>
+  <div id="sfzPlayer"></div>
+  <script src="sfz.js"></script>
+  <script>
+    var sfzPlayer = new Sfz.Player("sfzPlayer", {
+      header: true,
+      editor: {
+        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
+        directory: [
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
+        ],
+        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/',
+      },
+      interface: {
+        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
+        directory: [
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
+        ],
+        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/'
+      }
+    });
+  </script>
 </body>
 </html>

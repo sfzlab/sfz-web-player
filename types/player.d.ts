@@ -1,50 +1,21 @@
-type PlayerElement = PlayerButton | PlayerImage | PlayerKnob | PlayerSlider | PlayerText;
-declare enum PlayerElements {
-    Keyboard = "keyboard",
-    Knob = "knob",
-    Slider = "slider",
-    Switch = "switch"
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+import FileLoader from "../utils/fileLoader";
+interface EditorOptions {
+    directory?: string[] | FileWithDirectoryAndFileHandle[];
+    file?: string | FileWithDirectoryAndFileHandle;
+    loader?: FileLoader;
+    root?: string;
 }
-interface PlayerButton {
-    h: string;
-    image: string;
-    param: string;
-    w: string;
-    x: string;
-    y: string;
+interface InterfaceOptions {
+    directory?: string[] | FileWithDirectoryAndFileHandle[];
+    file?: string | FileWithDirectoryAndFileHandle;
+    loader?: FileLoader;
+    root?: string;
 }
-interface PlayerImage {
-    h: string;
-    image: string;
-    transparent?: string;
-    w: string;
-    x: string;
-    y: string;
+interface PlayerOptions {
+    audio?: boolean;
+    editor?: EditorOptions;
+    header?: boolean;
+    interface?: InterfaceOptions;
 }
-interface PlayerKnob {
-    frames: string;
-    image: string;
-    param: string;
-    x: string;
-    y: string;
-}
-interface PlayerSlider {
-    h: string;
-    image_bg: string;
-    image_handle: string;
-    orientation: string;
-    param: string;
-    w: string;
-    x: string;
-    y: string;
-}
-interface PlayerText {
-    color_text: string;
-    h: string;
-    text: string;
-    transparent: string;
-    w: string;
-    x: string;
-    y: string;
-}
-export { PlayerButton, PlayerElement, PlayerElements, PlayerImage, PlayerKnob, PlayerSlider, PlayerText, };
+export { EditorOptions, InterfaceOptions, PlayerOptions };

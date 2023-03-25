@@ -1,8 +1,3 @@
-import "./lib/webaudio-controls";
-import Component from "./components/component";
-import "./index.scss";
-declare class Index extends Component {
-    constructor();
-    render(): void;
-}
-export default Index;
+import Interface from "./components/Interface";
+import Player from "./components/Player";
+export { Interface, Player };

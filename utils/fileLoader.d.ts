@@ -1,23 +1,14 @@
-import { FileGitHubItem, FileItem, FilesMap, FilesNested } from "../types/files";
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
 declare class FileLoader {
-    private branch;
-    private files;
-    private filesNested;
-    private directory;
-    getFiles(): FilesMap;
-    loadFileLocal(file: File): Promise<FileItem>;
-    loadFileRemote(file: FileGitHubItem): Promise<FileItem>;
-    loadDirectoryLocal(blobs: File[]): Promise<{
-        branch: string;
-        directory: string;
-        files: FilesMap;
-        filesNested: FilesNested;
-    }>;
-    loadDirectoryRemote(data: any): Promise<{
-        branch: string;
-        directory: string;
-        files: FilesMap;
-        filesNested: FilesNested;
-    }>;
+    files: FilesMap;
+    filesTree: FilesTree;
+    root: string;
+    addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]): void;
+    addFile(file: string | FileWithDirectoryAndFileHandle): FileRemote | undefined;
+    loadFile(file: string | FileWithDirectoryAndFileHandle): Promise<FileRemote>;
+    getFile(file: string | FileLocal | FileRemote | undefined): Promise<FileRemote | undefined>;
+    setRoot(dir: string): void;
+    resetFiles(): void;
 }
 export default FileLoader;
