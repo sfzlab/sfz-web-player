@@ -7,7 +7,8 @@ import {
   directoryOpen,
   FileWithDirectoryAndFileHandle,
 } from "browser-fs-access";
-import { pathRoot } from "../utils/utils";
+import { pathDir, pathExt, pathRoot } from "../utils/utils";
+import { FileLocal, FileRemote } from "../types/files";
 
 class Player extends Component {
   private editor?: Editor;
@@ -42,6 +43,22 @@ class Player extends Component {
           recursive: true,
         })) as FileWithDirectoryAndFileHandle[];
         console.log(`${blobs.length} files selected.`);
+        if (this.interface) {
+          this.interface.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
+          this.interface.loader.addDirectory(blobs);
+          blobs.forEach((blob) => {
+            if (
+              pathExt(blob.webkitRelativePath) === "xml" &&
+              pathDir(blob.webkitRelativePath) === this.interface?.loader.root
+            ) {
+              const file: FileLocal | FileRemote | undefined =
+                this.interface.loader.addFile(blob);
+              this.interface.showFile(file);
+              return;
+            }
+          });
+          this.interface.render();
+        }
         if (this.editor) {
           this.editor.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
           this.editor.loader.addDirectory(blobs);

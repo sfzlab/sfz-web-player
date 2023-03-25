@@ -47,21 +47,7 @@ class Interface extends Component {
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
-    if (!file) return;
-    if (typeof file === "string") {
-      const fileKey: string = pathSubDir(file, this.loader.root);
-      file = this.loader.files[fileKey];
-    }
-    if (!file.contents) {
-      const fileKey: string = pathSubDir(file.path, this.loader.root);
-      if ("handle" in file) {
-        file = await this.loader.loadFile(file.handle);
-        this.loader.files[fileKey] = file;
-      } else {
-        file = await this.loader.loadFile(file.path);
-        this.loader.files[fileKey] = file;
-      }
-    }
+    file = await this.loader.getFile(file);
     this.instrument = this.parseXML(file);
     this.render();
   }
@@ -71,12 +57,6 @@ class Interface extends Component {
     this.setupControls();
   }
 
-  async loadXML(path: string) {
-    console.log("loadXML", path);
-    const file: FileLocal | FileRemote = await this.loader.loadFile(path);
-    return this.parseXML(file);
-  }
-
   async addImage(image: PlayerImage) {
     const img: HTMLImageElement = document.createElement("img");
     img.setAttribute("draggable", "false");
@@ -84,12 +64,18 @@ class Interface extends Component {
       "style",
       `left: ${image.x}px; top: ${image.y}px; height: ${image.h}px; width: ${image.w}px`
     );
-    this.addImageAtr(img, "src", image.image);
+    await this.addImageAtr(img, "src", image.image);
     return img;
   }
 
-  addImageAtr(img: HTMLImageElement, attribute: string, path: string) {
-    img.setAttribute(attribute, this.loader.root + "GUI/" + path);
+  async addImageAtr(img: HTMLImageElement, attribute: string, path: string) {
+    if (this.loader.root.startsWith("http")) {
+      img.setAttribute(attribute, this.loader.root + "GUI/" + path);
+    } else {
+      const file: FileLocal | FileRemote | undefined =
+        await this.loader.getFile(this.loader.root + "GUI/" + path);
+      img.setAttribute(attribute, file?.contents);
+    }
   }
 
   addControl(type: PlayerElements, element: PlayerElement) {
@@ -157,7 +143,8 @@ class Interface extends Component {
     return span;
   }
 
-  parseXML(file: FileLocal | FileRemote) {
+  parseXML(file: FileLocal | FileRemote | undefined) {
+    if (!file) return {};
     const fileParsed: any = xml2js(file.contents);
     return this.findElements({}, fileParsed.elements);
   }
@@ -166,9 +153,10 @@ class Interface extends Component {
     if (!this.instrument.AriaGUI) return;
     const info: Element = this.tabs.getElementsByClassName("panel")[0];
     info.replaceChildren();
-    const fileXml: any = await this.loadXML(
+    const file: FileLocal | FileRemote | undefined = await this.loader.getFile(
       this.loader.root + this.instrument.AriaGUI[0].path
     );
+    const fileXml: any = await this.parseXML(file);
     info.appendChild(await this.addImage(fileXml.StaticImage[0]));
   }
 
@@ -176,27 +164,28 @@ class Interface extends Component {
     if (!this.instrument.AriaProgram) return;
     const controls: Element = this.tabs.getElementsByClassName("panel")[1];
     controls.replaceChildren();
-    const fileProgram: any = await this.loadXML(
+    const file: FileLocal | FileRemote | undefined = await this.loader.getFile(
       this.loader.root + this.instrument.AriaProgram[0].gui
     );
-    if (fileProgram.Knob)
-      fileProgram.Knob.forEach((knob: PlayerKnob) =>
+    const fileXml: any = await this.parseXML(file);
+    if (fileXml.Knob)
+      fileXml.Knob.forEach((knob: PlayerKnob) =>
         controls.appendChild(this.addControl(PlayerElements.Knob, knob))
       );
-    if (fileProgram.OnOffButton)
-      fileProgram.OnOffButton.forEach((button: PlayerButton) =>
+    if (fileXml.OnOffButton)
+      fileXml.OnOffButton.forEach((button: PlayerButton) =>
         controls.appendChild(this.addControl(PlayerElements.Switch, button))
       );
-    if (fileProgram.Slider)
-      fileProgram.Slider.forEach((slider: PlayerSlider) =>
+    if (fileXml.Slider)
+      fileXml.Slider.forEach((slider: PlayerSlider) =>
         controls.appendChild(this.addControl(PlayerElements.Slider, slider))
       );
-    if (fileProgram.StaticImage)
-      fileProgram.StaticImage.forEach(async (image: PlayerImage) =>
+    if (fileXml.StaticImage)
+      fileXml.StaticImage.forEach(async (image: PlayerImage) =>
         controls.appendChild(await this.addImage(image))
       );
-    if (fileProgram.StaticText)
-      fileProgram.StaticText.forEach((text: PlayerText) =>
+    if (fileXml.StaticText)
+      fileXml.StaticText.forEach((text: PlayerText) =>
         controls.appendChild(this.addText(text))
       );
   }

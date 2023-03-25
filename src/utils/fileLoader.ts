@@ -56,7 +56,31 @@ class FileLoader {
     }
   }
 
+  async getFile(file: string | FileLocal | FileRemote | undefined) {
+    if (!file) return;
+    if (typeof file === "string") {
+      const fileKey: string = pathSubDir(file, this.root);
+      if (this.files[fileKey]) {
+        file = this.files[fileKey];
+      } else {
+        file = await this.loadFile(file);
+      }
+    }
+    if (!file.contents) {
+      const fileKey: string = pathSubDir(file.path, this.root);
+      if ("handle" in file) {
+        file = await this.loadFile(file.handle);
+        this.files[fileKey] = file;
+      } else {
+        file = await this.loadFile(file.path);
+        this.files[fileKey] = file;
+      }
+    }
+    return file;
+  }
+
   setRoot(dir: string) {
+    console.log("setRoot", dir);
     this.root = dir;
   }
 

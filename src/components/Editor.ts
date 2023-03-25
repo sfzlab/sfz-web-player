@@ -51,21 +51,8 @@ class Editor extends Component {
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
+    file = await this.loader.getFile(file);
     if (!file) return;
-    if (typeof file === "string") {
-      const fileKey: string = pathSubDir(file, this.loader.root);
-      file = this.loader.files[fileKey];
-    }
-    if (!file.contents) {
-      const fileKey: string = pathSubDir(file.path, this.loader.root);
-      if ("handle" in file) {
-        file = await this.loader.loadFile(file.handle);
-        this.loader.files[fileKey] = file;
-      } else {
-        file = await this.loader.loadFile(file.path);
-        this.loader.files[fileKey] = file;
-      }
-    }
     if (file.ext === "sfz") {
       this.ace.session.setMode(new Mode());
     } else {
