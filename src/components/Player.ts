@@ -7,6 +7,7 @@ import {
   directoryOpen,
   FileWithDirectoryAndFileHandle,
 } from "browser-fs-access";
+import { pathRoot } from "../utils/utils";
 
 class Player extends Component {
   private editor?: Editor;
@@ -42,7 +43,9 @@ class Player extends Component {
         })) as FileWithDirectoryAndFileHandle[];
         console.log(`${blobs.length} files selected.`);
         if (this.editor) {
-          this.editor.addDirectory(blobs);
+          this.editor.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
+          this.editor.loader.addDirectory(blobs);
+          this.editor.render();
         }
       } catch (err: any) {
         if (err.name !== "AbortError") {

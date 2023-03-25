@@ -10,15 +10,13 @@ import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
 import { EditorOptions } from "../types/player";
 import { get } from "../utils/api";
 import { pathDir, pathExt, pathRoot, pathSubDir } from "../utils/utils";
+import FileLoader from "../utils/fileLoader";
 
 class Editor extends Component {
-  private files: FilesMap = {};
-  private filesTree: FilesTree = {};
-  private directory: string = "";
   private ace: any;
-
   private aceEl: HTMLDivElement;
   private fileEl: HTMLDivElement;
+  loader: FileLoader;
 
   constructor(options: EditorOptions) {
     super("editor");
@@ -34,88 +32,38 @@ class Editor extends Component {
     });
     this.getEl().appendChild(this.aceEl);
 
-    if (options.directory) this.addDirectory(options.directory);
+    if (options.loader) {
+      this.loader = options.loader;
+    } else {
+      this.loader = new FileLoader();
+    }
+    if (options.root) this.loader.setRoot(options.root);
+    if (options.directory) {
+      this.loader.addDirectory(options.directory);
+      this.render();
+    }
     if (options.file) {
-      const file: FileLocal | FileRemote | undefined = this.addFile(
+      const file: FileLocal | FileRemote | undefined = this.loader.addFile(
         options.file
       );
       this.showFile(file);
-      this.render();
     }
-  }
-
-  addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]) {
-    if (typeof files[0] === "string") {
-      this.setDirectory(pathDir(files[0]));
-    } else {
-      this.setDirectory(pathRoot(files[0].webkitRelativePath));
-    }
-    this.resetFiles();
-    files.forEach((file: string | FileWithDirectoryAndFileHandle) =>
-      this.addFile(file)
-    );
-    this.render();
-  }
-
-  addFile(file: string | FileWithDirectoryAndFileHandle) {
-    let item: FileLocal | FileRemote;
-    if (typeof file === "string") {
-      if (file === this.directory) return;
-      item = {
-        ext: pathExt(file),
-        contents: null,
-        path: decodeURI(file),
-      };
-    } else {
-      item = {
-        ext: pathExt(file.webkitRelativePath),
-        contents: null,
-        path: decodeURI(file.webkitRelativePath),
-        handle: file,
-      };
-    }
-    const fileKey: string = pathSubDir(item.path, this.directory);
-    this.files[fileKey] = item;
-    fileKey
-      .split("/")
-      .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
-    return item;
-  }
-
-  async loadFile(file: string | FileWithDirectoryAndFileHandle) {
-    if (typeof file === "string") {
-      return {
-        ext: pathExt(file),
-        contents: await get(file),
-        path: decodeURI(file),
-      } as FileRemote;
-    } else {
-      return {
-        ext: pathExt(file.webkitRelativePath),
-        contents: await file.text(),
-        path: file.webkitRelativePath,
-      } as FileLocal;
-    }
-  }
-
-  setDirectory(dir: string) {
-    this.directory = dir;
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
     if (!file) return;
     if (typeof file === "string") {
-      const fileKey: string = pathSubDir(file, this.directory);
-      file = this.files[fileKey];
+      const fileKey: string = pathSubDir(file, this.loader.root);
+      file = this.loader.files[fileKey];
     }
     if (!file.contents) {
-      const fileKey: string = pathSubDir(file.path, this.directory);
+      const fileKey: string = pathSubDir(file.path, this.loader.root);
       if ("handle" in file) {
-        file = await this.loadFile(file.handle);
-        this.files[fileKey] = file;
+        file = await this.loader.loadFile(file.handle);
+        this.loader.files[fileKey] = file;
       } else {
-        file = await this.loadFile(file.path);
-        this.files[fileKey] = file;
+        file = await this.loader.loadFile(file.path);
+        this.loader.files[fileKey] = file;
       }
     }
     if (file.ext === "sfz") {
@@ -125,11 +73,6 @@ class Editor extends Component {
       this.ace.session.setMode(mode);
     }
     this.ace.setOption("value", file.contents);
-  }
-
-  resetFiles() {
-    this.files = {};
-    this.filesTree = {};
   }
 
   createTree(root: string, files: FilesMap, filesTree: FilesTree) {
@@ -160,11 +103,11 @@ class Editor extends Component {
 
   render() {
     this.fileEl.replaceChildren();
-    this.fileEl.innerHTML = this.directory;
+    this.fileEl.innerHTML = this.loader.root;
     const ul: HTMLUListElement = this.createTree(
       "",
-      this.files,
-      this.filesTree
+      this.loader.files,
+      this.loader.filesTree
     );
     ul.className = "tree";
     this.fileEl.appendChild(ul);

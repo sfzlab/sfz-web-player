@@ -1,9 +1,9 @@
 import "../lib/webaudio-controls";
-import { InterfaceOptions } from "../types/player";
 import "./Interface.scss";
-import Component from "./component";
-import { FileItem } from "../types/files";
 import { xml2js } from "xml-js";
+import { InterfaceOptions } from "../types/player";
+import Component from "./component";
+import { FileLocal, FileRemote } from "../types/files";
 import {
   PlayerButton,
   PlayerElement,
@@ -13,11 +13,13 @@ import {
   PlayerSlider,
   PlayerText,
 } from "../types/interface";
+import FileLoader from "../utils/fileLoader";
+import { pathExt, pathSubDir } from "../utils/utils";
 
 class Interface extends Component {
-  private basepath: string = "";
   private instrument: { [name: string]: any[] } = {};
   private tabs: HTMLDivElement;
+  loader: FileLoader;
 
   constructor(options: InterfaceOptions) {
     super("interface");
@@ -29,23 +31,49 @@ class Interface extends Component {
     this.getEl().appendChild(this.tabs);
     this.addKeyboard();
 
-    if (options.file) this.load(options.file);
+    if (options.loader) {
+      this.loader = options.loader;
+    } else {
+      this.loader = new FileLoader();
+    }
+    if (options.root) this.loader.setRoot(options.root);
+    if (options.directory) this.loader.addDirectory(options.directory);
+    if (options.file) {
+      const file: FileLocal | FileRemote | undefined = this.loader.addFile(
+        options.file
+      );
+      this.showFile(file);
+    }
   }
 
-  async load(path: string) {
-    if (this.getExt(path) !== "xml")
-      return console.error(
-        `${this.getExt(path)} extension not supported. Use .xml`
-      );
-    this.basepath = path.substring(0, path.lastIndexOf("/") + 1);
-    this.instrument = await this.loadXML(path);
+  async showFile(file: FileLocal | FileRemote | undefined) {
+    if (!file) return;
+    if (typeof file === "string") {
+      const fileKey: string = pathSubDir(file, this.loader.root);
+      file = this.loader.files[fileKey];
+    }
+    if (!file.contents) {
+      const fileKey: string = pathSubDir(file.path, this.loader.root);
+      if ("handle" in file) {
+        file = await this.loader.loadFile(file.handle);
+        this.loader.files[fileKey] = file;
+      } else {
+        file = await this.loader.loadFile(file.path);
+        this.loader.files[fileKey] = file;
+      }
+    }
+    this.instrument = this.parseXML(file);
+    this.render();
+  }
+
+  render() {
     this.setupInfo();
     this.setupControls();
   }
 
   async loadXML(path: string) {
     console.log("loadXML", path);
-    const file: FileItem = await this.getFile(path);
+    const file: FileLocal | FileRemote = await this.loader.loadFile(path);
     return this.parseXML(file);
   }
 
@@ -61,7 +89,7 @@ class Interface extends Component {
   }
 
   addImageAtr(img: HTMLImageElement, attribute: string, path: string) {
-    img.setAttribute(attribute, this.basepath + "GUI/" + path);
+    img.setAttribute(attribute, this.loader.root + "GUI/" + path);
   }
 
   addControl(type: PlayerElements, element: PlayerElement) {
@@ -129,20 +157,7 @@ class Interface extends Component {
     return span;
   }
 
-  getExt(path: string) {
-    return path.split(".").pop() || "none";
-  }
-
-  async getFile(path: string) {
-    const response: any = await fetch(path);
-    return {
-      ext: this.getExt(path),
-      contents: await response.text(),
-      path,
-    };
-  }
-
-  parseXML(file: FileItem) {
+  parseXML(file: FileLocal | FileRemote) {
     const fileParsed: any = xml2js(file.contents);
     return this.findElements({}, fileParsed.elements);
   }
@@ -152,7 +167,7 @@ class Interface extends Component {
     const info: Element = this.tabs.getElementsByClassName("panel")[0];
     info.replaceChildren();
     const fileXml: any = await this.loadXML(
-      this.basepath + this.instrument.AriaGUI[0].path
+      this.loader.root + this.instrument.AriaGUI[0].path
     );
     info.appendChild(await this.addImage(fileXml.StaticImage[0]));
   }
@@ -162,7 +177,7 @@ class Interface extends Component {
     const controls: Element = this.tabs.getElementsByClassName("panel")[1];
     controls.replaceChildren();
     const fileProgram: any = await this.loadXML(
-      this.basepath + this.instrument.AriaProgram[0].gui
+      this.loader.root + this.instrument.AriaProgram[0].gui
     );
     if (fileProgram.Knob)
       fileProgram.Knob.forEach((knob: PlayerKnob) =>
