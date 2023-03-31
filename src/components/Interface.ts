@@ -14,7 +14,6 @@ import {
   PlayerText,
 } from "../types/interface";
 import FileLoader from "../utils/fileLoader";
-import { pathExt, pathSubDir } from "../utils/utils";
 
 class Interface extends Component {
   private instrument: { [name: string]: any[] } = {};

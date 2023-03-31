@@ -1,15 +1,12 @@
-import * as ace from "ace-builds";
 import * as path from "path-browserify";
+import * as ace from "ace-builds";
 import * as modelist from "ace-builds/src-noconflict/ext-modelist";
 import "./Editor.scss";
 import "ace-builds/webpack-resolver";
-import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 const Mode = require("../lib/mode-sfz").Mode;
 import Component from "./component";
 import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
 import { EditorOptions } from "../types/player";
-import { get } from "../utils/api";
-import { pathDir, pathExt, pathRoot, pathSubDir } from "../utils/utils";
 import FileLoader from "../utils/fileLoader";
 
 class Editor extends Component {

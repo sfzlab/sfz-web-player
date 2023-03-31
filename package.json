@@ -5,8 +5,8 @@
   "main": "dist/sfz.js",
   "private": true,
   "scripts": {
-    "build": "webpack",
-    "dev": "webpack serve",
+    "build": "webpack --config webpack.dev.js && webpack --config webpack.prod.js",
+    "dev": "webpack serve --config webpack.dev.js",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "lint": "tslint -p tsconfig.json",
     "start": "serve ./dist",
@@ -21,7 +21,6 @@
   "author": "kmturley",
   "license": "CC0-1.0",
   "devDependencies": {
-    "@types/ace": "^0.0.48",
     "@types/path-browserify": "^1.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
@@ -37,7 +36,8 @@
     "typescript": "^4.9.5",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-dev-server": "^4.11.1",
+    "webpack-merge": "^5.8.0"
   },
   "dependencies": {
     "ace-builds": "^1.15.2",
