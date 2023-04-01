@@ -126,7 +126,7 @@ class Interface extends Component {
       quality: 1,
     });
 
-    window.webAudioControlsWidgetManager.addMidiListener(function (event: any) {
+    window.webAudioControlsWidgetManager.addMidiListener((event: any) => {
       synth.send([
         0x90,
         event.data[1],
