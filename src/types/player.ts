@@ -2,7 +2,8 @@ import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 import FileLoader from "../utils/fileLoader";
 
 interface AudioOptions {
-  enabled?: boolean;
+  file?: string | FileWithDirectoryAndFileHandle;
+  loader?: FileLoader;
 }
 
 interface EditorOptions {

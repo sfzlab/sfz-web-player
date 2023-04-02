@@ -35,6 +35,7 @@ class Player extends Component {
   }
 
   setupAudio(options: AudioOptions) {
+    options.loader = this.loader;
     this.audio = new Audio(options);
     this.audio.addEvent("change", (event: EventData) => {
       if (this.interface) this.interface.setKeyboard(event.data);
@@ -80,6 +81,12 @@ class Player extends Component {
               const file: FileLocal | FileRemote | undefined =
                 this.loader.addFile(blob);
               await this.interface?.showFile(file);
+            }
+            if (
+              pathExt(blob.webkitRelativePath) === "sfz" &&
+              pathDir(blob.webkitRelativePath) === this.loader.root
+            ) {
+              console.log(blob);
             }
           }
           this.interface.render();

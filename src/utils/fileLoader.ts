@@ -80,7 +80,6 @@ class FileLoader {
   }
 
   setRoot(dir: string) {
-    console.log("setRoot", dir);
     this.root = dir;
   }
 

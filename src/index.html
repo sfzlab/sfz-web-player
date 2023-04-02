@@ -10,7 +10,9 @@
   <script src="sfz.js"></script>
   <script>
     var sfzPlayer = new Sfz.Player("sfzPlayer", {
-      audio: true,
+      audio: {
+        file: 'https://raw.githubusercontent.com/studiorack/70s-synth/main/Programs/70s%20Organ%20Vibrato.sfz',
+      },
       header: true,
       editor: {
         file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
