@@ -1,4 +1,9 @@
-import { PlayerOptions } from "../types/player";
+import {
+  AudioOptions,
+  EditorOptions,
+  InterfaceOptions,
+  PlayerOptions,
+} from "../types/player";
 import Component from "./component";
 import Editor from "./Editor";
 import Interface from "./Interface";
@@ -10,8 +15,11 @@ import {
 import { pathDir, pathExt, pathRoot } from "../utils/utils";
 import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
+import Audio from "./Audio";
+import { EventData } from "../types/event";
 
 class Player extends Component {
+  private audio?: Audio;
   private editor?: Editor;
   private interface?: Interface;
   private loader: FileLoader;
@@ -19,20 +27,33 @@ class Player extends Component {
   constructor(id: string, options: PlayerOptions) {
     super("player");
     this.loader = new FileLoader();
-    if (options.header) {
-      this.setupHeader();
-    }
-    if (options.interface) {
-      options.interface.loader = this.loader;
-      this.interface = new Interface(options.interface);
-      this.getEl().appendChild(this.interface.getEl());
-    }
-    if (options.editor) {
-      options.editor.loader = this.loader;
-      this.editor = new Editor(options.editor);
-      this.getEl().appendChild(this.editor.getEl());
-    }
+    if (options.audio) this.setupAudio(options.audio);
+    if (options.header) this.setupHeader();
+    if (options.interface) this.setupInterface(options.interface);
+    if (options.editor) this.setupEditor(options.editor);
     document.getElementById(id)?.appendChild(this.getEl());
+  }
+
+  setupAudio(options: AudioOptions) {
+    this.audio = new Audio(options);
+    this.audio.addEvent("change", (event: EventData) => {
+      if (this.interface) this.interface.setKeyboard(event.data);
+    });
+  }
+
+  setupInterface(options: InterfaceOptions) {
+    options.loader = this.loader;
+    this.interface = new Interface(options);
+    this.interface.addEvent("change", (event: EventData) => {
+      if (this.audio) this.audio.setSynth(event.data);
+    });
+    this.getEl().appendChild(this.interface.getEl());
+  }
+
+  setupEditor(options: EditorOptions) {
+    options.loader = this.loader;
+    this.editor = new Editor(options);
+    this.getEl().appendChild(this.editor.getEl());
   }
 
   setupHeader() {

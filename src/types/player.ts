@@ -1,6 +1,10 @@
 import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 import FileLoader from "../utils/fileLoader";
 
+interface AudioOptions {
+  enabled?: boolean;
+}
+
 interface EditorOptions {
   directory?: string[] | FileWithDirectoryAndFileHandle[];
   file?: string | FileWithDirectoryAndFileHandle;
@@ -16,10 +20,10 @@ interface InterfaceOptions {
 }
 
 interface PlayerOptions {
-  audio?: boolean;
+  audio?: AudioOptions;
   editor?: EditorOptions;
   header?: boolean;
   interface?: InterfaceOptions;
 }
 
-export { EditorOptions, InterfaceOptions, PlayerOptions };
+export { AudioOptions, EditorOptions, InterfaceOptions, PlayerOptions };

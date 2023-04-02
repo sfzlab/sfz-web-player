@@ -6,7 +6,6 @@ declare global {
 }
 window.WebAudioControlsOptions = { useMidi: 1 };
 import "../lib/webaudio-controls";
-import * as WebAudioTinySynth from "webaudio-tinysynth";
 import "./Interface.scss";
 import { xml2js } from "xml-js";
 import { InterfaceOptions } from "../types/player";
@@ -22,8 +21,10 @@ import {
   PlayerText,
 } from "../types/interface";
 import FileLoader from "../utils/fileLoader";
+import { AudioControlEvent } from "../types/audio";
 
 class Interface extends Component {
+  private keys: any;
   private instrument: { [name: string]: any[] } = {};
   private tabs: HTMLDivElement;
   loader: FileLoader;
@@ -118,26 +119,20 @@ class Interface extends Component {
     keys.setAttribute("keys", "88");
     keys.setAttribute("height", "70");
     keys.setAttribute("width", "775");
-    this.getEl().appendChild(keys);
-
-    const synth = new WebAudioTinySynth({
-      voices: 16,
-      useReverb: 0,
-      quality: 1,
-    });
-
-    window.webAudioControlsWidgetManager.addMidiListener((event: any) => {
-      synth.send([
-        0x90,
-        event.data[1],
-        event.data[0] === 128 ? 0 : event.data[2],
-      ]);
-      keys.setNote(event.data[2] !== 64, event.data[1]);
-    });
-
     keys.addEventListener("change", (event: any) => {
-      synth.send([0x90, event.note[1], event.note[0] ? 100 : 0]);
+      const controlEvent: AudioControlEvent = {
+        channel: 0x90,
+        note: event.note[1],
+        velocity: event.note[0] ? 100 : 0,
+      };
+      this.dispatchEvent("change", controlEvent);
     });
+    this.getEl().appendChild(keys);
+    this.keys = keys;
+  }
+
+  setKeyboard(event: AudioControlEvent) {
+    this.keys.setNote(event.velocity, event.note);
   }
 
   addTab(name: string) {
