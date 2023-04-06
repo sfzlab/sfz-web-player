@@ -4,6 +4,7 @@ import FileLoader from "../utils/fileLoader";
 interface AudioOptions {
   file?: string | FileWithDirectoryAndFileHandle;
   loader?: FileLoader;
+  root?: string;
 }
 
 interface EditorOptions {

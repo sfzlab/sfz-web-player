@@ -1,10 +1,10 @@
 import * as WebAudioTinySynth from "webaudio-tinysynth";
-import parseSFZ from "sfz-parser";
 import { AudioControlEvent, AudioTinySynth } from "../types/audio";
 import { AudioOptions } from "../types/player";
 import Event from "./event";
 import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
+import { parseSfz, setLoader } from "../utils/parser";
 
 class Audio extends Event {
   loader: FileLoader;
@@ -20,11 +20,8 @@ class Audio extends Event {
     window.webAudioControlsWidgetManager.addMidiListener((event: any) =>
       this.onKeyboard(event)
     );
-    if (options.loader) {
-      this.loader = options.loader;
-    } else {
-      this.loader = new FileLoader();
-    }
+    this.loader = new FileLoader();
+    if (options.root) this.loader.setRoot(options.root);
     if (options.file) {
       const file: FileLocal | FileRemote | undefined = this.loader.addFile(
         options.file
@@ -35,13 +32,9 @@ class Audio extends Event {
 
   async showFile(file: FileLocal | FileRemote | undefined) {
     file = await this.loader.getFile(file);
-    const contents: string = file?.contents.replace(
-      /\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g,
-      ""
-    );
     console.log("showFile", file);
-    console.log("contents", contents);
-    console.log("parseSFZ", parseSFZ(contents));
+    setLoader(this.loader);
+    console.log("parseSFZ", await parseSfz(file?.contents));
   }
 
   onKeyboard(event: any) {
