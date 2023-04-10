@@ -4,14 +4,7 @@ import FileLoader from "./fileLoader";
 let loader: FileLoader;
 
 const skipCharacters: string[] = [" ", "\t", "\r", "\n"];
-const endCharacters: string[] = ["\r", "\n"];
-
-async function loadSfz(path: string) {
-  const file: FileLocal | FileRemote | undefined = await loader.getFile(
-    loader.root + path
-  );
-  return await parseSfz(file?.contents);
-}
+const endCharacters: string[] = [">", "\r", "\n"];
 
 async function parseSfz(contents: string) {
   let header: string = "";
@@ -22,31 +15,35 @@ async function parseSfz(contents: string) {
     if (skipCharacters.includes(char)) continue;
     const iEnd: number = findEnd(contents, i);
     if (char === "/") {
-      // const comment: string = contents.slice(i + 2, iEnd);
-      // console.log("comment", comment);
+      continue;
     } else if (char === "#") {
       const directive: string = contents.slice(i + 10, iEnd - 1);
-      const directiveValues: any = await loadSfz(directive);
-      console.log("directive", directive);
-      console.log("directiveValues", directiveValues);
+      const file: FileLocal | FileRemote | undefined = await loader.getFile(
+        loader.root + directive
+      );
+      const directiveValues: any = await parseSfz(file?.contents);
+      const headerValues: any[] = map[header];
+      headerValues[headerValues.length - 1] = {
+        ...headerValues[headerValues.length - 1],
+        ...directiveValues,
+      };
     } else if (char === "<") {
-      header = contents.slice(i + 1, iEnd - 1);
+      header = contents.slice(i + 1, iEnd);
       values = {};
       if (!map[header]) map[header] = [];
       map[header].push(values);
-      console.log("header", header);
     } else {
       const opcode: string = contents.slice(i, iEnd);
       const [opcodeName, opcodeValue]: any[] = opcode.split("=");
-      let opcodeValueTyped: any = opcodeValue;
       if (!isNaN(opcodeValue as any)) {
-        opcodeValueTyped = Number(opcodeValue);
+        values[opcodeName] = Number(opcodeValue);
+      } else {
+        values[opcodeName] = opcodeValue;
       }
-      values[opcodeName] = opcodeValueTyped;
-      console.log("opcode", opcodeName, opcodeValueTyped);
     }
     i = iEnd;
   }
+  if (!header) return values;
   return map;
 }
 
@@ -54,6 +51,7 @@ function findEnd(contents: string, startAt: number) {
   for (let index: number = startAt; index < contents.length; index++) {
     const char: string = contents.charAt(index);
     if (endCharacters.includes(char)) return index;
+    if (char === "/" && contents.charAt(index + 1) === "/") return index;
   }
   return contents.length;
 }
@@ -62,4 +60,4 @@ function setLoader(fileLoader: FileLoader) {
   loader = fileLoader;
 }
 
-export { loadSfz, parseSfz, setLoader };
+export { parseSfz, setLoader };
