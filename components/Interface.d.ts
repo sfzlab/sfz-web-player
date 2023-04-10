@@ -11,7 +11,9 @@ import Component from "./component";
 import { FileLocal, FileRemote } from "../types/files";
 import { PlayerElement, PlayerElements, PlayerImage, PlayerText } from "../types/interface";
 import FileLoader from "../utils/fileLoader";
+import { AudioControlEvent } from "../types/audio";
 declare class Interface extends Component {
+    private keys;
     private instrument;
     private tabs;
     loader: FileLoader;
@@ -22,6 +24,7 @@ declare class Interface extends Component {
     addImageAtr(img: HTMLImageElement, attribute: string, path: string): Promise<void>;
     addControl(type: PlayerElements, element: PlayerElement): any;
     addKeyboard(): void;
+    setKeyboard(event: AudioControlEvent): void;
     addTab(name: string): void;
     addText(text: PlayerText): HTMLSpanElement;
     parseXML(file: FileLocal | FileRemote | undefined): {
