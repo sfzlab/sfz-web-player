@@ -4,7 +4,7 @@ import { AudioOptions } from "../types/player";
 import Event from "./event";
 import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
-import { parseSfz, setLoader } from "../utils/parser";
+import { parseSfz, setParserLoader } from "../utils/parser";
 
 class Audio extends Event {
   loader: FileLoader;
@@ -21,6 +21,7 @@ class Audio extends Event {
       this.onKeyboard(event)
     );
     this.loader = new FileLoader();
+    setParserLoader(this.loader);
     if (options.root) this.loader.setRoot(options.root);
     if (options.file) {
       const file: FileLocal | FileRemote | undefined = this.loader.addFile(
@@ -33,7 +34,6 @@ class Audio extends Event {
   async showFile(file: FileLocal | FileRemote | undefined) {
     file = await this.loader.getFile(file);
     console.log("showFile", file);
-    setLoader(this.loader);
     console.log("parseSFZ", await parseSfz(file?.contents));
   }
 

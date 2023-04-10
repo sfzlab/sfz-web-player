@@ -70,30 +70,48 @@ class Player extends Component {
           recursive: true,
         })) as FileWithDirectoryAndFileHandle[];
         console.log(`${blobs.length} files selected.`);
-        if (this.interface) {
-          this.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
-          this.loader.addDirectory(blobs);
+        if (this.audio) {
+          let audioFile: FileLocal | FileRemote | undefined;
+          this.audio.loader.setRoot(
+            pathRoot(blobs[0].webkitRelativePath) + "Programs/"
+          );
+          this.audio.loader.addDirectory(blobs);
           for (const blob of blobs) {
-            if (
-              pathExt(blob.webkitRelativePath) === "xml" &&
-              pathDir(blob.webkitRelativePath) === this.loader.root
-            ) {
+            if (pathExt(blob.webkitRelativePath) === "sfz") {
               const file: FileLocal | FileRemote | undefined =
-                this.loader.addFile(blob);
-              await this.interface?.showFile(file);
-            }
-            if (
-              pathExt(blob.webkitRelativePath) === "sfz" &&
-              pathDir(blob.webkitRelativePath) === this.loader.root
-            ) {
-              console.log(blob);
+                this.audio.loader.addFile(blob);
+              if (
+                !audioFile &&
+                pathDir(blob.webkitRelativePath) === this.audio.loader.root
+              ) {
+                audioFile = file;
+              }
             }
           }
+          await this.audio.showFile(audioFile);
+        }
+        if (this.interface) {
+          let interfaceFile: FileLocal | FileRemote | undefined;
+          this.interface.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
+          this.interface.loader.addDirectory(blobs);
+          for (const blob of blobs) {
+            if (pathExt(blob.webkitRelativePath) === "xml") {
+              const file: FileLocal | FileRemote | undefined =
+                this.interface.loader.addFile(blob);
+              if (
+                !interfaceFile &&
+                pathDir(blob.webkitRelativePath) === this.interface.loader.root
+              ) {
+                interfaceFile = file;
+              }
+            }
+          }
+          await this.interface.showFile(interfaceFile);
           this.interface.render();
         }
         if (this.editor) {
-          this.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
-          this.loader.addDirectory(blobs);
+          this.editor.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
+          this.editor.loader.addDirectory(blobs);
           this.editor.render();
         }
       } catch (err: any) {

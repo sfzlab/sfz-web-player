@@ -15,7 +15,7 @@ async function parseSfz(contents: string) {
     if (skipCharacters.includes(char)) continue;
     const iEnd: number = findEnd(contents, i);
     if (char === "/") {
-      continue;
+      // do nothing
     } else if (char === "#") {
       const directive: string = contents.slice(i + 10, iEnd - 1);
       const file: FileLocal | FileRemote | undefined = await loader.getFile(
@@ -56,8 +56,8 @@ function findEnd(contents: string, startAt: number) {
   return contents.length;
 }
 
-function setLoader(fileLoader: FileLoader) {
+function setParserLoader(fileLoader: FileLoader) {
   loader = fileLoader;
 }
 
-export { parseSfz, setLoader };
+export { parseSfz, setParserLoader };
