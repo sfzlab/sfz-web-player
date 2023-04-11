@@ -1,8 +1,7 @@
 "use strict";
 
-var Ace = require('ace-builds/src-noconflict/ace');
-var oop = Ace.require("ace/lib/oop");
-var TextHighlightRules = Ace.require("ace/mode/text_highlight_rules").TextHighlightRules;
+var oop = ace.require("ace/lib/oop");
+var TextHighlightRules = ace.require("ace/mode/text_highlight_rules").TextHighlightRules;
 var SFZHighlightRules = function () {
   this.$rules = {
     start: [

@@ -1,13 +1,15 @@
 import * as path from "path-browserify";
-import * as ace from "ace-builds";
-import * as modelist from "ace-builds/src-noconflict/ext-modelist";
 import "./Editor.scss";
-import "ace-builds/webpack-resolver";
-const Mode = require("../lib/mode-sfz").Mode;
 import Component from "./component";
 import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
 import { EditorOptions } from "../types/player";
 import FileLoader from "../utils/fileLoader";
+
+declare global {
+  interface Window {
+    ace: any;
+  }
+}
 
 class Editor extends Component {
   private ace: any;
@@ -24,7 +26,7 @@ class Editor extends Component {
 
     this.aceEl = document.createElement("div");
     this.aceEl.className = "ace";
-    this.ace = ace.edit(this.aceEl, {
+    this.ace = window.ace.edit(this.aceEl, {
       theme: "ace/theme/monokai",
     });
     this.getEl().appendChild(this.aceEl);
@@ -51,8 +53,10 @@ class Editor extends Component {
     file = await this.loader.getFile(file);
     if (!file) return;
     if (file.ext === "sfz") {
-      this.ace.session.setMode(new Mode());
+      const SfzMode = require("../lib/mode-sfz").Mode;
+      this.ace.session.setMode(new SfzMode());
     } else {
+      const modelist = window.ace.require("ace/ext/modelist");
       const mode: string = modelist.getModeForPath(file.path).mode;
       this.ace.session.setMode(mode);
     }

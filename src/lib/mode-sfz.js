@@ -1,8 +1,7 @@
 "use strict";
 
-var Ace = require('ace-builds/src-noconflict/ace');
-var oop = Ace.require("ace/lib/oop");
-var TextMode = Ace.require("ace/mode/text").Mode;
+var oop = ace.require("ace/lib/oop");
+var TextMode = ace.require("ace/mode/text").Mode;
 var SFZHighlightRules = require("./sfz_highlight_rules").SFZHighlightRules;
 var FoldMode = require("./sfz_folding_mode").FoldMode;
 

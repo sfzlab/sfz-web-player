@@ -1,9 +1,8 @@
 "use strict";
 
-var Ace = require('ace-builds/src-noconflict/ace');
-var oop = Ace.require("ace/lib/oop");
-var Range = Ace.require("ace/range").Range;
-var BaseFoldMode = Ace.require("ace/mode/folding/fold_mode").FoldMode;
+var oop = ace.require("ace/lib/oop");
+var Range = ace.require("ace/range").Range;
+var BaseFoldMode = ace.require("ace/mode/folding/fold_mode").FoldMode;
 var FoldMode = (exports.FoldMode = function (commentRegex) {
   if (commentRegex) {
     this.foldingStartMarker = new RegExp(

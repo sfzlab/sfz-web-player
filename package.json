@@ -40,8 +40,6 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "ace-builds": "^1.15.2",
-    "ace-code": "^1.15.2",
     "browser-fs-access": "^0.33.0",
     "buffer": "^6.0.3",
     "path-browserify": "^1.0.1",
