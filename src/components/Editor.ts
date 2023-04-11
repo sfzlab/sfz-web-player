@@ -19,6 +19,9 @@ class Editor extends Component {
 
   constructor(options: EditorOptions) {
     super("editor");
+    if (!window.ace) {
+      window.alert("Ace editor not found, add to a <script> tag.");
+    }
 
     this.fileEl = document.createElement("div");
     this.fileEl.className = "fileList";
@@ -57,6 +60,9 @@ class Editor extends Component {
       this.ace.session.setMode(new SfzMode());
     } else {
       const modelist = window.ace.require("ace/ext/modelist");
+      if (!modelist) {
+        window.alert("Ace modelist not found, add to a <script> tag.");
+      }
       const mode: string = modelist.getModeForPath(file.path).mode;
       this.ace.session.setMode(mode);
     }
