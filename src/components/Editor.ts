@@ -1,4 +1,3 @@
-import * as path from "path-browserify";
 import "./Editor.scss";
 import Component from "./component";
 import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
@@ -72,7 +71,8 @@ class Editor extends Component {
   createTree(root: string, files: FilesMap, filesTree: FilesTree) {
     const ul: HTMLUListElement = document.createElement("ul");
     for (const key in filesTree) {
-      const filePath: string = path.join(root, key);
+      let filePath: string = root + "/" + key;
+      if (filePath.startsWith("/")) filePath = filePath.slice(1);
       const li: HTMLLIElement = document.createElement("li");
       if (Object.keys(filesTree[key]).length > 0) {
         const details: HTMLDetailsElement = document.createElement("details");
