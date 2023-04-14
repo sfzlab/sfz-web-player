@@ -1,10 +1,3 @@
-declare global {
-    interface Window {
-        WebAudioControlsOptions: any;
-        webAudioControlsWidgetManager: any;
-    }
-}
-import "../lib/webaudio-controls";
 import "./Interface.scss";
 import { InterfaceOptions } from "../types/player";
 import Component from "./component";
