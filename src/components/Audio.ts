@@ -1,4 +1,3 @@
-import * as WebAudioTinySynth from "webaudio-tinysynth";
 import { AudioControlEvent, AudioTinySynth } from "../types/audio";
 import { AudioOptions } from "../types/player";
 import Event from "./event";
@@ -6,17 +5,31 @@ import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
 import { parseSfz, setParserLoader } from "../utils/parser";
 
+declare global {
+  interface Window {
+    WebAudioTinySynth: any;
+    WebAudioControlsOptions: any;
+    webAudioControlsWidgetManager: any;
+  }
+}
+
 class Audio extends Event {
   loader: FileLoader;
   private synth: AudioTinySynth;
 
   constructor(options: AudioOptions) {
     super();
-    this.synth = new WebAudioTinySynth({
+    if (!window.WebAudioTinySynth) {
+      window.alert("webaudio-tinysynth not found, add to a <script> tag.");
+    }
+    this.synth = new window.WebAudioTinySynth({
       voices: 16,
       useReverb: 0,
       quality: 1,
     });
+    if (!window.webAudioControlsWidgetManager) {
+      window.alert("webaudio-controls not found, add to a <script> tag.");
+    }
     window.webAudioControlsWidgetManager.addMidiListener((event: any) =>
       this.onKeyboard(event)
     );

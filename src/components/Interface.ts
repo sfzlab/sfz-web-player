@@ -1,11 +1,3 @@
-declare global {
-  interface Window {
-    WebAudioControlsOptions: any;
-    webAudioControlsWidgetManager: any;
-  }
-}
-window.WebAudioControlsOptions = { useMidi: 1 };
-import "../lib/webaudio-controls";
 import "./Interface.scss";
 import { xml2js } from "xml-js";
 import { InterfaceOptions } from "../types/player";
