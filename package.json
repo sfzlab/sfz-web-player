@@ -1,6 +1,6 @@
 {
   "name": "sfz-web-player",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "SFZ player using the Web Audio API",
   "main": "dist/sfz.js",
   "private": true,
