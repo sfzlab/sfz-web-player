@@ -1,4 +1,3 @@
-
 .editor {
   background-color: #272822;
   color: #fff;
@@ -8,101 +7,100 @@
   height: 365px;
 }
 
-.ace {
+.editor .ace {
   flex-basis: 75%;
 }
 
-.fileList {
-  --spacing : 1rem;
-  --radius  : 7px;
+.editor .fileList {
+  --spacing: 1rem;
+  --radius: 7px;
   flex-basis: 25%;
-  padding: .5rem;
+  padding: 0.5rem;
   overflow-y: auto;
 }
 
-.fileList ul {
+.editor .fileList ul {
   margin: 0;
   padding: 0;
 }
 
-.fileList li {
+.editor .fileList li {
   cursor: pointer;
-  padding: .25rem .5rem;
+  padding: 0.25rem 0.5rem;
 
   &:hover {
     background-color: #222;
   }
 }
 
-.fileList li{
-  display      : block;
-  position     : relative;
-  padding-left : calc(2 * var(--spacing) - var(--radius) - 2px);
+.editor .fileList li {
+  display: block;
+  position: relative;
+  padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
   white-space: nowrap;
 }
 
-.fileList ul li{
-  border-left : 2px solid #ddd;
+.editor .fileList ul li {
+  border-left: 2px solid #ddd;
 }
 
-.fileList ul li:last-child{
-  border-color : transparent;
+.editor .fileList ul li:last-child {
+  border-color: transparent;
 }
 
-.fileList ul li::before{
-  content      : '';
-  display      : block;
-  position     : absolute;
-  top          : calc(var(--spacing) / -4);
-  left         : -2px;
-  width        : calc(var(--spacing) + 2px);
-  height       : calc(var(--spacing) + 1px);
-  border       : solid #ddd;
-  border-width : 0 0 2px 2px;
+.editor .fileList ul li::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: calc(var(--spacing) / -4);
+  left: -2px;
+  width: calc(var(--spacing) + 2px);
+  height: calc(var(--spacing) + 1px);
+  border: solid #ddd;
+  border-width: 0 0 2px 2px;
 }
 
-.fileList summary{
-  display : block;
-  cursor  : pointer;
+.editor .fileList summary {
+  display: block;
+  cursor: pointer;
 }
 
-.fileList summary::marker,
-.fileList summary::-webkit-details-marker{
-  display : none;
+.editor .fileList summary::marker,
+.editor .fileList summary::-webkit-details-marker {
+  display: none;
 }
 
-.fileList summary:focus{
-  outline : none;
+.editor .fileList summary:focus {
+  outline: none;
 }
 
-.fileList summary:focus-visible{
-  outline : 1px dotted #000;
+.editor .fileList summary:focus-visible {
+  outline: 1px dotted #000;
 }
 
-.fileList li::after,
-.fileList summary::before{
-  display       : block;
-  position      : absolute;
-  top           : calc(var(--spacing) / 2 - var(--radius));
-  left          : calc(var(--spacing) - var(--radius) - 1px);
-  width         : calc(2 * var(--radius));
-  height        : calc(2 * var(--radius));
-  background    : #ddd;
+.editor .fileList li::after,
+.editor .fileList summary::before {
+  display: block;
+  position: absolute;
+  top: calc(var(--spacing) / 2 - var(--radius));
+  left: calc(var(--spacing) - var(--radius) - 1px);
+  width: calc(2 * var(--radius));
+  height: calc(2 * var(--radius));
+  background: #ddd;
 }
 
-.fileList summary::before{
-  content     : '>';
-  z-index     : 1;
+.editor .fileList summary::before {
+  content: ">";
+  z-index: 1;
   background-color: #272822;
-  color       : #fff;
-  line-height : calc(2 * var(--radius) - 2px);
-  text-align  : center;
+  color: #fff;
+  line-height: calc(2 * var(--radius) - 2px);
+  text-align: center;
   left: 5px;
   top: 7px;
 }
 
-.fileList details[open] > summary::before{
+.editor .fileList details[open] > summary::before {
   // content : '−';
-  transform: rotate(90deg); 
+  transform: rotate(90deg);
 }
-
