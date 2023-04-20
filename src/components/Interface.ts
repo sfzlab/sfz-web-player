@@ -16,6 +16,8 @@ import FileLoader from "../utils/fileLoader";
 import { AudioControlEvent } from "../types/audio";
 
 class Interface extends Component {
+  private width: number = 775;
+  private height: number = 330;
   private keys: any;
   private instrument: { [name: string]: any[] } = {};
   private tabs: HTMLDivElement;
@@ -57,12 +59,26 @@ class Interface extends Component {
     this.setupControls();
   }
 
+  toPercentage(val1: string, val2: number) {
+    return Math.min(Number(val1) / val2, 1) * 100 + "%";
+  }
+
+  toRelative(element: PlayerElement) {
+    return {
+      left: this.toPercentage(element.x, this.width),
+      top: this.toPercentage(element.y, this.height),
+      width: this.toPercentage(element.w, this.width),
+      height: this.toPercentage(element.h, this.height),
+    };
+  }
+
   async addImage(image: PlayerImage) {
+    const relative: any = this.toRelative(image);
     const img: HTMLImageElement = document.createElement("img");
     img.setAttribute("draggable", "false");
     img.setAttribute(
       "style",
-      `left: ${image.x}px; top: ${image.y}px; height: ${image.h}px; width: ${image.w}px`
+      `left: ${relative.left}; top: ${relative.top}; width: ${relative.width}; height: ${relative.height};`
     );
     await this.addImageAtr(img, "src", image.image);
     return img;
@@ -80,6 +96,7 @@ class Interface extends Component {
   }
 
   addControl(type: PlayerElements, element: PlayerElement) {
+    const relative: any = this.toRelative(element);
     const el: any = document.createElement(`webaudio-${type}`);
     if ("image" in element) this.addImageAtr(el, "src", element.image);
     if ("image_bg" in element) this.addImageAtr(el, "src", element.image_bg);
@@ -96,12 +113,18 @@ class Interface extends Component {
       const dir: string = element.orientation === "vertical" ? "vert" : "horz";
       el.setAttribute("direction", dir);
     }
-    if ("x" in element) {
-      el.setAttribute("style", `left: ${element.x}px; top: ${element.y}px`);
-    }
-    if ("w" in element) {
-      el.setAttribute("height", element.h);
-      el.setAttribute("width", element.w);
+    if ("x" in element && "w" in element) {
+      el.setAttribute(
+        "style",
+        `left: ${relative.left}; top: ${relative.top}; width: ${relative.width}; height: ${relative.height};`
+      );
+    } else if ("x" in element) {
+      el.setAttribute("style", `left: ${relative.left}; top: ${relative.top};`);
+    } else if ("w" in element) {
+      el.setAttribute(
+        "style",
+        `width: ${relative.width}; height: ${relative.height};`
+      );
     }
     return el;
   }
@@ -148,10 +171,11 @@ class Interface extends Component {
   }
 
   addText(text: PlayerText) {
+    const relative: any = this.toRelative(text);
     const span: HTMLSpanElement = document.createElement("span");
     span.setAttribute(
       "style",
-      `left: ${text.x}px; top: ${text.y}px; color: ${text.color_text}; height: ${text.h}px; width: ${text.w}px`
+      `left: ${relative.left}; top: ${relative.top}; width: ${relative.width}; height: ${relative.height}; color: ${text.color_text};`
     );
     span.innerHTML = text.text;
     return span;
