@@ -5,14 +5,6 @@ import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
 import { parseSfz, setParserLoader } from "../utils/parser";
 
-declare global {
-  interface Window {
-    WebAudioTinySynth: any;
-    WebAudioControlsOptions: any;
-    webAudioControlsWidgetManager: any;
-  }
-}
-
 class Audio extends Event {
   loader: FileLoader;
   private synth: AudioTinySynth;
