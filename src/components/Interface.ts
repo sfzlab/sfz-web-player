@@ -18,7 +18,7 @@ import { AudioControlEvent } from "../types/audio";
 class Interface extends Component {
   private width: number = 775;
   private height: number = 330;
-  private keys: any;
+  private keyboard: any;
   private instrument: { [name: string]: any[] } = {};
   private tabs: HTMLDivElement;
   loader: FileLoader;
@@ -130,11 +130,11 @@ class Interface extends Component {
   }
 
   addKeyboard() {
-    const keys: any = document.createElement("webaudio-keyboard");
-    keys.setAttribute("keys", "88");
-    keys.setAttribute("height", "70");
-    keys.setAttribute("width", "775");
-    keys.addEventListener("change", (event: any) => {
+    const keyboard: any = document.createElement("webaudio-keyboard");
+    keyboard.setAttribute("keys", "88");
+    keyboard.setAttribute("height", "70");
+    keyboard.setAttribute("width", "775");
+    keyboard.addEventListener("change", (event: any) => {
       const controlEvent: AudioControlEvent = {
         channel: 0x90,
         note: event.note[1],
@@ -142,12 +142,20 @@ class Interface extends Component {
       };
       this.dispatchEvent("change", controlEvent);
     });
-    this.getEl().appendChild(keys);
-    this.keys = keys;
+    this.getEl().appendChild(keyboard);
+    this.keyboard = keyboard;
+    window.addEventListener("resize", () => this.resizeKeyboard());
+    window.setTimeout(() => this.resizeKeyboard());
+  }
+
+  resizeKeyboard() {
+    const keys: number = Math.floor(this.getEl().clientWidth / 13);
+    this.keyboard.keys = keys;
+    this.keyboard.width = this.getEl().clientWidth;
   }
 
   setKeyboard(event: AudioControlEvent) {
-    this.keys.setNote(event.velocity, event.note);
+    this.keyboard.setNote(event.velocity, event.note);
   }
 
   addTab(name: string) {
