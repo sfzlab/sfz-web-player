@@ -113,18 +113,12 @@ class Interface extends Component {
       const dir: string = element.orientation === "vertical" ? "vert" : "horz";
       el.setAttribute("direction", dir);
     }
-    if ("x" in element && "w" in element) {
-      el.setAttribute(
-        "style",
-        `left: ${relative.left}; top: ${relative.top}; width: ${relative.width}; height: ${relative.height};`
-      );
-    } else if ("x" in element) {
+    if ("x" in element) {
       el.setAttribute("style", `left: ${relative.left}; top: ${relative.top};`);
-    } else if ("w" in element) {
-      el.setAttribute(
-        "style",
-        `width: ${relative.width}; height: ${relative.height};`
-      );
+    }
+    if ("w" in element) {
+      el.setAttribute("height", element.h);
+      el.setAttribute("width", element.w);
     }
     return el;
   }
@@ -234,6 +228,26 @@ class Interface extends Component {
       fileXml.StaticText.forEach((text: PlayerText) =>
         controls.appendChild(this.addText(text))
       );
+    window.addEventListener("resize", () => this.resizeControls());
+    window.setTimeout(() => this.resizeControls());
+  }
+
+  resizeControls() {
+    const width: number = Math.floor(this.getEl().clientWidth / 25);
+    const sliderWidth: number = Math.floor(this.getEl().clientWidth / 65);
+    const sliderHeight: number = Math.floor(this.getEl().clientHeight / 4);
+    const controls: Element = this.tabs.getElementsByClassName("panel")[1];
+    controls.childNodes.forEach((control: any) => {
+      if (
+        control.nodeName === "WEBAUDIO-KNOB" ||
+        control.nodeName === "WEBAUDIO-SWITCH"
+      ) {
+        control.width = control.height = width;
+      } else if (control.nodeName === "WEBAUDIO-SLIDER") {
+        control.width = sliderWidth;
+        control.height = sliderHeight;
+      }
+    });
   }
 
   findElements(list: { [name: string]: any[] }, nodes: any[]) {
