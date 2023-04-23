@@ -23,8 +23,10 @@ interface PlayerImage {
 }
 interface PlayerKnob {
     frames: string;
+    h: string;
     image: string;
     param: string;
+    w: string;
     x: string;
     y: string;
 }

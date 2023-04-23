@@ -3,13 +3,6 @@ import { AudioOptions } from "../types/player";
 import Event from "./event";
 import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
-declare global {
-    interface Window {
-        WebAudioTinySynth: any;
-        WebAudioControlsOptions: any;
-        webAudioControlsWidgetManager: any;
-    }
-}
 declare class Audio extends Event {
     loader: FileLoader;
     private synth;
