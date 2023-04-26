@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SFZ Web Player</title>
   <link href="main.min.css" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+    }
+    #sfzPlayer .player {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    #sfzPlayer .editor {
+      flex-grow: 1;
+    }
+  </style>
 </head>
 <body>
   <div id="sfzPlayer"></div>
