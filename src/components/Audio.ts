@@ -8,9 +8,11 @@ import { parseSfz, setParserLoader } from "../utils/parser";
 class Audio extends Event {
   loader: FileLoader;
   private synth: AudioTinySynth;
+  private audio: AudioContext;
 
   constructor(options: AudioOptions) {
     super();
+    this.audio = new AudioContext();
     if (!window.WebAudioTinySynth) {
       window.alert("webaudio-tinysynth not found, add to a <script> tag.");
     }
@@ -34,6 +36,16 @@ class Audio extends Event {
       );
       this.showFile(file);
     }
+    this.loadSample(
+      "https://raw.githubusercontent.com/freepats/glass/main/samples/C5_01.flac"
+    );
+  }
+
+  async loadSample(url: string) {
+    const file: FileLocal | FileRemote | undefined = this.loader.addFile(url);
+    console.log("file", file);
+    const newFile = await this.loader.getFile(file, true);
+    console.log("newFile", newFile);
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {

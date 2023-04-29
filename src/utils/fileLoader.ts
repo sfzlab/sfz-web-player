@@ -1,9 +1,10 @@
 import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
-import { get } from "./api";
+import { get, getRaw } from "./api";
 import { pathDir, pathExt, pathRoot, pathSubDir } from "./utils";
 
 class FileLoader {
+  audio: AudioContext = new AudioContext();
   files: FilesMap = {};
   filesTree: FilesTree = {};
   root: string = "";
@@ -40,8 +41,19 @@ class FileLoader {
     return item;
   }
 
-  async loadFile(file: string | FileWithDirectoryAndFileHandle) {
+  async loadFile(
+    file: string | FileWithDirectoryAndFileHandle,
+    buffer = false
+  ) {
     if (typeof file === "string") {
+      if (buffer === true) {
+        const arrayBuffer: ArrayBuffer = await getRaw(file);
+        return {
+          ext: pathExt(file),
+          contents: await this.audio.decodeAudioData(arrayBuffer),
+          path: decodeURI(file),
+        } as FileRemote;
+      }
       return {
         ext: pathExt(file),
         contents: await get(file),
@@ -56,23 +68,26 @@ class FileLoader {
     }
   }
 
-  async getFile(file: string | FileLocal | FileRemote | undefined) {
+  async getFile(
+    file: string | FileLocal | FileRemote | undefined,
+    buffer = false
+  ) {
     if (!file) return;
     if (typeof file === "string") {
       const fileKey: string = pathSubDir(file, this.root);
       if (this.files[fileKey]) {
         file = this.files[fileKey];
       } else {
-        file = await this.loadFile(file);
+        file = await this.loadFile(file, buffer);
       }
     }
     if (!file.contents) {
       const fileKey: string = pathSubDir(file.path, this.root);
       if ("handle" in file) {
-        file = await this.loadFile(file.handle);
+        file = await this.loadFile(file.handle, buffer);
         this.files[fileKey] = file;
       } else {
-        file = await this.loadFile(file.path);
+        file = await this.loadFile(file.path, buffer);
         this.files[fileKey] = file;
       }
     }

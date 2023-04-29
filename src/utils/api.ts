@@ -10,9 +10,9 @@ async function getJSON(url: string): Promise<any> {
   return fetch(url).then((res: any) => res.json());
 }
 
-async function getRaw(url: string): Promise<Buffer> {
+async function getRaw(url: string): Promise<ArrayBuffer> {
   console.log("⤓", url);
-  return fetch(url).then((res: any) => res.buffer());
+  return fetch(url).then((res: any) => res.arrayBuffer());
 }
 
 async function getXML(url: string): Promise<object> {
