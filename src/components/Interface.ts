@@ -235,7 +235,7 @@ class Interface extends Component {
   resizeControls() {
     const width: number = Math.floor(this.getEl().clientWidth / 25);
     const sliderWidth: number = Math.floor(this.getEl().clientWidth / 65);
-    const sliderHeight: number = Math.floor(this.getEl().clientHeight / 4);
+    const sliderHeight: number = Math.floor(this.getEl().clientHeight / 3.5);
     const controls: Element = this.tabs.getElementsByClassName("panel")[1];
     controls.childNodes.forEach((control: any) => {
       if (
