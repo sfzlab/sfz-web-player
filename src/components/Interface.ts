@@ -152,6 +152,12 @@ class Interface extends Component {
     this.keyboard.setNote(event.velocity, event.note);
   }
 
+  setKeyboardRange(min: number, max: number) {
+    console.log("setKeyboardRange", min, max);
+    // this.keyboard.min = min;
+    // this.keyboard.min = max;
+  }
+
   addTab(name: string) {
     const input: HTMLInputElement = document.createElement("input");
     input.className = "radiotab";

@@ -40,6 +40,10 @@ class Player extends Component {
     this.audio.addEvent("change", (event: EventData) => {
       if (this.interface) this.interface.setKeyboard(event.data);
     });
+    this.audio.addEvent("load", (event: EventData) => {
+      if (this.interface)
+        this.interface.setKeyboardRange(event.data.min, event.data.max);
+    });
   }
 
   setupInterface(options: InterfaceOptions) {

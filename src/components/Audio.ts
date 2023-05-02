@@ -10,7 +10,7 @@ class Audio extends Event {
   private synth: AudioTinySynth;
   private audio: AudioContext;
   private audioBuffer: AudioBufferSourceNode;
-  private samples: string[] = [];
+  private samples: { [key: number]: string } = [];
 
   constructor(options: AudioOptions) {
     super();
@@ -42,11 +42,8 @@ class Audio extends Event {
   }
 
   async loadSample(url: string) {
-    console.log("loadSample", url);
     const file: FileLocal | FileRemote | undefined = this.loader.addFile(url);
-    console.log("file", file);
-    const newFile = await this.loader.getFile(file, true);
-    console.log("newFile", newFile);
+    return this.loader.getFile(file, true);
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
@@ -64,10 +61,15 @@ class Audio extends Event {
         );
         this.samples[region.lokey] = samplePath;
       });
-      this.samples.forEach(
-        async (sample: string) => await this.loadSample(sample)
-      );
+      for (const key in this.samples) {
+        await this.loadSample(this.samples[key]);
+      }
       console.log(this.samples);
+      const keys: string[] = Object.keys(this.samples);
+      this.dispatchEvent("load", {
+        min: Number(keys[0]),
+        max: Number(keys[keys.length - 1]),
+      });
     }
   }
 
@@ -88,7 +90,7 @@ class Audio extends Event {
     // prototype using samples
     console.log("setSynth", event);
     if (event.velocity === 0) {
-      this.audioBuffer.stop();
+      // this.audioBuffer.stop();
       return;
     }
     const samplePath: string = this.samples[event.note];
