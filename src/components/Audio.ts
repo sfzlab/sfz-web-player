@@ -1,4 +1,4 @@
-import { AudioControlEvent, AudioTinySynth } from "../types/audio";
+import { AudioControlEvent } from "../types/audio";
 import { AudioOptions } from "../types/player";
 import Event from "./event";
 import { FileLocal, FileRemote } from "../types/files";
@@ -7,7 +7,6 @@ import { parseSfz, setParserLoader } from "../utils/parser";
 
 class Audio extends Event {
   loader: FileLoader;
-  private synth: AudioTinySynth;
   private audio: AudioContext;
   private audioBuffer: AudioBufferSourceNode;
   private samples: { [key: number]: string } = [];
@@ -16,14 +15,6 @@ class Audio extends Event {
     super();
     this.audio = new AudioContext();
     this.audioBuffer = this.audio.createBufferSource();
-    if (!window.WebAudioTinySynth) {
-      window.alert("webaudio-tinysynth not found, add to a <script> tag.");
-    }
-    this.synth = new window.WebAudioTinySynth({
-      voices: 16,
-      useReverb: 0,
-      quality: 1,
-    });
     if (!window.webAudioControlsWidgetManager) {
       window.alert("webaudio-controls not found, add to a <script> tag.");
     }
@@ -84,9 +75,6 @@ class Audio extends Event {
   }
 
   async setSynth(event: AudioControlEvent) {
-    // Demo using AudioTinySynth
-    // this.synth.send([event.channel, event.note, event.velocity]);
-
     // prototype using samples
     console.log("setSynth", event);
     if (event.velocity === 0) {
