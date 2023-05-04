@@ -9,6 +9,8 @@ declare class Interface extends Component {
     private width;
     private height;
     private keyboard;
+    private keyboardStart;
+    private keyboardEnd;
     private instrument;
     private tabs;
     loader: FileLoader;
@@ -28,6 +30,7 @@ declare class Interface extends Component {
     addKeyboard(): void;
     resizeKeyboard(): void;
     setKeyboard(event: AudioControlEvent): void;
+    setKeyboardRange(start: number, end: number): void;
     addTab(name: string): void;
     addText(text: PlayerText): HTMLSpanElement;
     parseXML(file: FileLocal | FileRemote | undefined): {

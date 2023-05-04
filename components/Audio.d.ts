@@ -5,10 +5,13 @@ import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
 declare class Audio extends Event {
     loader: FileLoader;
-    private synth;
+    private audio;
+    private audioBuffer;
+    private samples;
     constructor(options: AudioOptions);
+    loadSample(url: string): Promise<FileRemote | undefined>;
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
     onKeyboard(event: any): void;
-    setSynth(event: AudioControlEvent): void;
+    setSynth(event: AudioControlEvent): Promise<void>;
 }
 export default Audio;
