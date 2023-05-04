@@ -67,8 +67,8 @@ class Audio extends Event {
       console.log(this.samples);
       const keys: string[] = Object.keys(this.samples);
       this.dispatchEvent("load", {
-        min: Number(keys[0]),
-        max: Number(keys[keys.length - 1]),
+        start: Number(keys[0]),
+        end: Number(keys[keys.length - 1]),
       });
     }
   }

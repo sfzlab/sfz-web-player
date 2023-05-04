@@ -42,7 +42,7 @@ class Player extends Component {
     });
     this.audio.addEvent("load", (event: EventData) => {
       if (this.interface)
-        this.interface.setKeyboardRange(event.data.min, event.data.max);
+        this.interface.setKeyboardRange(event.data.start, event.data.end);
     });
   }
 

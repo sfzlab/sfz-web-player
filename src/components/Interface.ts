@@ -19,6 +19,8 @@ class Interface extends Component {
   private width: number = 775;
   private height: number = 330;
   private keyboard: any;
+  private keyboardStart: number = 0;
+  private keyboardEnd: number = 200;
   private instrument: { [name: string]: any[] } = {};
   private tabs: HTMLDivElement;
   loader: FileLoader;
@@ -143,19 +145,26 @@ class Interface extends Component {
   }
 
   resizeKeyboard() {
-    const keys: number = Math.floor(this.getEl().clientWidth / 13);
-    this.keyboard.keys = keys;
+    const keysFit: number = Math.floor(this.getEl().clientWidth / 13);
+    const keysRange: number = this.keyboardEnd - this.keyboardStart;
+    const keysDiff: number = Math.floor(keysFit / 2 - keysRange / 2);
+    this.keyboard.min = Math.max(this.keyboardStart - keysDiff, 0);
+    this.keyboard.keys = keysFit;
     this.keyboard.width = this.getEl().clientWidth;
+    // This feature is only available if this PR is merged
+    // https://github.com/g200kg/webaudio-controls/pull/52
+    this.keyboard.setDisabledRange(1, 0, this.keyboardStart);
+    this.keyboard.setDisabledRange(1, this.keyboardEnd, 200);
   }
 
   setKeyboard(event: AudioControlEvent) {
     this.keyboard.setNote(event.velocity, event.note);
   }
 
-  setKeyboardRange(min: number, max: number) {
-    console.log("setKeyboardRange", min, max);
-    // this.keyboard.min = min;
-    // this.keyboard.min = max;
+  setKeyboardRange(start: number, end: number) {
+    this.keyboardStart = start;
+    this.keyboardEnd = end;
+    this.resizeKeyboard();
   }
 
   addTab(name: string) {
