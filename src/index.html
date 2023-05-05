@@ -1,57 +1,7 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SFZ Web Player</title>
-  <style>
-    body {
-      margin: 0;
-    }
-    #sfzPlayer .player {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    #sfzPlayer .editor {
-      flex-grow: 1;
-    }
-  </style>
-</head>
-<body>
-  <div id="sfzPlayer"></div>
-  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.16.0/src-min-noconflict/ace.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.16.0/src-min-noconflict/ext-modelist.js"></script>
-  <script>window.WebAudioControlsOptions = { useMidi: 1 };</script>
-  <script src="https://github.com/kmturley/webaudio-controls/releases/download/v1.0.0/webaudio-controls.js"></script>
-  <script src="sfz.js"></script>
-  <script>
-    var sfzPlayer = new Sfz.Player("sfzPlayer", {
-      audio: {
-        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Programs/01-green_keyswitch.sfz',
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Programs/',
-      },
-      header: true,
-      editor: {
-        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
-        directory: [
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
-        ],
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/',
-      },
-      interface: {
-        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
-        directory: [
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
-        ],
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/'
-      }
-    });
-  </script>
-  
-</body>
+<html>
+  <head>
+    <meta http-equiv="Refresh" content="0; url='./demos/'" />
+  </head>
+  <body>
+  </body>
 </html>
