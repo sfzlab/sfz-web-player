@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SFZ Web Player - Editor</title>
+  <link href="index.css" rel="stylesheet" />
+</head>
+<body>
+  <ul class="menu">
+    <li class="logo">sfz web player</li>
+    <li><a href="index.html">All</a></li>
+    <li><a href="audio.html">Audio</a></li>
+    <li><a>Editor</a></li>
+    <li><a href="interface.html">Interface</a></li>
+  </ul>
+  <div id="sfzPlayer"></div>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.16.0/src-min-noconflict/ace.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.16.0/src-min-noconflict/ext-modelist.js"></script>
+  <script src="../sfz.js"></script>
+  <script>
+    var sfzPlayer = new Sfz.Player("sfzPlayer", {
+      editor: {
+        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
+        directory: [
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
+          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
+        ],
+        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/',
+      }
+    });
+  </script>
+</body>
+</html>
