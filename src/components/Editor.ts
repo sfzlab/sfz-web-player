@@ -78,9 +78,6 @@ class Editor extends Component {
         const details: HTMLDetailsElement = document.createElement("details");
         const summary: HTMLElement = document.createElement("summary");
         summary.innerHTML = key;
-        summary.addEventListener("click", async () => {
-          await this.showFile(files[filePath]);
-        });
         details.appendChild(summary);
         details.appendChild(this.createTree(filePath, files, filesTree[key]));
         li.appendChild(details);

@@ -17,6 +17,7 @@ import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
 import Audio from "./Audio";
 import { EventData } from "../types/event";
+import { getJSON } from "../utils/api";
 
 class Player extends Component {
   private audio?: Audio;
@@ -65,69 +66,106 @@ class Player extends Component {
     const div: HTMLDivElement = document.createElement("div");
     div.className = "header";
 
-    const input: HTMLInputElement = document.createElement("input");
-    input.type = "button";
-    input.value = "Select directory";
-    input.addEventListener("click", async (e) => {
-      try {
-        const blobs: FileWithDirectoryAndFileHandle[] = (await directoryOpen({
-          recursive: true,
-        })) as FileWithDirectoryAndFileHandle[];
-        console.log(`${blobs.length} files selected.`);
-        if (this.audio) {
-          let audioFile: FileLocal | FileRemote | undefined;
-          this.audio.loader.setRoot(
-            pathRoot(blobs[0].webkitRelativePath) + "Programs/"
-          );
-          this.audio.loader.addDirectory(blobs);
-          for (const blob of blobs) {
-            if (pathExt(blob.webkitRelativePath) === "sfz") {
-              const file: FileLocal | FileRemote | undefined =
-                this.audio.loader.addFile(blob);
-              if (
-                !audioFile &&
-                pathDir(blob.webkitRelativePath) === this.audio.loader.root
-              ) {
-                audioFile = file;
-              }
-            }
-          }
-          await this.audio.showFile(audioFile);
-        }
-        if (this.interface) {
-          let interfaceFile: FileLocal | FileRemote | undefined;
-          this.interface.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
-          this.interface.loader.addDirectory(blobs);
-          for (const blob of blobs) {
-            if (pathExt(blob.webkitRelativePath) === "xml") {
-              const file: FileLocal | FileRemote | undefined =
-                this.interface.loader.addFile(blob);
-              if (
-                !interfaceFile &&
-                pathDir(blob.webkitRelativePath) === this.interface.loader.root
-              ) {
-                interfaceFile = file;
-              }
-            }
-          }
-          await this.interface.showFile(interfaceFile);
-          this.interface.render();
-        }
-        if (this.editor) {
-          this.editor.loader.setRoot(pathRoot(blobs[0].webkitRelativePath));
-          this.editor.loader.addDirectory(blobs);
-          this.editor.render();
-        }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          return console.error(err);
-        }
-        console.log("The user aborted a request.");
-      }
+    const inputLocal: HTMLInputElement = document.createElement("input");
+    inputLocal.type = "button";
+    inputLocal.value = "Local directory";
+    inputLocal.addEventListener("click", async (e) => {
+      await this.loadLocalInstrument();
     });
-    div.appendChild(input);
+    div.appendChild(inputLocal);
+
+    const inputRemote: HTMLInputElement = document.createElement("input");
+    inputRemote.type = "button";
+    inputRemote.value = "Remote directory";
+    inputRemote.addEventListener("click", async (e) => {
+      await this.loadRemoteInstrument();
+    });
+    div.appendChild(inputRemote);
 
     this.getEl().appendChild(div);
+  }
+
+  async loadLocalInstrument() {
+    try {
+      const blobs: FileWithDirectoryAndFileHandle[] = (await directoryOpen({
+        recursive: true,
+      })) as FileWithDirectoryAndFileHandle[];
+      console.log(`${blobs.length} files selected.`);
+      this.loadDirectory(pathRoot(blobs[0].webkitRelativePath), blobs);
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        return console.error(err);
+      }
+      console.log("The user aborted a request.");
+    }
+  }
+
+  async loadRemoteInstrument() {
+    const repo: string | null = window.prompt(
+      "Enter a GitHub owner/repo",
+      "studiorack/black-and-green-guitars"
+    );
+    if (repo) {
+      const response: any = await getJSON(
+        `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`
+      );
+      const paths: string[] = response.tree.map(
+        (file: any) =>
+          `https://raw.githubusercontent.com/${repo}/main/${file.path}`
+      );
+      await this.loadDirectory(
+        `https://raw.githubusercontent.com/${repo}/main/`,
+        paths
+      );
+    }
+  }
+
+  async loadDirectory(
+    root: string,
+    files: string[] | FileWithDirectoryAndFileHandle[]
+  ) {
+    console.log("loadDirectory", root, files);
+    let audioFile: string | FileWithDirectoryAndFileHandle | undefined;
+    let interfaceFile: string | FileWithDirectoryAndFileHandle | undefined;
+    for (const file of files) {
+      const path: string =
+        typeof file === "string" ? file : file.webkitRelativePath;
+      if (pathExt(path) === "sfz" && pathDir(path) === root + "Programs/") {
+        audioFile = file;
+      }
+      if (pathExt(path) === "xml" && pathDir(path) === root) {
+        interfaceFile = file;
+      }
+    }
+    if (this.interface) {
+      this.interface.loader.setRoot(root);
+      this.interface.loader.addDirectory(files);
+      if (interfaceFile) {
+        const file: FileLocal | FileRemote | undefined =
+          this.interface.loader.addFile(interfaceFile);
+        await this.interface.showFile(file);
+      }
+      this.interface.render();
+    }
+    if (this.editor) {
+      this.editor.loader.setRoot(root);
+      this.editor.loader.addDirectory(files);
+      if (interfaceFile) {
+        const file: FileLocal | FileRemote | undefined =
+          this.editor.loader.addFile(interfaceFile);
+        await this.editor.showFile(file);
+      }
+      this.editor.render();
+    }
+    if (this.audio) {
+      this.audio.loader.setRoot(root + "Programs/");
+      this.audio.loader.addDirectory(files);
+      if (audioFile) {
+        const file: FileLocal | FileRemote | undefined =
+          this.audio.loader.addFile(audioFile);
+        await this.audio.showFile(file);
+      }
+    }
   }
 }
 
