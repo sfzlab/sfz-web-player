@@ -9,7 +9,7 @@ declare class Audio extends Event {
     private audioBuffer;
     private samples;
     constructor(options: AudioOptions);
-    loadSample(url: string): Promise<FileRemote | undefined>;
+    loadSample(path: string): Promise<FileRemote | undefined>;
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
     onKeyboard(event: any): void;
     setSynth(event: AudioControlEvent): Promise<void>;
