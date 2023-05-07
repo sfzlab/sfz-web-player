@@ -1,3 +1,4 @@
+import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "./fileLoader";
 
@@ -6,7 +7,7 @@ let loader: FileLoader;
 const skipCharacters: string[] = [" ", "\t", "\r", "\n"];
 const endCharacters: string[] = [">", "\r", "\n"];
 
-async function parseSfz(contents: string) {
+async function parseSfz(prefix: string, contents: string) {
   let header: string = "";
   const map: any = {};
   let values: any = {};
@@ -18,10 +19,12 @@ async function parseSfz(contents: string) {
       // do nothing
     } else if (char === "#") {
       const directive: string = contents.slice(i + 10, iEnd - 1);
+      const fileRef: FileLocal | FileRemote | undefined =
+        loader.files[prefix + directive];
       const file: FileLocal | FileRemote | undefined = await loader.getFile(
-        loader.root + directive
+        fileRef || prefix + directive
       );
-      const directiveValues: any = await parseSfz(file?.contents);
+      const directiveValues: any = await parseSfz(prefix, file?.contents);
       const headerValues: any[] = map[header];
       headerValues[headerValues.length - 1] = {
         ...headerValues[headerValues.length - 1],

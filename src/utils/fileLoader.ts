@@ -1,7 +1,7 @@
 import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
 import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
 import { get, getRaw } from "./api";
-import { pathDir, pathExt, pathRoot, pathSubDir } from "./utils";
+import { pathExt, pathSubDir } from "./utils";
 
 class FileLoader {
   audio: AudioContext = new AudioContext();
@@ -60,6 +60,14 @@ class FileLoader {
         path: decodeURI(file),
       } as FileRemote;
     } else {
+      if (buffer === true) {
+        const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
+        return {
+          ext: pathExt(file.webkitRelativePath),
+          contents: await this.audio.decodeAudioData(arrayBuffer),
+          path: file.webkitRelativePath,
+        } as FileRemote;
+      }
       return {
         ext: pathExt(file.webkitRelativePath),
         contents: await file.text(),

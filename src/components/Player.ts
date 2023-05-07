@@ -124,16 +124,19 @@ class Player extends Component {
     root: string,
     files: string[] | FileWithDirectoryAndFileHandle[]
   ) {
-    console.log("loadDirectory", root, files);
     let audioFile: string | FileWithDirectoryAndFileHandle | undefined;
     let interfaceFile: string | FileWithDirectoryAndFileHandle | undefined;
     for (const file of files) {
       const path: string =
         typeof file === "string" ? file : file.webkitRelativePath;
-      if (pathExt(path) === "sfz" && pathDir(path) === root + "Programs/") {
+      if (
+        !audioFile &&
+        pathExt(path) === "sfz" &&
+        pathDir(path) === root + "Programs/"
+      ) {
         audioFile = file;
       }
-      if (pathExt(path) === "xml" && pathDir(path) === root) {
+      if (!interfaceFile && pathExt(path) === "xml" && pathDir(path) === root) {
         interfaceFile = file;
       }
     }
@@ -158,7 +161,7 @@ class Player extends Component {
       this.editor.render();
     }
     if (this.audio) {
-      this.audio.loader.setRoot(root + "Programs/");
+      this.audio.loader.setRoot(root);
       this.audio.loader.addDirectory(files);
       if (audioFile) {
         const file: FileLocal | FileRemote | undefined =

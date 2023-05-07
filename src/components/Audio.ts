@@ -32,30 +32,36 @@ class Audio extends Event {
     }
   }
 
-  async loadSample(url: string) {
-    const file: FileLocal | FileRemote | undefined = this.loader.addFile(url);
+  async loadSample(path: string) {
+    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[path];
+    if (fileRef) {
+      return await this.loader.getFile(fileRef, true);
+    }
+    const file: FileLocal | FileRemote | undefined = this.loader.addFile(path);
     return this.loader.getFile(file, true);
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
     file = await this.loader.getFile(file);
-    const sfzObject: any = await parseSfz(file?.contents);
+    const prefix: string = file?.path.startsWith("https")
+      ? this.loader.root + "Programs/"
+      : "Programs/";
+    const sfzObject: any = await parseSfz(prefix, file?.contents);
     console.log("showFile", file);
     console.log("parseSFZ", sfzObject);
 
     // hardcoded prototype for one sfz file
     if (sfzObject.master) {
       sfzObject.master[0].region.forEach((region: any) => {
-        const samplePath: string = this.loader.root.replace(
-          "Programs/",
-          region.sample.replace("../", "")
-        );
-        this.samples[region.lokey] = samplePath;
+        this.samples[region.lokey] = region.sample.replace("../", "");
+        if (file?.path.startsWith("https")) {
+          this.samples[region.lokey] =
+            this.loader.root + region.sample.replace("../", "");
+        }
       });
       for (const key in this.samples) {
         await this.loadSample(this.samples[key]);
       }
-      console.log(this.samples);
       const keys: string[] = Object.keys(this.samples);
       this.dispatchEvent("load", {
         start: Number(keys[0]),
@@ -76,14 +82,16 @@ class Audio extends Event {
 
   async setSynth(event: AudioControlEvent) {
     // prototype using samples
-    console.log("setSynth", event);
     if (event.velocity === 0) {
       // this.audioBuffer.stop();
       return;
     }
     const samplePath: string = this.samples[event.note];
     console.log("samplePath", event.note, samplePath);
-    const newFile = await this.loader.getFile(samplePath, true);
+    const fileRef: FileLocal | FileRemote | undefined =
+      this.loader.files[samplePath];
+    const newFile: FileLocal | FileRemote | undefined =
+      await this.loader.getFile(fileRef || samplePath, true);
     this.audioBuffer = this.audio.createBufferSource();
     this.audioBuffer.buffer = newFile?.contents;
     this.audioBuffer.connect(this.audio.destination);
