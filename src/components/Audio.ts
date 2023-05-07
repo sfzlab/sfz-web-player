@@ -51,9 +51,14 @@ class Audio extends Event {
     console.log("parseSFZ", sfzObject);
 
     // hardcoded prototype for one sfz file
-    let defaultPath: string = sfzObject.control
-      ? sfzObject.control[0].default_path
-      : "";
+    let defaultPath: string = "";
+    if (
+      sfzObject.control &&
+      sfzObject.control[0] &&
+      sfzObject.control[0].default_path
+    ) {
+      defaultPath = sfzObject.control[0].default_path;
+    }
     let regions: any = sfzObject.region;
     if (sfzObject.master) regions = sfzObject.master[0].region;
     if (regions) {
@@ -64,7 +69,6 @@ class Audio extends Event {
             this.loader.root + defaultPath + region.sample.replace("../", "");
         }
       });
-      console.log(this.samples);
       for (const key in this.samples) {
         await this.loadSample(this.samples[key]);
       }

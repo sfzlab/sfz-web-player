@@ -17,63 +17,53 @@ class FileLoader {
   }
 
   addFile(file: string | FileWithDirectoryAndFileHandle) {
-    let item: FileLocal | FileRemote;
+    const path: string = decodeURI(
+      typeof file === "string" ? file : file.webkitRelativePath
+    );
+    if (path === this.root) return;
+    const fileKey: string = pathSubDir(path, this.root);
     if (typeof file === "string") {
-      if (file === this.root) return;
-      item = {
+      this.files[fileKey] = {
         ext: pathExt(file),
         contents: null,
-        path: decodeURI(file),
+        path,
       };
     } else {
-      item = {
+      this.files[fileKey] = {
         ext: pathExt(file.webkitRelativePath),
         contents: null,
-        path: decodeURI(file.webkitRelativePath),
+        path,
         handle: file,
       };
     }
-    const fileKey: string = pathSubDir(item.path, this.root);
-    this.files[fileKey] = item;
-    fileKey
-      .split("/")
-      .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
-    return item;
+    this.addToFileTree(fileKey);
+    return this.files[fileKey];
   }
 
-  async loadFile(
-    file: string | FileWithDirectoryAndFileHandle,
-    buffer = false
-  ) {
-    if (typeof file === "string") {
-      if (buffer === true) {
-        const arrayBuffer: ArrayBuffer = await getRaw(encodeHashes(file));
-        return {
-          ext: pathExt(file),
-          contents: await this.audio.decodeAudioData(arrayBuffer),
-          path: decodeURI(file),
-        } as FileRemote;
-      }
-      return {
-        ext: pathExt(file),
-        contents: await get(encodeHashes(file)),
-        path: decodeURI(file),
-      } as FileRemote;
-    } else {
-      if (buffer === true) {
-        const arrayBuffer: ArrayBuffer = await file.arrayBuffer();
-        return {
-          ext: pathExt(file.webkitRelativePath),
-          contents: await this.audio.decodeAudioData(arrayBuffer),
-          path: file.webkitRelativePath,
-        } as FileRemote;
-      }
-      return {
-        ext: pathExt(file.webkitRelativePath),
-        contents: await file.text(),
-        path: file.webkitRelativePath,
-      } as FileLocal;
+  addToFileTree(key: string) {
+    key
+      .split("/")
+      .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
+  }
+
+  async loadFileLocal(file: FileLocal, buffer = false) {
+    if (buffer === true) {
+      const arrayBuffer: ArrayBuffer = await file.handle.arrayBuffer();
+      file.contents = await this.audio.decodeAudioData(arrayBuffer);
+      return file;
     }
+    file.contents = await file.handle.text();
+    return file;
+  }
+
+  async loadFileRemote(file: FileRemote, buffer = false) {
+    if (buffer === true) {
+      const arrayBuffer: ArrayBuffer = await getRaw(encodeHashes(file.path));
+      file.contents = await this.audio.decodeAudioData(arrayBuffer);
+      return file;
+    }
+    file.contents = await get(encodeHashes(file.path));
+    return file;
   }
 
   async getFile(
@@ -82,24 +72,15 @@ class FileLoader {
   ) {
     if (!file) return;
     if (typeof file === "string") {
+      if (pathExt(file).length === 0) return;
       const fileKey: string = pathSubDir(file, this.root);
-      if (this.files[fileKey]) {
-        file = this.files[fileKey];
-      } else {
-        file = await this.loadFile(file, buffer);
-      }
+      const fileRef: FileLocal = this.files[fileKey] as FileLocal;
+      if (file.startsWith("http"))
+        return await this.loadFileRemote(fileRef, buffer);
+      return await this.loadFileLocal(fileRef, buffer);
     }
-    if (!file.contents) {
-      const fileKey: string = pathSubDir(file.path, this.root);
-      if ("handle" in file) {
-        file = await this.loadFile(file.handle, buffer);
-        this.files[fileKey] = file;
-      } else {
-        file = await this.loadFile(file.path, buffer);
-        this.files[fileKey] = file;
-      }
-    }
-    return file;
+    if ("handle" in file) return await this.loadFileLocal(file, buffer);
+    return await this.loadFileRemote(file, buffer);
   }
 
   setRoot(dir: string) {

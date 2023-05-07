@@ -4,7 +4,7 @@ import FileLoader from "./fileLoader";
 let loader: FileLoader;
 
 const skipCharacters: string[] = [" ", "\t", "\r", "\n"];
-const endCharacters: string[] = [" ", ">", "\r", "\n"];
+const endCharacters: string[] = [">", "\r", "\n"];
 
 async function parseSfz(prefix: string, contents: string) {
   let header: string = "";

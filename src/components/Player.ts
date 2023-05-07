@@ -124,7 +124,6 @@ class Player extends Component {
     root: string,
     files: string[] | FileWithDirectoryAndFileHandle[]
   ) {
-    console.log("loadDirectory", root, files);
     let audioFile: string | FileWithDirectoryAndFileHandle | undefined;
     let interfaceFile: string | FileWithDirectoryAndFileHandle | undefined;
     for (const file of files) {
