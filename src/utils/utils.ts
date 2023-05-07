@@ -1,3 +1,7 @@
+function encodeHashes(item: string) {
+  return item.replace(/#/g, encodeURIComponent("#"));
+}
+
 function pathDir(item: string, separator: string = "/"): string {
   return item.substring(0, item.lastIndexOf(separator) + 1);
 }
@@ -14,4 +18,4 @@ function pathSubDir(item: string, dir: string): string {
   return item.substring(dir.length);
 }
 
-export { pathDir, pathExt, pathRoot, pathSubDir };
+export { encodeHashes, pathDir, pathExt, pathRoot, pathSubDir };

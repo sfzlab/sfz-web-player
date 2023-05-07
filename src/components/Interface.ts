@@ -162,8 +162,9 @@ class Interface extends Component {
   }
 
   setKeyboardRange(start: number, end: number) {
-    this.keyboardStart = start;
-    this.keyboardEnd = end;
+    console.log("setKeyboardRange", start, end);
+    this.keyboardStart = start || 0;
+    this.keyboardEnd = end || 100;
     this.resizeKeyboard();
   }
 

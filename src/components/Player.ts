@@ -124,6 +124,7 @@ class Player extends Component {
     root: string,
     files: string[] | FileWithDirectoryAndFileHandle[]
   ) {
+    console.log("loadDirectory", root, files);
     let audioFile: string | FileWithDirectoryAndFileHandle | undefined;
     let interfaceFile: string | FileWithDirectoryAndFileHandle | undefined;
     for (const file of files) {
@@ -132,7 +133,7 @@ class Player extends Component {
       if (
         !audioFile &&
         pathExt(path) === "sfz" &&
-        pathDir(path) === root + "Programs/"
+        (pathDir(path) === root || pathDir(path) === root + "Programs/")
       ) {
         audioFile = file;
       }
@@ -140,6 +141,8 @@ class Player extends Component {
         interfaceFile = file;
       }
     }
+    console.log("audioFile", audioFile);
+    console.log("interfaceFile", interfaceFile);
     if (this.interface) {
       this.interface.loader.setRoot(root);
       this.interface.loader.addDirectory(files);
@@ -153,9 +156,11 @@ class Player extends Component {
     if (this.editor) {
       this.editor.loader.setRoot(root);
       this.editor.loader.addDirectory(files);
-      if (interfaceFile) {
+      const defaultFile: string | FileWithDirectoryAndFileHandle | undefined =
+        audioFile || interfaceFile;
+      if (defaultFile) {
         const file: FileLocal | FileRemote | undefined =
-          this.editor.loader.addFile(interfaceFile);
+          this.editor.loader.addFile(defaultFile);
         await this.editor.showFile(file);
       }
       this.editor.render();
