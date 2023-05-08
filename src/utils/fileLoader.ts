@@ -10,7 +10,6 @@ class FileLoader {
   root: string = "";
 
   addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]) {
-    this.resetFiles();
     files.forEach((file: string | FileWithDirectoryAndFileHandle) =>
       this.addFile(file)
     );
@@ -74,10 +73,11 @@ class FileLoader {
     if (typeof file === "string") {
       if (pathExt(file).length === 0) return;
       const fileKey: string = pathSubDir(file, this.root);
-      const fileRef: FileLocal = this.files[fileKey] as FileLocal;
+      let fileRef: FileLocal | FileRemote | undefined = this.files[fileKey];
+      if (!fileRef) fileRef = this.addFile(file);
       if (file.startsWith("http"))
-        return await this.loadFileRemote(fileRef, buffer);
-      return await this.loadFileLocal(fileRef, buffer);
+        return await this.loadFileRemote(fileRef as FileRemote, buffer);
+      return await this.loadFileLocal(fileRef as FileLocal, buffer);
     }
     if ("handle" in file) return await this.loadFileLocal(file, buffer);
     return await this.loadFileRemote(file, buffer);

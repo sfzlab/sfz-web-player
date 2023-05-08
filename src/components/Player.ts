@@ -142,36 +142,30 @@ class Player extends Component {
     }
     console.log("audioFile", audioFile);
     console.log("interfaceFile", interfaceFile);
-    if (this.interface) {
-      this.interface.loader.setRoot(root);
-      this.interface.loader.addDirectory(files);
-      if (interfaceFile) {
-        const file: FileLocal | FileRemote | undefined =
-          this.interface.loader.addFile(interfaceFile);
-        await this.interface.showFile(file);
-      }
+    this.loader.resetFiles();
+    this.loader.setRoot(root);
+    this.loader.addDirectory(files);
+
+    if (this.interface && interfaceFile) {
+      const file: FileLocal | FileRemote | undefined =
+        this.interface.loader.addFile(interfaceFile);
+      await this.interface.showFile(file);
       this.interface.render();
     }
     if (this.editor) {
-      this.editor.loader.setRoot(root);
-      this.editor.loader.addDirectory(files);
       const defaultFile: string | FileWithDirectoryAndFileHandle | undefined =
         audioFile || interfaceFile;
       if (defaultFile) {
         const file: FileLocal | FileRemote | undefined =
           this.editor.loader.addFile(defaultFile);
         await this.editor.showFile(file);
+        this.editor.render();
       }
-      this.editor.render();
     }
-    if (this.audio) {
-      this.audio.loader.setRoot(root);
-      this.audio.loader.addDirectory(files);
-      if (audioFile) {
-        const file: FileLocal | FileRemote | undefined =
-          this.audio.loader.addFile(audioFile);
-        await this.audio.showFile(file);
-      }
+    if (this.audio && audioFile) {
+      const file: FileLocal | FileRemote | undefined =
+        this.audio.loader.addFile(audioFile);
+      await this.audio.showFile(file);
     }
   }
 }

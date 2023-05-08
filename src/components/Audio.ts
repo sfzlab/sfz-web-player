@@ -4,6 +4,7 @@ import Event from "./event";
 import { FileLocal, FileRemote } from "../types/files";
 import FileLoader from "../utils/fileLoader";
 import { parseSfz, setParserLoader } from "../utils/parser";
+import { pathDir } from "../utils/utils";
 
 class Audio extends Event {
   loader: FileLoader;
@@ -21,7 +22,11 @@ class Audio extends Event {
     window.webAudioControlsWidgetManager.addMidiListener((event: any) =>
       this.onKeyboard(event)
     );
-    this.loader = new FileLoader();
+    if (options.loader) {
+      this.loader = options.loader;
+    } else {
+      this.loader = new FileLoader();
+    }
     setParserLoader(this.loader);
     if (options.root) this.loader.setRoot(options.root);
     if (options.file) {
@@ -43,12 +48,12 @@ class Audio extends Event {
 
   async showFile(file: FileLocal | FileRemote | undefined) {
     file = await this.loader.getFile(file);
-    const prefix: string = file?.path.startsWith("https")
-      ? this.loader.root + "Programs/"
-      : "Programs/";
-    const sfzObject: any = await parseSfz(prefix, file?.contents);
+    if (!file) return;
     console.log("showFile", file);
-    console.log("parseSFZ", sfzObject);
+    const prefix: string = pathDir(file.path);
+    console.log("prefix", prefix);
+    const sfzObject: any = await parseSfz(prefix, file?.contents);
+    console.log("sfzObject", sfzObject);
 
     // hardcoded prototype for one sfz file
     let defaultPath: string = "";

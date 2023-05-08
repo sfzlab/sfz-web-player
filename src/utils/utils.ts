@@ -15,7 +15,7 @@ function pathRoot(item: string, separator: string = "/"): string {
 }
 
 function pathSubDir(item: string, dir: string): string {
-  return item.substring(dir.length);
+  return item.replace(dir, "");
 }
 
 export { encodeHashes, pathDir, pathExt, pathRoot, pathSubDir };
