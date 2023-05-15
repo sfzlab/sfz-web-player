@@ -13,7 +13,7 @@ declare class Player extends Component {
     setupEditor(options: EditorOptions): void;
     setupHeader(): void;
     loadLocalInstrument(): Promise<void>;
-    loadRemoteInstrument(): Promise<void>;
+    loadRemoteInstrument(repo: string): Promise<void>;
     loadDirectory(root: string, files: string[] | FileWithDirectoryAndFileHandle[]): Promise<void>;
 }
 export default Player;

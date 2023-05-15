@@ -17,5 +17,6 @@ declare class Editor extends Component {
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
     createTree(root: string, files: FilesMap, filesTree: FilesTree): HTMLUListElement;
     render(): void;
+    reset(): void;
 }
 export default Editor;

@@ -13,5 +13,6 @@ declare class Audio extends Event {
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
     onKeyboard(event: any): void;
     setSynth(event: AudioControlEvent): Promise<void>;
+    reset(): void;
 }
 export default Audio;

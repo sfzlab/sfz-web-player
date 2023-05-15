@@ -36,6 +36,7 @@ declare class Interface extends Component {
     parseXML(file: FileLocal | FileRemote | undefined): {
         [name: string]: any[];
     };
+    reset(): void;
     setupInfo(): Promise<void>;
     setupControls(): Promise<void>;
     resizeControls(): void;
