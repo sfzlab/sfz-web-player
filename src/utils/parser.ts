@@ -39,9 +39,20 @@ async function parseSfz(prefix: string, contents: string) {
     } else if (char === "<") {
       header = contents.slice(i + 1, iEnd);
       values = {};
+      // prototype, this will need to be re-written
+      if (header === "region") {
+        if (map.global) {
+          const globalValues: any = map.global[map.global.length - 1];
+          values = { ...globalValues };
+        }
+        if (map.group) {
+          const groupValues: any = map.group[map.group.length - 1];
+          values = { ...groupValues };
+        }
+      }
       if (!map[header]) map[header] = [];
       map[header].push(values);
-      if (DEBUG) console.log("header", header);
+      if (DEBUG) console.log(`<${header}>`, values);
     } else {
       const opcode: string = contents.slice(i, iEnd);
       const opcodeGroups: string[] = opcode.split(/[= ]/g);
@@ -57,7 +68,7 @@ async function parseSfz(prefix: string, contents: string) {
           }
         }
       }
-      if (DEBUG) console.log("opcode", opcode, opcodeGroups);
+      if (DEBUG) console.log(opcode, opcodeGroups);
     }
     i = iEnd;
   }

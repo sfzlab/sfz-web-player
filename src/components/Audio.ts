@@ -67,10 +67,12 @@ class Audio extends Event {
     let regions: any = sfzObject.region;
     if (sfzObject.master) regions = sfzObject.master[0].region;
     if (regions) {
+      this.samples = [];
       regions.forEach((region: any) => {
-        this.samples[region.lokey] = region.sample.replace("../", "");
+        const key: number = region.lokey || region.key;
+        this.samples[key] = region.sample.replace("../", "");
         if (file?.path.startsWith("https")) {
-          this.samples[region.lokey] =
+          this.samples[key] =
             this.loader.root + defaultPath + region.sample.replace("../", "");
         }
       });
@@ -115,6 +117,7 @@ class Audio extends Event {
 
   reset() {
     this.audioBuffer.stop();
+    this.samples = [];
   }
 }
 
