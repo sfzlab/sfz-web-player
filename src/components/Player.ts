@@ -147,11 +147,15 @@ class Player extends Component {
     this.loader.setRoot(root);
     this.loader.addDirectory(files);
 
-    if (this.interface && interfaceFile) {
-      const file: FileLocal | FileRemote | undefined =
-        this.interface.loader.addFile(interfaceFile);
-      await this.interface.showFile(file);
-      this.interface.render();
+    if (this.interface) {
+      if (interfaceFile) {
+        const file: FileLocal | FileRemote | undefined =
+          this.interface.loader.addFile(interfaceFile);
+        await this.interface.showFile(file);
+        this.interface.render();
+      } else {
+        this.interface.reset();
+      }
     }
     if (this.editor) {
       const defaultFile: string | FileWithDirectoryAndFileHandle | undefined =
@@ -161,12 +165,18 @@ class Player extends Component {
           this.editor.loader.addFile(defaultFile);
         await this.editor.showFile(file);
         this.editor.render();
+      } else {
+        this.editor.reset();
       }
     }
-    if (this.audio && audioFile) {
-      const file: FileLocal | FileRemote | undefined =
-        this.audio.loader.addFile(audioFile);
-      await this.audio.showFile(file);
+    if (this.audio) {
+      if (audioFile) {
+        const file: FileLocal | FileRemote | undefined =
+          this.audio.loader.addFile(audioFile);
+        await this.audio.showFile(file);
+      } else {
+        this.audio.reset();
+      }
     }
   }
 }

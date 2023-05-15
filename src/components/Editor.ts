@@ -103,6 +103,11 @@ class Editor extends Component {
     ul.className = "tree";
     this.fileEl.appendChild(ul);
   }
+
+  reset() {
+    this.fileEl.replaceChildren();
+    this.ace.setOption("value", "");
+  }
 }
 
 export default Editor;

@@ -205,6 +205,14 @@ class Interface extends Component {
     return this.findElements({}, fileParsed.elements);
   }
 
+  reset() {
+    const panels: HTMLCollectionOf<Element> =
+      this.tabs.getElementsByClassName("panel");
+    for (const panel of panels) {
+      panel.replaceChildren();
+    }
+  }
+
   async setupInfo() {
     if (!this.instrument.AriaGUI) return;
     const info: Element = this.tabs.getElementsByClassName("panel")[0];

@@ -112,6 +112,10 @@ class Audio extends Event {
     this.audioBuffer.connect(this.audio.destination);
     this.audioBuffer.start(0);
   }
+
+  reset() {
+    this.audioBuffer.stop();
+  }
 }
 
 export default Audio;
