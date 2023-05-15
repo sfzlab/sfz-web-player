@@ -33,6 +33,9 @@ class Player extends Component {
     if (options.interface) this.setupInterface(options.interface);
     if (options.editor) this.setupEditor(options.editor);
     document.getElementById(id)?.appendChild(this.getEl());
+    if (options.instrument) {
+      this.loadRemoteInstrument(options.instrument);
+    }
   }
 
   setupAudio(options: AudioOptions) {
@@ -78,7 +81,11 @@ class Player extends Component {
     inputRemote.type = "button";
     inputRemote.value = "Remote directory";
     inputRemote.addEventListener("click", async (e) => {
-      await this.loadRemoteInstrument();
+      const repo: string | null = window.prompt(
+        "Enter a GitHub owner/repo",
+        "studiorack/black-and-green-guitars"
+      );
+      if (repo) await this.loadRemoteInstrument(repo);
     });
     div.appendChild(inputRemote);
 
@@ -100,24 +107,18 @@ class Player extends Component {
     }
   }
 
-  async loadRemoteInstrument() {
-    const repo: string | null = window.prompt(
-      "Enter a GitHub owner/repo",
-      "studiorack/black-and-green-guitars"
+  async loadRemoteInstrument(repo: string) {
+    const response: any = await getJSON(
+      `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`
     );
-    if (repo) {
-      const response: any = await getJSON(
-        `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`
-      );
-      const paths: string[] = response.tree.map(
-        (file: any) =>
-          `https://raw.githubusercontent.com/${repo}/main/${file.path}`
-      );
-      await this.loadDirectory(
-        `https://raw.githubusercontent.com/${repo}/main/`,
-        paths
-      );
-    }
+    const paths: string[] = response.tree.map(
+      (file: any) =>
+        `https://raw.githubusercontent.com/${repo}/main/${file.path}`
+    );
+    await this.loadDirectory(
+      `https://raw.githubusercontent.com/${repo}/main/`,
+      paths
+    );
   }
 
   async loadDirectory(

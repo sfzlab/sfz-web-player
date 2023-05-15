@@ -25,6 +25,7 @@ interface PlayerOptions {
   audio?: AudioOptions;
   editor?: EditorOptions;
   header?: boolean;
+  instrument?: string;
   interface?: InterfaceOptions;
 }
 
