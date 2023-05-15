@@ -3,6 +3,7 @@ import FileLoader from "./fileLoader";
 
 let loader: FileLoader;
 
+const DEBUG: boolean = false;
 const skipCharacters: string[] = [" ", "\t", "\r", "\n"];
 const endCharacters: string[] = [">", "\r", "\n"];
 
@@ -29,19 +30,34 @@ async function parseSfz(prefix: string, contents: string) {
         ...headerValues[headerValues.length - 1],
         ...directiveValues,
       };
+      if (DEBUG)
+        console.log(
+          "headerValues",
+          headerValues.length - 1,
+          headerValues[headerValues.length - 1]
+        );
     } else if (char === "<") {
       header = contents.slice(i + 1, iEnd);
       values = {};
       if (!map[header]) map[header] = [];
       map[header].push(values);
+      if (DEBUG) console.log("header", header);
     } else {
       const opcode: string = contents.slice(i, iEnd);
-      const [opcodeName, opcodeValue]: any[] = opcode.split("=");
-      if (!isNaN(opcodeValue as any)) {
-        values[opcodeName] = Number(opcodeValue);
-      } else {
-        values[opcodeName] = opcodeValue;
+      const opcodeGroups: string[] = opcode.split(/[= ]/g);
+      let opcodeName: string = "";
+      for (let j = 0; j < opcodeGroups.length; j++) {
+        if (j % 2 === 0) {
+          opcodeName = opcodeGroups[j];
+        } else {
+          if (!isNaN(opcodeGroups[j] as any)) {
+            values[opcodeName] = Number(opcodeGroups[j]);
+          } else {
+            values[opcodeName] = opcodeGroups[j];
+          }
+        }
       }
+      if (DEBUG) console.log("opcode", opcode, opcodeGroups);
     }
     i = iEnd;
   }
