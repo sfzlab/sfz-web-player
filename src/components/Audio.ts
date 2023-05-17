@@ -76,14 +76,16 @@ class Audio extends Event {
             this.loader.root + defaultPath + region.sample.replace("../", "");
         }
       });
-      for (const key in this.samples) {
-        await this.loadSample(this.samples[key]);
-      }
       const keys: string[] = Object.keys(this.samples);
-      this.dispatchEvent("load", {
+      this.dispatchEvent("range", {
         start: Number(keys[0]),
         end: Number(keys[keys.length - 1]),
       });
+      this.dispatchEvent("preload", {});
+      for (const key in this.samples) {
+        await this.loadSample(this.samples[key]);
+      }
+      this.dispatchEvent("loaded", {});
     }
   }
 

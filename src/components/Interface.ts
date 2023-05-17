@@ -161,6 +161,11 @@ class Interface extends Component {
     this.keyboard.setNote(event.velocity, event.note);
   }
 
+  setKeyboardState(loading: boolean) {
+    if (loading) this.keyboard.classList.add("loading");
+    else this.keyboard.classList.remove("loading");
+  }
+
   setKeyboardRange(start: number, end: number) {
     console.log("setKeyboardRange", start, end);
     this.keyboardStart = start || 0;

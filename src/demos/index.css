@@ -21,7 +21,7 @@ body {
 #sfzPlayer .player {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: calc(100vh - 50.5px);
 }
 
 #sfzPlayer .editor {
