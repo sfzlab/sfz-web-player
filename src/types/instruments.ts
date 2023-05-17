@@ -52,12 +52,4 @@ interface PluginType {
   ext: string;
 }
 
-export {
-  PluginEntry,
-  PluginFile,
-  PluginFiles,
-  PluginInterface,
-  PluginLicense,
-  PluginPack,
-  PluginType,
-};
+export { PluginEntry, PluginFile, PluginFiles, PluginInterface, PluginLicense, PluginPack, PluginType };

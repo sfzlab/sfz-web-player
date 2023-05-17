@@ -1,10 +1,10 @@
-import { AudioControlEvent } from "../types/audio";
-import { AudioOptions } from "../types/player";
-import Event from "./event";
-import { FileLocal, FileRemote } from "../types/files";
-import FileLoader from "../utils/fileLoader";
-import { parseSfz, setParserLoader } from "../utils/parser";
-import { pathDir } from "../utils/utils";
+import { AudioControlEvent } from '../types/audio';
+import { AudioOptions } from '../types/player';
+import Event from './event';
+import { FileLocal, FileRemote } from '../types/files';
+import FileLoader from '../utils/fileLoader';
+import { parseSfz, setParserLoader } from '../utils/parser';
+import { pathDir } from '../utils/utils';
 
 class Audio extends Event {
   loader: FileLoader;
@@ -17,11 +17,9 @@ class Audio extends Event {
     this.audio = new AudioContext();
     this.audioBuffer = this.audio.createBufferSource();
     if (!window.webAudioControlsWidgetManager) {
-      window.alert("webaudio-controls not found, add to a <script> tag.");
+      window.alert('webaudio-controls not found, add to a <script> tag.');
     }
-    window.webAudioControlsWidgetManager.addMidiListener((event: any) =>
-      this.onKeyboard(event)
-    );
+    window.webAudioControlsWidgetManager.addMidiListener((event: any) => this.onKeyboard(event));
     if (options.loader) {
       this.loader = options.loader;
     } else {
@@ -30,9 +28,7 @@ class Audio extends Event {
     setParserLoader(this.loader);
     if (options.root) this.loader.setRoot(options.root);
     if (options.file) {
-      const file: FileLocal | FileRemote | undefined = this.loader.addFile(
-        options.file
-      );
+      const file: FileLocal | FileRemote | undefined = this.loader.addFile(options.file);
       this.showFile(file);
     }
   }
@@ -49,19 +45,15 @@ class Audio extends Event {
   async showFile(file: FileLocal | FileRemote | undefined) {
     file = await this.loader.getFile(file);
     if (!file) return;
-    console.log("showFile", file);
+    console.log('showFile', file);
     const prefix: string = pathDir(file.path);
-    console.log("prefix", prefix);
+    console.log('prefix', prefix);
     const sfzObject: any = await parseSfz(prefix, file?.contents);
-    console.log("sfzObject", sfzObject);
+    console.log('sfzObject', sfzObject);
 
     // hardcoded prototype for one sfz file
-    let defaultPath: string = "";
-    if (
-      sfzObject.control &&
-      sfzObject.control[0] &&
-      sfzObject.control[0].default_path
-    ) {
+    let defaultPath: string = '';
+    if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
       defaultPath = sfzObject.control[0].default_path;
     }
     let regions: any = sfzObject.region;
@@ -70,22 +62,21 @@ class Audio extends Event {
       this.samples = [];
       regions.forEach((region: any) => {
         const key: number = region.lokey || region.key;
-        this.samples[key] = region.sample.replace("../", "");
-        if (file?.path.startsWith("https")) {
-          this.samples[key] =
-            this.loader.root + defaultPath + region.sample.replace("../", "");
+        this.samples[key] = region.sample.replace('../', '');
+        if (file?.path.startsWith('https')) {
+          this.samples[key] = this.loader.root + defaultPath + region.sample.replace('../', '');
         }
       });
       const keys: string[] = Object.keys(this.samples);
-      this.dispatchEvent("range", {
+      this.dispatchEvent('range', {
         start: Number(keys[0]),
         end: Number(keys[keys.length - 1]),
       });
-      this.dispatchEvent("preload", {});
+      this.dispatchEvent('preload', {});
       for (const key in this.samples) {
         await this.loadSample(this.samples[key]);
       }
-      this.dispatchEvent("loaded", {});
+      this.dispatchEvent('loaded', {});
     }
   }
 
@@ -96,7 +87,7 @@ class Audio extends Event {
       velocity: event.data[0] === 128 ? 0 : event.data[2],
     };
     this.setSynth(controlEvent);
-    this.dispatchEvent("change", controlEvent);
+    this.dispatchEvent('change', controlEvent);
   }
 
   async setSynth(event: AudioControlEvent) {
@@ -106,11 +97,9 @@ class Audio extends Event {
       return;
     }
     const samplePath: string = this.samples[event.note];
-    console.log("samplePath", event.note, samplePath);
-    const fileRef: FileLocal | FileRemote | undefined =
-      this.loader.files[samplePath];
-    const newFile: FileLocal | FileRemote | undefined =
-      await this.loader.getFile(fileRef || samplePath, true);
+    console.log('samplePath', event.note, samplePath);
+    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[samplePath];
+    const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || samplePath, true);
     this.audioBuffer = this.audio.createBufferSource();
     this.audioBuffer.buffer = newFile?.contents;
     this.audioBuffer.connect(this.audio.destination);

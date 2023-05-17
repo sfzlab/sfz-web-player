@@ -1,5 +1,5 @@
-import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
-import FileLoader from "../utils/fileLoader";
+import { FileWithDirectoryAndFileHandle } from 'browser-fs-access';
+import FileLoader from '../utils/fileLoader';
 
 interface AudioOptions {
   file?: string | FileWithDirectoryAndFileHandle;

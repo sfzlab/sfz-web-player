@@ -1,4 +1,4 @@
-import { EventFunc, EventList } from "../types/event";
+import { EventFunc, EventList } from '../types/event';
 
 class Event {
   events: EventList = {};

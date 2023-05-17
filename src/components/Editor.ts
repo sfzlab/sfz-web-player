@@ -1,8 +1,8 @@
-import "./Editor.scss";
-import Component from "./component";
-import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
-import { EditorOptions } from "../types/player";
-import FileLoader from "../utils/fileLoader";
+import './Editor.scss';
+import Component from './component';
+import { FileLocal, FileRemote, FilesMap, FilesTree } from '../types/files';
+import { EditorOptions } from '../types/player';
+import FileLoader from '../utils/fileLoader';
 
 declare global {
   interface Window {
@@ -17,19 +17,19 @@ class Editor extends Component {
   loader: FileLoader;
 
   constructor(options: EditorOptions) {
-    super("editor");
+    super('editor');
     if (!window.ace) {
-      window.alert("Ace editor not found, add to a <script> tag.");
+      window.alert('Ace editor not found, add to a <script> tag.');
     }
 
-    this.fileEl = document.createElement("div");
-    this.fileEl.className = "fileList";
+    this.fileEl = document.createElement('div');
+    this.fileEl.className = 'fileList';
     this.getEl().appendChild(this.fileEl);
 
-    this.aceEl = document.createElement("div");
-    this.aceEl.className = "ace";
+    this.aceEl = document.createElement('div');
+    this.aceEl.className = 'ace';
     this.ace = window.ace.edit(this.aceEl, {
-      theme: "ace/theme/monokai",
+      theme: 'ace/theme/monokai',
     });
     this.getEl().appendChild(this.aceEl);
 
@@ -44,9 +44,7 @@ class Editor extends Component {
       this.render();
     }
     if (options.file) {
-      const file: FileLocal | FileRemote | undefined = this.loader.addFile(
-        options.file
-      );
+      const file: FileLocal | FileRemote | undefined = this.loader.addFile(options.file);
       this.showFile(file);
     }
   }
@@ -54,36 +52,36 @@ class Editor extends Component {
   async showFile(file: FileLocal | FileRemote | undefined) {
     file = await this.loader.getFile(file);
     if (!file) return;
-    if (file.ext === "sfz") {
-      const SfzMode = require("../lib/mode-sfz").Mode;
+    if (file.ext === 'sfz') {
+      const SfzMode = require('../lib/mode-sfz').Mode;
       this.ace.session.setMode(new SfzMode());
     } else {
-      const modelist = window.ace.require("ace/ext/modelist");
+      const modelist = window.ace.require('ace/ext/modelist');
       if (!modelist) {
-        window.alert("Ace modelist not found, add to a <script> tag.");
+        window.alert('Ace modelist not found, add to a <script> tag.');
       }
       const mode: string = modelist.getModeForPath(file.path).mode;
       this.ace.session.setMode(mode);
     }
-    this.ace.setOption("value", file.contents);
+    this.ace.setOption('value', file.contents);
   }
 
   createTree(root: string, files: FilesMap, filesTree: FilesTree) {
-    const ul: HTMLUListElement = document.createElement("ul");
+    const ul: HTMLUListElement = document.createElement('ul');
     for (const key in filesTree) {
-      let filePath: string = root + "/" + key;
-      if (filePath.startsWith("/")) filePath = filePath.slice(1);
-      const li: HTMLLIElement = document.createElement("li");
+      let filePath: string = root + '/' + key;
+      if (filePath.startsWith('/')) filePath = filePath.slice(1);
+      const li: HTMLLIElement = document.createElement('li');
       if (Object.keys(filesTree[key]).length > 0) {
-        const details: HTMLDetailsElement = document.createElement("details");
-        const summary: HTMLElement = document.createElement("summary");
+        const details: HTMLDetailsElement = document.createElement('details');
+        const summary: HTMLElement = document.createElement('summary');
         summary.innerHTML = key;
         details.appendChild(summary);
         details.appendChild(this.createTree(filePath, files, filesTree[key]));
         li.appendChild(details);
       } else {
         li.innerHTML = key;
-        li.addEventListener("click", async () => {
+        li.addEventListener('click', async () => {
           await this.showFile(files[filePath]);
         });
       }
@@ -95,18 +93,14 @@ class Editor extends Component {
   render() {
     this.fileEl.replaceChildren();
     this.fileEl.innerHTML = this.loader.root;
-    const ul: HTMLUListElement = this.createTree(
-      "",
-      this.loader.files,
-      this.loader.filesTree
-    );
-    ul.className = "tree";
+    const ul: HTMLUListElement = this.createTree('', this.loader.files, this.loader.filesTree);
+    ul.className = 'tree';
     this.fileEl.appendChild(ul);
   }
 
   reset() {
     this.fileEl.replaceChildren();
-    this.ace.setOption("value", "");
+    this.ace.setOption('value', '');
   }
 }
 

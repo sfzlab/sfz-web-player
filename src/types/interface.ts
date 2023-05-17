@@ -1,15 +1,10 @@
-type PlayerElement =
-  | PlayerButton
-  | PlayerImage
-  | PlayerKnob
-  | PlayerSlider
-  | PlayerText;
+type PlayerElement = PlayerButton | PlayerImage | PlayerKnob | PlayerSlider | PlayerText;
 
 enum PlayerElements {
-  Keyboard = "keyboard",
-  Knob = "knob",
-  Slider = "slider",
-  Switch = "switch",
+  Keyboard = 'keyboard',
+  Knob = 'knob',
+  Slider = 'slider',
+  Switch = 'switch',
 }
 
 interface PlayerButton {
@@ -61,12 +56,4 @@ interface PlayerText {
   y: string;
 }
 
-export {
-  PlayerButton,
-  PlayerElement,
-  PlayerElements,
-  PlayerImage,
-  PlayerKnob,
-  PlayerSlider,
-  PlayerText,
-};
+export { PlayerButton, PlayerElement, PlayerElements, PlayerImage, PlayerKnob, PlayerSlider, PlayerText };

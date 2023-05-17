@@ -1,7 +1,7 @@
-import Event from "./event";
+import Event from './event';
 
 class Component extends Event {
-  private el: HTMLDivElement = document.createElement("div");
+  private el: HTMLDivElement = document.createElement('div');
 
   constructor(className: string) {
     super();

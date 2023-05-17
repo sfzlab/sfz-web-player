@@ -1,8 +1,8 @@
-import "./Interface.scss";
-import { xml2js } from "xml-js";
-import { InterfaceOptions } from "../types/player";
-import Component from "./component";
-import { FileLocal, FileRemote } from "../types/files";
+import './Interface.scss';
+import { xml2js } from 'xml-js';
+import { InterfaceOptions } from '../types/player';
+import Component from './component';
+import { FileLocal, FileRemote } from '../types/files';
 import {
   PlayerButton,
   PlayerElement,
@@ -11,9 +11,9 @@ import {
   PlayerKnob,
   PlayerSlider,
   PlayerText,
-} from "../types/interface";
-import FileLoader from "../utils/fileLoader";
-import { AudioControlEvent } from "../types/audio";
+} from '../types/interface';
+import FileLoader from '../utils/fileLoader';
+import { AudioControlEvent } from '../types/audio';
 
 class Interface extends Component {
   private width: number = 775;
@@ -26,12 +26,12 @@ class Interface extends Component {
   loader: FileLoader;
 
   constructor(options: InterfaceOptions) {
-    super("interface");
+    super('interface');
 
-    this.tabs = document.createElement("div");
-    this.tabs.className = "tabs";
-    this.addTab("Info");
-    this.addTab("Controls");
+    this.tabs = document.createElement('div');
+    this.tabs.className = 'tabs';
+    this.addTab('Info');
+    this.addTab('Controls');
     this.getEl().appendChild(this.tabs);
     this.addKeyboard();
 
@@ -43,9 +43,7 @@ class Interface extends Component {
     if (options.root) this.loader.setRoot(options.root);
     if (options.directory) this.loader.addDirectory(options.directory);
     if (options.file) {
-      const file: FileLocal | FileRemote | undefined = this.loader.addFile(
-        options.file
-      );
+      const file: FileLocal | FileRemote | undefined = this.loader.addFile(options.file);
       this.showFile(file);
     }
   }
@@ -62,7 +60,7 @@ class Interface extends Component {
   }
 
   toPercentage(val1: string, val2: number) {
-    return Math.min(Number(val1) / val2, 1) * 100 + "%";
+    return Math.min(Number(val1) / val2, 1) * 100 + '%';
   }
 
   toRelative(element: PlayerElement) {
@@ -76,22 +74,22 @@ class Interface extends Component {
 
   async addImage(image: PlayerImage) {
     const relative: any = this.toRelative(image);
-    const img: HTMLImageElement = document.createElement("img");
-    img.setAttribute("draggable", "false");
+    const img: HTMLImageElement = document.createElement('img');
+    img.setAttribute('draggable', 'false');
     img.setAttribute(
-      "style",
+      'style',
       `left: ${relative.left}; top: ${relative.top}; width: ${relative.width}; height: ${relative.height};`
     );
-    await this.addImageAtr(img, "src", image.image);
+    await this.addImageAtr(img, 'src', image.image);
     return img;
   }
 
   async addImageAtr(img: HTMLImageElement, attribute: string, path: string) {
-    if (this.loader.root.startsWith("http")) {
-      img.setAttribute(attribute, this.loader.root + "GUI/" + path);
+    if (this.loader.root.startsWith('http')) {
+      img.setAttribute(attribute, this.loader.root + 'GUI/' + path);
     } else {
-      const file: FileRemote | undefined = this.loader.files["GUI/" + path];
-      if (file && "handle" in file) {
+      const file: FileRemote | undefined = this.loader.files['GUI/' + path];
+      if (file && 'handle' in file) {
         img.setAttribute(attribute, URL.createObjectURL(file.handle as Blob));
       }
     }
@@ -100,47 +98,46 @@ class Interface extends Component {
   addControl(type: PlayerElements, element: PlayerElement) {
     const relative: any = this.toRelative(element);
     const el: any = document.createElement(`webaudio-${type}`);
-    if ("image" in element) this.addImageAtr(el, "src", element.image);
-    if ("image_bg" in element) this.addImageAtr(el, "src", element.image_bg);
-    if ("image_handle" in element)
-      this.addImageAtr(el, "knobsrc", element.image_handle);
-    if ("frames" in element) {
-      el.setAttribute("value", "0");
-      el.setAttribute("max", Number(element.frames) - 1);
-      el.setAttribute("step", "1");
-      el.setAttribute("sprites", Number(element.frames) - 1);
-      el.setAttribute("tooltip", "%d");
+    if ('image' in element) this.addImageAtr(el, 'src', element.image);
+    if ('image_bg' in element) this.addImageAtr(el, 'src', element.image_bg);
+    if ('image_handle' in element) this.addImageAtr(el, 'knobsrc', element.image_handle);
+    if ('frames' in element) {
+      el.setAttribute('value', '0');
+      el.setAttribute('max', Number(element.frames) - 1);
+      el.setAttribute('step', '1');
+      el.setAttribute('sprites', Number(element.frames) - 1);
+      el.setAttribute('tooltip', '%d');
     }
-    if ("orientation" in element) {
-      const dir: string = element.orientation === "vertical" ? "vert" : "horz";
-      el.setAttribute("direction", dir);
+    if ('orientation' in element) {
+      const dir: string = element.orientation === 'vertical' ? 'vert' : 'horz';
+      el.setAttribute('direction', dir);
     }
-    if ("x" in element) {
-      el.setAttribute("style", `left: ${relative.left}; top: ${relative.top};`);
+    if ('x' in element) {
+      el.setAttribute('style', `left: ${relative.left}; top: ${relative.top};`);
     }
-    if ("w" in element) {
-      el.setAttribute("height", element.h);
-      el.setAttribute("width", element.w);
+    if ('w' in element) {
+      el.setAttribute('height', element.h);
+      el.setAttribute('width', element.w);
     }
     return el;
   }
 
   addKeyboard() {
-    const keyboard: any = document.createElement("webaudio-keyboard");
-    keyboard.setAttribute("keys", "88");
-    keyboard.setAttribute("height", "70");
-    keyboard.setAttribute("width", "775");
-    keyboard.addEventListener("change", (event: any) => {
+    const keyboard: any = document.createElement('webaudio-keyboard');
+    keyboard.setAttribute('keys', '88');
+    keyboard.setAttribute('height', '70');
+    keyboard.setAttribute('width', '775');
+    keyboard.addEventListener('change', (event: any) => {
       const controlEvent: AudioControlEvent = {
         channel: 0x90,
         note: event.note[1],
         velocity: event.note[0] ? 100 : 0,
       };
-      this.dispatchEvent("change", controlEvent);
+      this.dispatchEvent('change', controlEvent);
     });
     this.getEl().appendChild(keyboard);
     this.keyboard = keyboard;
-    window.addEventListener("resize", () => this.resizeKeyboard());
+    window.addEventListener('resize', () => this.resizeKeyboard());
     window.setTimeout(() => this.resizeKeyboard());
   }
 
@@ -162,42 +159,42 @@ class Interface extends Component {
   }
 
   setKeyboardState(loading: boolean) {
-    if (loading) this.keyboard.classList.add("loading");
-    else this.keyboard.classList.remove("loading");
+    if (loading) this.keyboard.classList.add('loading');
+    else this.keyboard.classList.remove('loading');
   }
 
   setKeyboardRange(start: number, end: number) {
-    console.log("setKeyboardRange", start, end);
+    console.log('setKeyboardRange', start, end);
     this.keyboardStart = start || 0;
     this.keyboardEnd = end || 100;
     this.resizeKeyboard();
   }
 
   addTab(name: string) {
-    const input: HTMLInputElement = document.createElement("input");
-    input.className = "radiotab";
-    if (name === "Info") input.setAttribute("checked", "checked");
-    input.type = "radio";
+    const input: HTMLInputElement = document.createElement('input');
+    input.className = 'radiotab';
+    if (name === 'Info') input.setAttribute('checked', 'checked');
+    input.type = 'radio';
     input.id = name.toLowerCase();
-    input.name = "tabs";
+    input.name = 'tabs';
     this.tabs.appendChild(input);
 
-    const label: HTMLLabelElement = document.createElement("label");
-    label.className = "label";
-    label.setAttribute("for", name.toLowerCase());
+    const label: HTMLLabelElement = document.createElement('label');
+    label.className = 'label';
+    label.setAttribute('for', name.toLowerCase());
     label.innerHTML = name;
     this.tabs.appendChild(label);
 
-    const div: HTMLDivElement = document.createElement("div");
-    div.className = "panel";
+    const div: HTMLDivElement = document.createElement('div');
+    div.className = 'panel';
     this.tabs.appendChild(div);
   }
 
   addText(text: PlayerText) {
     const relative: any = this.toRelative(text);
-    const span: HTMLSpanElement = document.createElement("span");
+    const span: HTMLSpanElement = document.createElement('span');
     span.setAttribute(
-      "style",
+      'style',
       `left: ${relative.left}; top: ${relative.top}; width: ${relative.width}; height: ${relative.height}; color: ${text.color_text};`
     );
     span.innerHTML = text.text;
@@ -211,8 +208,7 @@ class Interface extends Component {
   }
 
   reset() {
-    const panels: HTMLCollectionOf<Element> =
-      this.tabs.getElementsByClassName("panel");
+    const panels: HTMLCollectionOf<Element> = this.tabs.getElementsByClassName('panel');
     for (const panel of panels) {
       panel.replaceChildren();
     }
@@ -220,7 +216,7 @@ class Interface extends Component {
 
   async setupInfo() {
     if (!this.instrument.AriaGUI) return;
-    const info: Element = this.tabs.getElementsByClassName("panel")[0];
+    const info: Element = this.tabs.getElementsByClassName('panel')[0];
     info.replaceChildren();
     const file: FileLocal | FileRemote | undefined = await this.loader.getFile(
       this.loader.root + this.instrument.AriaGUI[0].path
@@ -231,16 +227,14 @@ class Interface extends Component {
 
   async setupControls() {
     if (!this.instrument.AriaProgram) return;
-    const controls: Element = this.tabs.getElementsByClassName("panel")[1];
+    const controls: Element = this.tabs.getElementsByClassName('panel')[1];
     controls.replaceChildren();
     const file: FileLocal | FileRemote | undefined = await this.loader.getFile(
       this.loader.root + this.instrument.AriaProgram[0].gui
     );
     const fileXml: any = await this.parseXML(file);
     if (fileXml.Knob)
-      fileXml.Knob.forEach((knob: PlayerKnob) =>
-        controls.appendChild(this.addControl(PlayerElements.Knob, knob))
-      );
+      fileXml.Knob.forEach((knob: PlayerKnob) => controls.appendChild(this.addControl(PlayerElements.Knob, knob)));
     if (fileXml.OnOffButton)
       fileXml.OnOffButton.forEach((button: PlayerButton) =>
         controls.appendChild(this.addControl(PlayerElements.Switch, button))
@@ -250,14 +244,9 @@ class Interface extends Component {
         controls.appendChild(this.addControl(PlayerElements.Slider, slider))
       );
     if (fileXml.StaticImage)
-      fileXml.StaticImage.forEach(async (image: PlayerImage) =>
-        controls.appendChild(await this.addImage(image))
-      );
-    if (fileXml.StaticText)
-      fileXml.StaticText.forEach((text: PlayerText) =>
-        controls.appendChild(this.addText(text))
-      );
-    window.addEventListener("resize", () => this.resizeControls());
+      fileXml.StaticImage.forEach(async (image: PlayerImage) => controls.appendChild(await this.addImage(image)));
+    if (fileXml.StaticText) fileXml.StaticText.forEach((text: PlayerText) => controls.appendChild(this.addText(text)));
+    window.addEventListener('resize', () => this.resizeControls());
     window.setTimeout(() => this.resizeControls());
   }
 
@@ -265,14 +254,11 @@ class Interface extends Component {
     const width: number = Math.floor(this.getEl().clientWidth / 25);
     const sliderWidth: number = Math.floor(this.getEl().clientWidth / 65);
     const sliderHeight: number = Math.floor(this.getEl().clientHeight / 3.5);
-    const controls: Element = this.tabs.getElementsByClassName("panel")[1];
+    const controls: Element = this.tabs.getElementsByClassName('panel')[1];
     controls.childNodes.forEach((control: any) => {
-      if (
-        control.nodeName === "WEBAUDIO-KNOB" ||
-        control.nodeName === "WEBAUDIO-SWITCH"
-      ) {
+      if (control.nodeName === 'WEBAUDIO-KNOB' || control.nodeName === 'WEBAUDIO-SWITCH') {
         control.width = control.height = width;
-      } else if (control.nodeName === "WEBAUDIO-SLIDER") {
+      } else if (control.nodeName === 'WEBAUDIO-SLIDER') {
         control.width = sliderWidth;
         control.height = sliderHeight;
       }
@@ -281,7 +267,7 @@ class Interface extends Component {
 
   findElements(list: { [name: string]: any[] }, nodes: any[]) {
     nodes.forEach((node: any) => {
-      if (node.type === "element") {
+      if (node.type === 'element') {
         if (!list[node.name]) list[node.name] = [];
         list[node.name].push(node.attributes);
       }

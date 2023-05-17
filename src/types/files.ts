@@ -1,4 +1,4 @@
-import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
+import { FileWithDirectoryAndFileHandle } from 'browser-fs-access';
 
 interface FilesMap {
   [name: string]: FileLocal | FileRemote;

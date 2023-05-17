@@ -1,27 +1,23 @@
-import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
-import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
-import { get, getRaw } from "./api";
-import { encodeHashes, pathExt, pathSubDir } from "./utils";
+import { FileWithDirectoryAndFileHandle } from 'browser-fs-access';
+import { FileLocal, FileRemote, FilesMap, FilesTree } from '../types/files';
+import { get, getRaw } from './api';
+import { encodeHashes, pathExt, pathSubDir } from './utils';
 
 class FileLoader {
   audio: AudioContext = new AudioContext();
   files: FilesMap = {};
   filesTree: FilesTree = {};
-  root: string = "";
+  root: string = '';
 
   addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]) {
-    files.forEach((file: string | FileWithDirectoryAndFileHandle) =>
-      this.addFile(file)
-    );
+    files.forEach((file: string | FileWithDirectoryAndFileHandle) => this.addFile(file));
   }
 
   addFile(file: string | FileWithDirectoryAndFileHandle) {
-    const path: string = decodeURI(
-      typeof file === "string" ? file : file.webkitRelativePath
-    );
+    const path: string = decodeURI(typeof file === 'string' ? file : file.webkitRelativePath);
     if (path === this.root) return;
     const fileKey: string = pathSubDir(path, this.root);
-    if (typeof file === "string") {
+    if (typeof file === 'string') {
       this.files[fileKey] = {
         ext: pathExt(file),
         contents: null,
@@ -40,9 +36,7 @@ class FileLoader {
   }
 
   addToFileTree(key: string) {
-    key
-      .split("/")
-      .reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
+    key.split('/').reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
   }
 
   async loadFileLocal(file: FileLocal, buffer = false) {
@@ -65,21 +59,17 @@ class FileLoader {
     return file;
   }
 
-  async getFile(
-    file: string | FileLocal | FileRemote | undefined,
-    buffer = false
-  ) {
+  async getFile(file: string | FileLocal | FileRemote | undefined, buffer = false) {
     if (!file) return;
-    if (typeof file === "string") {
+    if (typeof file === 'string') {
       if (pathExt(file).length === 0) return;
       const fileKey: string = pathSubDir(file, this.root);
       let fileRef: FileLocal | FileRemote | undefined = this.files[fileKey];
       if (!fileRef) fileRef = this.addFile(file);
-      if (file.startsWith("http"))
-        return await this.loadFileRemote(fileRef as FileRemote, buffer);
+      if (file.startsWith('http')) return await this.loadFileRemote(fileRef as FileRemote, buffer);
       return await this.loadFileLocal(fileRef as FileLocal, buffer);
     }
-    if ("handle" in file) return await this.loadFileLocal(file, buffer);
+    if ('handle' in file) return await this.loadFileLocal(file, buffer);
     return await this.loadFileRemote(file, buffer);
   }
 
