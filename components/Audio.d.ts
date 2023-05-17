@@ -1,8 +1,8 @@
-import { AudioControlEvent } from "../types/audio";
-import { AudioOptions } from "../types/player";
-import Event from "./event";
-import { FileLocal, FileRemote } from "../types/files";
-import FileLoader from "../utils/fileLoader";
+import { AudioControlEvent } from '../types/audio';
+import { AudioOptions } from '../types/player';
+import Event from './event';
+import { FileLocal, FileRemote } from '../types/files';
+import FileLoader from '../utils/fileLoader';
 declare class Audio extends Event {
     loader: FileLoader;
     private audio;

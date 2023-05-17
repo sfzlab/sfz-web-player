@@ -1,10 +1,11 @@
-import { FileWithDirectoryAndFileHandle } from "browser-fs-access";
-import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
+import { FileWithDirectoryAndFileHandle } from 'browser-fs-access';
+import { FileLocal, FileRemote, FilesMap, FilesTree } from '../types/files';
 declare class FileLoader {
-    audio: AudioContext;
+    audio: AudioContext | undefined;
     files: FilesMap;
     filesTree: FilesTree;
     root: string;
+    constructor();
     addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]): void;
     addFile(file: string | FileWithDirectoryAndFileHandle): FileRemote | undefined;
     addToFileTree(key: string): void;

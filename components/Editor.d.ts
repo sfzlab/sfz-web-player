@@ -1,8 +1,8 @@
-import "./Editor.scss";
-import Component from "./component";
-import { FileLocal, FileRemote, FilesMap, FilesTree } from "../types/files";
-import { EditorOptions } from "../types/player";
-import FileLoader from "../utils/fileLoader";
+import './Editor.scss';
+import Component from './component';
+import { FileLocal, FileRemote, FilesMap, FilesTree } from '../types/files';
+import { EditorOptions } from '../types/player';
+import FileLoader from '../utils/fileLoader';
 declare global {
     interface Window {
         ace: any;

@@ -49,4 +49,4 @@ interface PlayerText {
     x: string;
     y: string;
 }
-export { PlayerButton, PlayerElement, PlayerElements, PlayerImage, PlayerKnob, PlayerSlider, PlayerText, };
+export { PlayerButton, PlayerElement, PlayerElements, PlayerImage, PlayerKnob, PlayerSlider, PlayerText };

@@ -1,4 +1,4 @@
-import Event from "./event";
+import Event from './event';
 declare class Component extends Event {
     private el;
     constructor(className: string);

@@ -1,10 +1,10 @@
-import "./Interface.scss";
-import { InterfaceOptions } from "../types/player";
-import Component from "./component";
-import { FileLocal, FileRemote } from "../types/files";
-import { PlayerElement, PlayerElements, PlayerImage, PlayerText } from "../types/interface";
-import FileLoader from "../utils/fileLoader";
-import { AudioControlEvent } from "../types/audio";
+import './Interface.scss';
+import { InterfaceOptions } from '../types/player';
+import Component from './component';
+import { FileLocal, FileRemote } from '../types/files';
+import { PlayerElement, PlayerElements, PlayerImage, PlayerText } from '../types/interface';
+import FileLoader from '../utils/fileLoader';
+import { AudioControlEvent } from '../types/audio';
 declare class Interface extends Component {
     private width;
     private height;
@@ -30,6 +30,7 @@ declare class Interface extends Component {
     addKeyboard(): void;
     resizeKeyboard(): void;
     setKeyboard(event: AudioControlEvent): void;
+    setKeyboardState(loading: boolean): void;
     setKeyboardRange(start: number, end: number): void;
     addTab(name: string): void;
     addText(text: PlayerText): HTMLSpanElement;
