@@ -9,8 +9,8 @@
     "analyze": "webpack --config webpack.prod.js --profile --json > stats.json",
     "build": "webpack --config webpack.dev.js && webpack --config webpack.prod.js",
     "dev": "webpack serve --config webpack.dev.js",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "lint": "tslint -p tsconfig.json",
+    "format": "prettier --write 'src/**/*.{ts,tsx}' && prettier --write 'tests/**/*.{ts,tsx}'",
+    "lint": "tslint --project tsconfig.json && tslint 'tests/**/*.{ts,tsx}'",
     "start": "serve ./dist",
     "test": "jest --config jestconfig.json --coverage --detectOpenHandles",
     "test:update": "jest --config jestconfig.json --updateSnapshot"
