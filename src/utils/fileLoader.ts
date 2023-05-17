@@ -4,10 +4,16 @@ import { get, getRaw } from './api';
 import { encodeHashes, pathExt, pathSubDir } from './utils';
 
 class FileLoader {
-  audio: AudioContext = new AudioContext();
+  audio: AudioContext | undefined;
   files: FilesMap = {};
   filesTree: FilesTree = {};
   root: string = '';
+
+  constructor() {
+    if (window.AudioContext) {
+      this.audio = new window.AudioContext();
+    }
+  }
 
   addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]) {
     files.forEach((file: string | FileWithDirectoryAndFileHandle) => this.addFile(file));
@@ -42,7 +48,9 @@ class FileLoader {
   async loadFileLocal(file: FileLocal, buffer = false) {
     if (buffer === true) {
       const arrayBuffer: ArrayBuffer = await file.handle.arrayBuffer();
-      file.contents = await this.audio.decodeAudioData(arrayBuffer);
+      if (this.audio) {
+        file.contents = await this.audio.decodeAudioData(arrayBuffer);
+      }
       return file;
     }
     file.contents = await file.handle.text();
@@ -52,7 +60,9 @@ class FileLoader {
   async loadFileRemote(file: FileRemote, buffer = false) {
     if (buffer === true) {
       const arrayBuffer: ArrayBuffer = await getRaw(encodeHashes(file.path));
-      file.contents = await this.audio.decodeAudioData(arrayBuffer);
+      if (this.audio) {
+        file.contents = await this.audio.decodeAudioData(arrayBuffer);
+      }
       return file;
     }
     file.contents = await get(encodeHashes(file.path));

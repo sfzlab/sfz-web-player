@@ -8,18 +8,22 @@ import { pathDir } from '../utils/utils';
 
 class Audio extends Event {
   loader: FileLoader;
-  private audio: AudioContext;
-  private audioBuffer: AudioBufferSourceNode;
+  private audio: AudioContext | undefined;
+  private audioBuffer: AudioBufferSourceNode | undefined;
   private samples: { [key: number]: string } = [];
 
   constructor(options: AudioOptions) {
     super();
-    this.audio = new AudioContext();
-    this.audioBuffer = this.audio.createBufferSource();
-    if (!window.webAudioControlsWidgetManager) {
-      window.alert('webaudio-controls not found, add to a <script> tag.');
+    if (window.AudioContext) {
+      this.audio = new window.AudioContext();
+      this.audioBuffer = this.audio.createBufferSource();
     }
-    window.webAudioControlsWidgetManager.addMidiListener((event: any) => this.onKeyboard(event));
+    if (window.webAudioControlsWidgetManager) {
+      window.webAudioControlsWidgetManager.addMidiListener((event: any) => this.onKeyboard(event));
+    } else {
+      console.log('webaudio-controls not found, add to a <script> tag.');
+    }
+
     if (options.loader) {
       this.loader = options.loader;
     } else {
@@ -100,14 +104,16 @@ class Audio extends Event {
     console.log('samplePath', event.note, samplePath);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[samplePath];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || samplePath, true);
-    this.audioBuffer = this.audio.createBufferSource();
-    this.audioBuffer.buffer = newFile?.contents;
-    this.audioBuffer.connect(this.audio.destination);
-    this.audioBuffer.start(0);
+    if (this.audio) {
+      this.audioBuffer = this.audio.createBufferSource();
+      this.audioBuffer.buffer = newFile?.contents;
+      this.audioBuffer.connect(this.audio.destination);
+      this.audioBuffer.start(0);
+    }
   }
 
   reset() {
-    this.audioBuffer.stop();
+    this.audioBuffer?.stop();
     this.samples = [];
   }
 }

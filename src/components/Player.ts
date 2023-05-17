@@ -15,7 +15,7 @@ class Player extends Component {
   private audio?: Audio;
   private editor?: Editor;
   private interface?: Interface;
-  private loader: FileLoader;
+  public loader: FileLoader;
 
   constructor(id: string, options: PlayerOptions) {
     super('player');

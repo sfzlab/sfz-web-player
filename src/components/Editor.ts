@@ -19,7 +19,7 @@ class Editor extends Component {
   constructor(options: EditorOptions) {
     super('editor');
     if (!window.ace) {
-      window.alert('Ace editor not found, add to a <script> tag.');
+      console.log('Ace editor not found, add to a <script> tag.');
     }
 
     this.fileEl = document.createElement('div');
@@ -28,9 +28,11 @@ class Editor extends Component {
 
     this.aceEl = document.createElement('div');
     this.aceEl.className = 'ace';
-    this.ace = window.ace.edit(this.aceEl, {
-      theme: 'ace/theme/monokai',
-    });
+    if (window.ace) {
+      this.ace = window.ace.edit(this.aceEl, {
+        theme: 'ace/theme/monokai',
+      });
+    }
     this.getEl().appendChild(this.aceEl);
 
     if (options.loader) {

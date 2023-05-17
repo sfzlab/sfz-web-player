@@ -2,7 +2,11 @@
   "transform": {
     "^.+\\.(t|j)sx?$": "ts-jest"
   },
+  "testEnvironment": "jsdom",
   "testTimeout": 36000,
   "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "moduleNameMapper": {
+    "\\.(css|scss)$": "identity-obj-proxy"
+  }
 }
