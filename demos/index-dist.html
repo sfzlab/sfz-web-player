@@ -4,23 +4,128 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SFZ Web Player</title>
-  <link href="main.min.css" rel="stylesheet" />
-  <link href="demos/index.css" rel="stylesheet" />
+  <link href="../main.min.css" rel="stylesheet" />
+  <link href="index.css" rel="stylesheet" />
 </head>
 <body>
+  <ul class="menu">
+    <li class="logo">sfz web player</li>
+    <li><a>All</a></li>
+    <li><a href="audio.html">Audio</a></li>
+    <li><a href="editor.html">Editor</a></li>
+    <li><a href="interface.html">Interface</a></li>
+  </ul>
   <div id="sfzPlayer"></div>
   <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.16.0/src-min-noconflict/ace.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.16.0/src-min-noconflict/ext-modelist.min.js"></script>
   <script>window.WebAudioControlsOptions = { useMidi: 1 };</script>
   <script src="https://github.com/kmturley/webaudio-controls/releases/download/v1.0.0/webaudio-controls.min.js"></script>
-  <script src="sfz.min.js"></script>
+  <script src="../sfz.min.js"></script>
   <script>
     var sfzPlayer = new Sfz.Player("sfzPlayer", {
       audio: {
         file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Programs/01-green_keyswitch.sfz',
         root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Programs/',
       },
-      header: true,
+      header: {
+        local: true,
+        remote: true,
+        presets: [
+          {
+            name: 'Glasses Of Water',
+            id: 'freepats/glass'
+          },
+          {
+            name: 'Hang D Minor',
+            id: 'freepats/hang-d-minor'
+          },
+          {
+            name: 'Synthesizer Percussion',
+            id: 'freepats/synthesizer-percussion'
+          },
+          {
+            name: 'Upright Piano KW',
+            id: 'freepats/upright-piano-kw'
+          },
+          {
+            name: 'Salamander Grand Piano',
+            id: 'studiorack/salamander-grand-piano'
+          },
+          {
+            name: 'Spanish Classical Guitar',
+            id: 'freepats/spanish-classical-guitar'
+          },
+          {
+            name: 'Basic Harmonica',
+            id: 'studiorack/basic-harmonica'
+          },
+          {
+            name: 'Naked Drums',
+            id: 'studiorack/naked-drums'
+          },
+          {
+            name: 'AVL Percussions',
+            id: 'studiorack/avl-percussions'
+          },
+          {
+            name: 'jRhodes3c',
+            id: 'studiorack/jrhodes-3c'
+          },
+          {
+            name: 'Splendid Grand Piano',
+            id: 'studiorack/splendid-grand-piano'
+          },
+          {
+            name: 'Sam\'s Sonor',
+            id: 'studiorack/sams-sonor'
+          },
+          {
+            name: 'Black and Green Guitars',
+            id: 'studiorack/black-and-green-guitars',
+            selected: true
+          },
+          {
+            name: 'Horse Pulse',
+            id: 'studiorack/horse-pulse'
+          },
+          {
+            name: 'Virtual Playing Orchestra',
+            id: 'studiorack/virtual-playing-orchestra'
+          },
+          {
+            name: 'jSteelDrum',
+            id: 'studiorack/jsteeldrum'
+          },
+          {
+            name: 'War Tuba',
+            id: 'studiorack/war-tuba'
+          },
+          {
+            name: 'AVL Drumkits',
+            id: 'studiorack/avl-drumkits'
+          },
+          {
+            name: 'Double Bass',
+            id: 'studiorack/double-bass'
+          },
+          {
+            name: 'Hungarian Zither',
+            id: 'studiorack/hungarian-zither'
+          },
+          {
+            name: 'Bear Sax',
+            id: 'studiorack/bear-sax'
+          },
+          {
+            name: 'Salamander Drumkit',
+            id: 'studiorack/salamander-drumkit'
+          },
+          {
+            name: 'Virtuosity Drums',
+            id: 'studiorack/virtuosity-drums'
+          }
+        ]
+      },
       editor: {
         file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
         directory: [
