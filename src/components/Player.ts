@@ -1,4 +1,11 @@
-import { AudioOptions, EditorOptions, InterfaceOptions, PlayerOptions } from '../types/player';
+import {
+  AudioOptions,
+  EditorOptions,
+  HeaderOptions,
+  HeaderPreset,
+  InterfaceOptions,
+  PlayerOptions,
+} from '../types/player';
 import Component from './component';
 import Editor from './Editor';
 import Interface from './Interface';
@@ -21,7 +28,7 @@ class Player extends Component {
     super('player');
     this.loader = new FileLoader();
     if (options.audio) this.setupAudio(options.audio);
-    if (options.header) this.setupHeader();
+    if (options.header) this.setupHeader(options.header);
     if (options.interface) this.setupInterface(options.interface);
     if (options.editor) this.setupEditor(options.editor);
     document.getElementById(id)?.appendChild(this.getEl());
@@ -39,8 +46,8 @@ class Player extends Component {
     this.audio.addEvent('range', (event: EventData) => {
       if (this.interface) this.interface.setKeyboardRange(event.data.start, event.data.end);
     });
-    this.audio.addEvent('loaded', (event: EventData) => {
-      if (this.interface) this.interface.setKeyboardState(false);
+    this.audio.addEvent('loading', (event: EventData) => {
+      if (this.interface) this.interface.setKeyboardState(event.data);
     });
   }
 
@@ -60,26 +67,43 @@ class Player extends Component {
     this.getEl().appendChild(this.editor.getEl());
   }
 
-  setupHeader() {
+  setupHeader(options: HeaderOptions) {
     const div: HTMLDivElement = document.createElement('div');
     div.className = 'header';
 
-    const inputLocal: HTMLInputElement = document.createElement('input');
-    inputLocal.type = 'button';
-    inputLocal.value = 'Local directory';
-    inputLocal.addEventListener('click', async (e) => {
-      await this.loadLocalInstrument();
-    });
-    div.appendChild(inputLocal);
-
-    const inputRemote: HTMLInputElement = document.createElement('input');
-    inputRemote.type = 'button';
-    inputRemote.value = 'Remote directory';
-    inputRemote.addEventListener('click', async (e) => {
-      const repo: string | null = window.prompt('Enter a GitHub owner/repo', 'studiorack/black-and-green-guitars');
-      if (repo) await this.loadRemoteInstrument(repo);
-    });
-    div.appendChild(inputRemote);
+    if (options.local) {
+      const inputLocal: HTMLInputElement = document.createElement('input');
+      inputLocal.type = 'button';
+      inputLocal.value = 'Local directory';
+      inputLocal.addEventListener('click', async (e) => {
+        await this.loadLocalInstrument();
+      });
+      div.appendChild(inputLocal);
+    }
+    if (options.remote) {
+      const inputRemote: HTMLInputElement = document.createElement('input');
+      inputRemote.type = 'button';
+      inputRemote.value = 'Remote directory';
+      inputRemote.addEventListener('click', async (e) => {
+        const repo: string | null = window.prompt('Enter a GitHub owner/repo', 'studiorack/black-and-green-guitars');
+        if (repo) await this.loadRemoteInstrument(repo);
+      });
+      div.appendChild(inputRemote);
+    }
+    if (options.presets) {
+      const inputPresets: HTMLSelectElement = document.createElement('select');
+      options.presets.forEach((preset: HeaderPreset) => {
+        const inputOption: HTMLOptionElement = document.createElement('option');
+        inputOption.innerHTML = preset.name;
+        if (preset.selected) inputOption.selected = true;
+        inputPresets.appendChild(inputOption);
+      });
+      inputPresets.addEventListener('change', async (e) => {
+        const preset: HeaderPreset = options.presets[inputPresets.selectedIndex];
+        await this.loadRemoteInstrument(preset.id);
+      });
+      div.appendChild(inputPresets);
+    }
 
     this.getEl().appendChild(div);
   }

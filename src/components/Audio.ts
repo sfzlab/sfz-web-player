@@ -47,6 +47,7 @@ class Audio extends Event {
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
+    this.dispatchEvent('loading', true);
     file = await this.loader.getFile(file);
     if (!file) return;
     console.log('showFile', file);
@@ -80,7 +81,7 @@ class Audio extends Event {
       for (const key in this.samples) {
         await this.loadSample(this.samples[key]);
       }
-      this.dispatchEvent('loaded', {});
+      this.dispatchEvent('loading', false);
     }
   }
 

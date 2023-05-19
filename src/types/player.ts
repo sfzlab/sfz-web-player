@@ -14,6 +14,18 @@ interface EditorOptions {
   root?: string;
 }
 
+interface HeaderOptions {
+  local?: boolean;
+  remote?: boolean;
+  presets: HeaderPreset[];
+}
+
+interface HeaderPreset {
+  name: string;
+  id: string;
+  selected?: boolean;
+}
+
 interface InterfaceOptions {
   directory?: string[] | FileWithDirectoryAndFileHandle[];
   file?: string | FileWithDirectoryAndFileHandle;
@@ -24,9 +36,9 @@ interface InterfaceOptions {
 interface PlayerOptions {
   audio?: AudioOptions;
   editor?: EditorOptions;
-  header?: boolean;
+  header?: HeaderOptions;
   instrument?: string;
   interface?: InterfaceOptions;
 }
 
-export { AudioOptions, EditorOptions, InterfaceOptions, PlayerOptions };
+export { AudioOptions, EditorOptions, HeaderOptions, HeaderPreset, InterfaceOptions, PlayerOptions };
