@@ -1,3 +1,4 @@
+import { AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion } from '../types/audio';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from './fileLoader';
 
@@ -10,6 +11,7 @@ const endCharacters: string[] = ['>', '\r', '\n'];
 async function parseSfz(prefix: string, contents: string) {
   let header: string = '';
   const map: any = {};
+  let parent: any = map;
   let values: any = {};
   for (let i: number = 0; i < contents.length; i++) {
     const char: string = contents.charAt(i);
@@ -22,7 +24,7 @@ async function parseSfz(prefix: string, contents: string) {
       const fileRef: FileLocal | FileRemote | undefined = loader.files[prefix + directive];
       const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || prefix + directive);
       const directiveValues: any = await parseSfz(prefix, file?.contents);
-      const headerValues: any[] = map[header];
+      const headerValues: any[] = parent[header];
       headerValues[headerValues.length - 1] = {
         ...headerValues[headerValues.length - 1],
         ...directiveValues,
@@ -30,20 +32,17 @@ async function parseSfz(prefix: string, contents: string) {
       if (DEBUG) console.log('headerValues', headerValues.length - 1, headerValues[headerValues.length - 1]);
     } else if (char === '<') {
       header = contents.slice(i + 1, iEnd);
+      // TODO actually support master headers
+      if (header === 'master') header = 'group';
       values = {};
-      // prototype, this will need to be re-written
-      if (header === 'region') {
-        if (map.global) {
-          const globalValues: any = map.global[map.global.length - 1];
-          values = { ...globalValues };
-        }
-        if (map.group) {
-          const groupValues: any = map.group[map.group.length - 1];
-          values = { ...groupValues };
-        }
+      if (map.global) {
+        if (header === 'group') parent = map.global[map.global.length - 1];
+        else if (header === 'region')
+          parent = map.global[map.global.length - 1].group[map.global[map.global.length - 1].group.length - 1];
+        else parent = map;
       }
-      if (!map[header]) map[header] = [];
-      map[header].push(values);
+      if (!parent[header]) parent[header] = [];
+      parent[header].push(values);
       if (DEBUG) console.log(`<${header}>`, values);
     } else {
       const opcode: string = contents.slice(i, iEnd);
@@ -68,6 +67,28 @@ async function parseSfz(prefix: string, contents: string) {
   return map;
 }
 
+function flattenSfzObject(sfzObject: AudioSfz) {
+  const keys: any = {};
+  sfzObject.global?.forEach((global: AudioSfzGlobal) => {
+    const valuesGlobal: any = { ...global };
+    delete valuesGlobal.group;
+    global.group?.forEach((group: AudioSfzGroup) => {
+      const valuesGroup: any = { ...valuesGlobal, ...group };
+      delete valuesGroup.region;
+      group.region?.forEach((region: AudioSfzRegion) => {
+        const valuesRegion: any = { ...valuesGroup, ...region };
+        const start: number = valuesRegion.lokey || valuesRegion.key;
+        const end: number = valuesRegion.hikey || valuesRegion.key;
+        for (let i = start; i <= end; i++) {
+          if (!keys[i]) keys[i] = [];
+          keys[i].push(valuesRegion);
+        }
+      });
+    });
+  });
+  return keys;
+}
+
 function findEnd(contents: string, startAt: number) {
   for (let index: number = startAt; index < contents.length; index++) {
     const char: string = contents.charAt(index);
@@ -81,4 +102,4 @@ function setParserLoader(fileLoader: FileLoader) {
   loader = fileLoader;
 }
 
-export { parseSfz, setParserLoader };
+export { flattenSfzObject, parseSfz, setParserLoader };

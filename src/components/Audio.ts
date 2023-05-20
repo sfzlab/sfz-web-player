@@ -1,16 +1,16 @@
-import { AudioControlEvent } from '../types/audio';
+import { AudioControlEvent, AudioKeys, AudioSample, AudioSfz } from '../types/audio';
 import { AudioOptions } from '../types/player';
 import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
-import { parseSfz, setParserLoader } from '../utils/parser';
+import { flattenSfzObject, parseSfz, setParserLoader } from '../utils/parser';
 import { pathDir } from '../utils/utils';
 
 class Audio extends Event {
   loader: FileLoader;
   private audio: AudioContext | undefined;
   private audioBuffer: AudioBufferSourceNode | undefined;
-  private samples: { [key: number]: string } = [];
+  private keys: AudioKeys = [];
 
   constructor(options: AudioOptions) {
     super();
@@ -53,36 +53,37 @@ class Audio extends Event {
     console.log('showFile', file);
     const prefix: string = pathDir(file.path);
     console.log('prefix', prefix);
-    const sfzObject: any = await parseSfz(prefix, file?.contents);
+    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents);
     console.log('sfzObject', sfzObject);
+    const sfzFlat: any = flattenSfzObject(sfzObject);
+    console.log('sfzFlat', sfzFlat);
+    this.keys = sfzFlat;
 
-    // hardcoded prototype for one sfz file
+    // if file contains default path
     let defaultPath: string = '';
     if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
       defaultPath = sfzObject.control[0].default_path;
     }
-    let regions: any = sfzObject.region;
-    if (sfzObject.master) regions = sfzObject.master[0].region;
-    if (regions) {
-      this.samples = [];
-      regions.forEach((region: any) => {
-        const key: number = region.lokey || region.key;
-        this.samples[key] = region.sample.replace('../', '');
-        if (file?.path.startsWith('https')) {
-          this.samples[key] = this.loader.root + defaultPath + region.sample.replace('../', '');
+    for (const key in this.keys) {
+      for (let i = 0; i < this.keys[key].length; i++) {
+        let samplePath: string = this.keys[key][i].sample;
+        samplePath = samplePath.replace('../', '');
+        if (file?.path.startsWith('https') && !samplePath.startsWith('https')) {
+          samplePath = this.loader.root + defaultPath + samplePath;
         }
-      });
-      const keys: string[] = Object.keys(this.samples);
-      this.dispatchEvent('range', {
-        start: Number(keys[0]),
-        end: Number(keys[keys.length - 1]),
-      });
-      this.dispatchEvent('preload', {});
-      for (const key in this.samples) {
-        await this.loadSample(this.samples[key]);
+        this.keys[key][i].sample = samplePath;
       }
-      this.dispatchEvent('loading', false);
     }
+    const keys: string[] = Object.keys(this.keys);
+    this.dispatchEvent('range', {
+      start: Number(keys[0]),
+      end: Number(keys[keys.length - 1]),
+    });
+    this.dispatchEvent('preload', {});
+    for (const key in this.keys) {
+      await this.loadSample(this.keys[key][0].sample);
+    }
+    this.dispatchEvent('loading', false);
   }
 
   onKeyboard(event: any) {
@@ -101,10 +102,11 @@ class Audio extends Event {
       // this.audioBuffer.stop();
       return;
     }
-    const samplePath: string = this.samples[event.note];
-    console.log('samplePath', event.note, samplePath);
-    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[samplePath];
-    const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || samplePath, true);
+    if (!this.keys[event.note]) return;
+    const keySample: AudioSample = this.keys[event.note][0];
+    console.log('sample', event.note, keySample);
+    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
+    const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
     if (this.audio) {
       this.audioBuffer = this.audio.createBufferSource();
       this.audioBuffer.buffer = newFile?.contents;
@@ -115,7 +117,7 @@ class Audio extends Event {
 
   reset() {
     this.audioBuffer?.stop();
-    this.samples = [];
+    this.keys = [];
   }
 }
 
