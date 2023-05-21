@@ -32,6 +32,7 @@ interface AudioSample {
 interface AudioSfz {
   control: AudioControl[];
   global: AudioSfzGlobal[];
+  variables: AudioSfzVariables;
 }
 
 interface AudioControl {
@@ -59,6 +60,10 @@ interface AudioSfzRegion {
   seq_position: number;
 }
 
+interface AudioSfzVariables {
+  [name: string]: string;
+}
+
 export {
   AudioControl,
   AudioControlEvent,
@@ -68,4 +73,5 @@ export {
   AudioSfzGlobal,
   AudioSfzGroup,
   AudioSfzRegion,
+  AudioSfzVariables,
 };

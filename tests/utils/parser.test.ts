@@ -1,8 +1,8 @@
-import { processDirective, processHeader, processOpcode } from '../../src/utils/parser';
+import { processDirective, processHeader, processOpcode, processVariables } from '../../src/utils/parser';
 
 test('processDirective', async () => {
   expect(processDirective('#include "green/stac_tp.sfz"')).toEqual(['include', 'green/stac_tp.sfz']);
-  expect(processDirective('#define $KICKKEY 36')).toEqual(['define', 'KICKKEY', '36']);
+  expect(processDirective('#define $KICKKEY 36')).toEqual(['define', '$KICKKEY', '36']);
 });
 
 test('processHeader', async () => {
@@ -16,4 +16,14 @@ test('processHeader', async () => {
 test('processOpcode', async () => {
   expect(processOpcode('seq_position=3')).toEqual(['seq_position', '3']);
   expect(processOpcode('seq_position=3 pitch_keycenter=50')).toEqual(['seq_position', '3', 'pitch_keycenter', '50']);
+  expect(processOpcode('region_label=01 sample=harmLA0.$EXT')).toEqual([
+    'region_label',
+    '01',
+    'sample',
+    'harmLA0.$EXT',
+  ]);
+});
+
+test('processVariables', async () => {
+  expect(processVariables('sample=harmLA0.$EXT', { $EXT: 'flac' })).toEqual('sample=harmLA0.flac');
 });

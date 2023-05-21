@@ -1,4 +1,4 @@
-import { AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion } from '../types/audio';
+import { AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion, AudioSfzVariables } from '../types/audio';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from './fileLoader';
 
@@ -7,6 +7,7 @@ let loader: FileLoader;
 const DEBUG: boolean = false;
 const skipCharacters: string[] = [' ', '\t', '\r', '\n'];
 const endCharacters: string[] = ['>', '\r', '\n'];
+const variables: any = {};
 
 async function parseSfz(prefix: string, contents: string) {
   let header: string = '';
@@ -15,24 +16,25 @@ async function parseSfz(prefix: string, contents: string) {
   let values: any = {};
   for (let i: number = 0; i < contents.length; i++) {
     const char: string = contents.charAt(i);
-    if (skipCharacters.includes(char)) continue;
+    if (skipCharacters.includes(char)) continue; // skip character
     const iEnd: number = findEnd(contents, i);
-    const line: string = contents.slice(i, iEnd);
+    let line: string = contents.slice(i, iEnd);
     if (char === '/') {
       // do nothing
     } else if (char === '#') {
       const matches: string[] = processDirective(line);
       // Need to handle define header
       if (matches[0] === 'include') {
-        const fileRef: FileLocal | FileRemote | undefined = loader.files[prefix + matches[1]];
-        const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || prefix + matches[1]);
-        const directiveValues: any = await parseSfz(prefix, file?.contents);
-        const headerValues: any[] = parent[header];
-        headerValues[headerValues.length - 1] = {
-          ...headerValues[headerValues.length - 1],
-          ...directiveValues,
+        const includeVal: any = await loadParseSfz(prefix, matches[1]);
+        const parentVal: any[] = parent[header];
+        parentVal[parentVal.length - 1] = {
+          ...parentVal[parentVal.length - 1],
+          ...includeVal,
         };
-        if (DEBUG) console.log('headerValues', headerValues.length - 1, headerValues[headerValues.length - 1]);
+        if (DEBUG) console.log('val', parentVal[parentVal.length - 1]);
+      } else if (matches[0] === 'define') {
+        variables[matches[1]] = matches[2];
+        if (DEBUG) console.log('define', matches[1], variables[matches[1]]);
       }
     } else if (char === '<') {
       const matches: string[] = processHeader(line);
@@ -52,16 +54,19 @@ async function parseSfz(prefix: string, contents: string) {
         if (DEBUG) console.log(`<${header}>`, values);
       }
     } else {
+      if (line.includes('$')) line = processVariables(line, variables);
       const opcodeGroups: string[] = processOpcode(line);
       let opcodeName: string = '';
+      let opcodeValue: any;
       for (let j = 0; j < opcodeGroups.length; j++) {
+        opcodeValue = opcodeGroups[j];
         if (j % 2 === 0) {
-          opcodeName = opcodeGroups[j];
+          opcodeName = opcodeValue;
         } else {
-          if (!isNaN(opcodeGroups[j] as any)) {
-            values[opcodeName] = Number(opcodeGroups[j]);
+          if (!isNaN(opcodeValue as any)) {
+            values[opcodeName] = Number(opcodeValue);
           } else {
-            values[opcodeName] = opcodeGroups[j];
+            values[opcodeName] = opcodeValue;
           }
         }
       }
@@ -73,8 +78,14 @@ async function parseSfz(prefix: string, contents: string) {
   return map;
 }
 
+async function loadParseSfz(prefix: string, path: string) {
+  const fileRef: FileLocal | FileRemote | undefined = loader.files[prefix + path];
+  const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || prefix + path);
+  return await parseSfz(prefix, file?.contents);
+}
+
 function processDirective(input: string) {
-  return input.match(/[^#$ "]+/g) || [];
+  return input.match(/[^# "]+/g) || [];
 }
 
 function processHeader(input: string) {
@@ -83,6 +94,16 @@ function processHeader(input: string) {
 
 function processOpcode(input: string) {
   return input.split(/[= ]+/g) || [];
+}
+
+function processVariables(input: string, vars: AudioSfzVariables) {
+  const list: string = Object.keys(vars)
+    .map((key) => '\\' + key)
+    .join('|');
+  const regEx: RegExp = new RegExp(list, 'g');
+  return input.replace(regEx, (matched: string) => {
+    return vars[matched];
+  });
 }
 
 function flattenSfzObject(sfzObject: AudioSfz) {
@@ -120,4 +141,12 @@ function setParserLoader(fileLoader: FileLoader) {
   loader = fileLoader;
 }
 
-export { flattenSfzObject, parseSfz, processDirective, processHeader, processOpcode, setParserLoader };
+export {
+  flattenSfzObject,
+  parseSfz,
+  processDirective,
+  processHeader,
+  processOpcode,
+  processVariables,
+  setParserLoader,
+};
