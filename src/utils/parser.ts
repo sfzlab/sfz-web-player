@@ -20,18 +20,21 @@ async function parseSfz(prefix: string, contents: string) {
     if (char === '/') {
       // do nothing
     } else if (char === '#') {
-      const directive: string = contents.slice(i + 10, iEnd - 1);
-      const fileRef: FileLocal | FileRemote | undefined = loader.files[prefix + directive];
-      const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || prefix + directive);
-      const directiveValues: any = await parseSfz(prefix, file?.contents);
-      const headerValues: any[] = parent[header];
-      headerValues[headerValues.length - 1] = {
-        ...headerValues[headerValues.length - 1],
-        ...directiveValues,
-      };
-      if (DEBUG) console.log('headerValues', headerValues.length - 1, headerValues[headerValues.length - 1]);
+      const [directive, value] = processDirective(contents.slice(i, iEnd));
+      // Need to handle define header
+      if (directive === 'include') {
+        const fileRef: FileLocal | FileRemote | undefined = loader.files[prefix + value];
+        const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || prefix + value);
+        const directiveValues: any = await parseSfz(prefix, file?.contents);
+        const headerValues: any[] = parent[header];
+        headerValues[headerValues.length - 1] = {
+          ...headerValues[headerValues.length - 1],
+          ...directiveValues,
+        };
+        if (DEBUG) console.log('headerValues', headerValues.length - 1, headerValues[headerValues.length - 1]);
+      }
     } else if (char === '<') {
-      header = contents.slice(i + 1, iEnd);
+      header = processHeader(contents.slice(i, iEnd + 1));
       // TODO actually support master headers
       if (header === 'master') header = 'group';
       values = {};
@@ -45,8 +48,7 @@ async function parseSfz(prefix: string, contents: string) {
       parent[header].push(values);
       if (DEBUG) console.log(`<${header}>`, values);
     } else {
-      const opcode: string = contents.slice(i, iEnd);
-      const opcodeGroups: string[] = opcode.split(/[= ]/g);
+      const opcodeGroups: string[] = processOpcode(contents.slice(i, iEnd));
       let opcodeName: string = '';
       for (let j = 0; j < opcodeGroups.length; j++) {
         if (j % 2 === 0) {
@@ -59,12 +61,26 @@ async function parseSfz(prefix: string, contents: string) {
           }
         }
       }
-      if (DEBUG) console.log(opcode, opcodeGroups);
+      if (DEBUG) console.log(opcodeGroups);
     }
     i = iEnd;
   }
   if (!header) return values;
   return map;
+}
+
+function processDirective(input: string) {
+  const directive: string[] = input.split(/#(.*?) /);
+  const value: string[] = input.split(/"(.*?)"/);
+  return [directive[1], value[1]];
+}
+
+function processHeader(input: string) {
+  return input.split(/<(.*?)>/)[1];
+}
+
+function processOpcode(input: string) {
+  return input.split(/[= ]/g);
 }
 
 function flattenSfzObject(sfzObject: AudioSfz) {
@@ -102,4 +118,4 @@ function setParserLoader(fileLoader: FileLoader) {
   loader = fileLoader;
 }
 
-export { flattenSfzObject, parseSfz, setParserLoader };
+export { flattenSfzObject, parseSfz, processDirective, processHeader, processOpcode, setParserLoader };

@@ -65,7 +65,7 @@ class Audio extends Event {
       defaultPath = sfzObject.control[0].default_path;
     }
     for (const key in this.keys) {
-      for (let i = 0; i < this.keys[key].length; i++) {
+      for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
         samplePath = samplePath.replace('../', '');
         if (file?.path.startsWith('https') && !samplePath.startsWith('https')) {
