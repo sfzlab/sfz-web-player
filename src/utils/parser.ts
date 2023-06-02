@@ -55,21 +55,8 @@ async function parseSfz(prefix: string, contents: string) {
       }
     } else {
       if (line.includes('$')) line = processVariables(line, variables);
-      const opcodeGroups: string[] = processOpcode(line);
-      let opcodeName: string = '';
-      let opcodeValue: any;
-      for (let j = 0; j < opcodeGroups.length; j++) {
-        opcodeValue = opcodeGroups[j];
-        if (j % 2 === 0) {
-          opcodeName = opcodeValue;
-        } else {
-          if (!isNaN(opcodeValue as any)) {
-            values[opcodeName] = Number(opcodeValue);
-          } else {
-            values[opcodeName] = opcodeValue;
-          }
-        }
-      }
+      const opcodeGroups: any = processOpcode(line);
+      values = Object.assign(values, opcodeGroups);
       if (DEBUG) console.log(opcodeGroups);
     }
     i = iEnd;
@@ -93,13 +80,18 @@ function processHeader(input: string) {
 }
 
 function processOpcode(input: string) {
-  const output: string[] = [];
+  const output: any = {};
   const labels: string[] = input.match(/\w+(?==)/g) || [];
   const values: string[] = input.split(/\w+(?==)/g) || [];
   values.forEach((val: string) => {
     if (!val.length) return;
-    const trimmed: string = val.trim().replace(/[='"]/g, '');
-    output.push(labels[output.length / 2], trimmed);
+    const opcodeName: string = labels[Object.keys(output).length];
+    const opcodeValue: string = val.trim().replace(/[='"]/g, '');
+    if (!isNaN(opcodeValue as any)) {
+      output[opcodeName] = Number(opcodeValue);
+    } else {
+      output[opcodeName] = opcodeValue;
+    }
   });
   return output;
 }
