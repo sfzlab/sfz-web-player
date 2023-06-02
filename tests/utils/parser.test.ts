@@ -22,6 +22,9 @@ test('processOpcode', async () => {
     'sample',
     'harmLA0.$EXT',
   ]);
+  expect(processOpcode('label_cc27="Release vol"')).toEqual(['label_cc27', 'Release vol']);
+  expect(processOpcode('label_cc27=Release vol')).toEqual(['label_cc27', 'Release vol']);
+  expect(processOpcode('apple=An Apple banana=\'A Banana\' carrot="A Carrot"')).toEqual(['apple', 'An Apple', 'banana', 'A Banana', 'carrot', 'A Carrot']);
 });
 
 test('processVariables', async () => {

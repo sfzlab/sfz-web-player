@@ -93,7 +93,15 @@ function processHeader(input: string) {
 }
 
 function processOpcode(input: string) {
-  return input.split(/[= ]+/g) || [];
+  const output: string[] = [];
+  const labels: string[] = input.match(/\w+(?==)/g) || [];
+  const values: string[] = input.split(/\w+(?==)/g) || [];
+  values.forEach((val: string) => {
+    if (!val.length) return;
+    const trimmed: string = val.trim().replace(/[='"]/g, '');
+    output.push(labels[output.length / 2], trimmed);
+  });
+  return output;
 }
 
 function processVariables(input: string, vars: AudioSfzVariables) {
