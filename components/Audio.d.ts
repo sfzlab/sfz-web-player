@@ -7,7 +7,7 @@ declare class Audio extends Event {
     loader: FileLoader;
     private audio;
     private audioBuffer;
-    private samples;
+    private keys;
     constructor(options: AudioOptions);
     loadSample(path: string): Promise<FileRemote | undefined>;
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
