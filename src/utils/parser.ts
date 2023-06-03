@@ -1,6 +1,7 @@
 import { AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion, AudioSfzVariables } from '../types/audio';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from './fileLoader';
+import { pathJoin } from './utils';
 
 let loader: FileLoader;
 
@@ -65,9 +66,10 @@ async function parseSfz(prefix: string, contents: string) {
   return map;
 }
 
-async function loadParseSfz(prefix: string, path: string) {
-  const fileRef: FileLocal | FileRemote | undefined = loader.files[prefix + path];
-  const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || prefix + path);
+async function loadParseSfz(prefix: string, suffix: string) {
+  const pathJoined: string = pathJoin(prefix, suffix);
+  const fileRef: FileLocal | FileRemote | undefined = loader.files[pathJoined];
+  const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || pathJoined);
   return await parseSfz(prefix, file?.contents);
 }
 

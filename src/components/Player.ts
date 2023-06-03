@@ -133,14 +133,19 @@ class Player extends Component {
 
   async loadDirectory(root: string, files: string[] | FileWithDirectoryAndFileHandle[]) {
     let audioFile: string | FileWithDirectoryAndFileHandle | undefined;
+    let audioFileDepth: number = 1000;
     let interfaceFile: string | FileWithDirectoryAndFileHandle | undefined;
+    let interfaceFileDepth: number = 1000;
     for (const file of files) {
       const path: string = typeof file === 'string' ? file : file.webkitRelativePath;
-      if (!audioFile && pathExt(path) === 'sfz' && (pathDir(path) === root || pathDir(path) === root + 'Programs/')) {
+      const depth: number = path.match(/\//g)?.length || 0;
+      if (pathExt(path) === 'sfz' && depth < audioFileDepth) {
         audioFile = file;
+        audioFileDepth = depth;
       }
-      if (!interfaceFile && pathExt(path) === 'xml' && pathDir(path) === root) {
+      if (pathExt(path) === 'xml' && depth < interfaceFileDepth) {
         interfaceFile = file;
+        interfaceFileDepth = depth;
       }
     }
     console.log('audioFile', audioFile);
