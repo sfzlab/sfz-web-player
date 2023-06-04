@@ -4,7 +4,7 @@ import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
 import { flattenSfzObject, parseSfz, setParserLoader } from '../utils/parser';
-import { pathDir } from '../utils/utils';
+import { pathDir, pathJoin } from '../utils/utils';
 
 class Audio extends Event {
   loader: FileLoader;
@@ -53,7 +53,7 @@ class Audio extends Event {
     console.log('showFile', file);
     const prefix: string = pathDir(file.path);
     console.log('prefix', prefix);
-    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents);
+    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents, true);
     console.log('sfzObject', sfzObject);
     const sfzFlat: any = flattenSfzObject(sfzObject);
     console.log('sfzFlat', sfzFlat);
@@ -67,9 +67,9 @@ class Audio extends Event {
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
-        samplePath = samplePath.replace('../', '');
+        samplePath = samplePath.replace(/\\/g, '/');
         if (file?.path.startsWith('https') && !samplePath.startsWith('https')) {
-          samplePath = this.loader.root + defaultPath + samplePath;
+          samplePath = pathJoin(pathDir(file.path), defaultPath, samplePath);
         }
         this.keys[key][i].sample = samplePath;
       }

@@ -10,7 +10,7 @@ const skipCharacters: string[] = [' ', '\t', '\r', '\n'];
 const endCharacters: string[] = ['>', '\r', '\n'];
 const variables: any = {};
 
-async function parseSfz(prefix: string, contents: string) {
+async function parseSfz(prefix: string, contents: string, root = false) {
   let header: string = '';
   const map: any = {};
   let parent: any = map;
@@ -27,12 +27,14 @@ async function parseSfz(prefix: string, contents: string) {
       // Need to handle define header
       if (matches[0] === 'include') {
         const includeVal: any = await loadParseSfz(prefix, matches[1]);
-        const parentVal: any[] = parent[header];
-        parentVal[parentVal.length - 1] = {
-          ...parentVal[parentVal.length - 1],
-          ...includeVal,
-        };
-        if (DEBUG) console.log('val', parentVal[parentVal.length - 1]);
+        if (header) {
+          const parentVal: any[] = parent[header];
+          parentVal[parentVal.length - 1] = {
+            ...parentVal[parentVal.length - 1],
+            ...includeVal,
+          };
+        }
+        if (DEBUG) console.log('include', matches[1], includeVal);
       } else if (matches[0] === 'define') {
         variables[matches[1]] = matches[2];
         if (DEBUG) console.log('define', matches[1], variables[matches[1]]);
@@ -44,11 +46,12 @@ async function parseSfz(prefix: string, contents: string) {
         // TODO actually support master headers
         if (header === 'master') header = 'group';
         values = {};
-        if (map.global) {
+        if (root) {
+          if (!map.global) map.global = [{ group: [{ region: [] }] }];
           if (header === 'group') parent = map.global[map.global.length - 1];
-          else if (header === 'region')
+          else if (header === 'region') {
             parent = map.global[map.global.length - 1].group[map.global[map.global.length - 1].group.length - 1];
-          else parent = map;
+          } else parent = map;
         }
         if (!parent[header]) parent[header] = [];
         parent[header].push(values);

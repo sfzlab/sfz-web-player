@@ -26,7 +26,8 @@ function pathJoin(...segments: any) {
       continue;
     }
     if (part === '..') {
-      resultParts.pop();
+      const partRemoved: string = resultParts.pop();
+      if (partRemoved === '') resultParts.pop();
       continue;
     }
     resultParts.push(part);
