@@ -207,11 +207,16 @@ class Interface extends Component {
     return this.findElements({}, fileParsed.elements);
   }
 
-  reset() {
+  reset(title?: string) {
     const panels: HTMLCollectionOf<Element> = this.tabs.getElementsByClassName('panel');
     for (const panel of panels) {
       panel.replaceChildren();
     }
+    const info: Element = this.tabs.getElementsByClassName('panel')[0];
+    const span: HTMLSpanElement = document.createElement('span');
+    span.className = 'default-title';
+    span.innerHTML = title || 'sfz instrument';
+    info.appendChild(span);
   }
 
   async setupInfo() {
