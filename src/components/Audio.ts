@@ -5,6 +5,7 @@ import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
 import { flattenSfzObject, parseSfz, setParserLoader } from '../utils/parser';
 import { pathDir, pathJoin } from '../utils/utils';
+import { pathSubDir } from '../utils/utils';
 
 class Audio extends Event {
   loader: FileLoader;
@@ -70,6 +71,8 @@ class Audio extends Event {
         samplePath = samplePath.replace(/\\/g, '/');
         if (file?.path.startsWith('https') && !samplePath.startsWith('https')) {
           samplePath = pathJoin(pathDir(file.path), defaultPath, samplePath);
+        } else {
+          samplePath = pathJoin(pathSubDir(pathDir(file.path), this.loader.root), defaultPath, samplePath);
         }
         this.keys[key][i].sample = samplePath;
       }
