@@ -68,8 +68,9 @@ class Audio extends Event {
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
-        samplePath = samplePath.replace(/\\/g, '/');
-        if (file?.path.startsWith('https') && !samplePath.startsWith('https')) {
+        if (samplePath.startsWith('https')) continue;
+        if (samplePath.includes('\\')) samplePath = samplePath.replace(/\\/g, '/');
+        if (file?.path.startsWith('https')) {
           samplePath = pathJoin(pathDir(file.path), defaultPath, samplePath);
         } else {
           samplePath = pathJoin(pathSubDir(pathDir(file.path), this.loader.root), defaultPath, samplePath);
