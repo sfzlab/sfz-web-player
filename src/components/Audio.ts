@@ -68,6 +68,7 @@ class Audio extends Event {
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
+        if (!samplePath) continue;
         if (samplePath.startsWith('https')) continue;
         if (samplePath.includes('\\')) samplePath = samplePath.replace(/\\/g, '/');
         if (file?.path.startsWith('https')) {
@@ -85,7 +86,9 @@ class Audio extends Event {
     });
     this.dispatchEvent('preload', {});
     for (const key in this.keys) {
-      await this.loadSample(this.keys[key][0].sample);
+      const samplePath: string = this.keys[key][0].sample;
+      if (samplePath.includes('*')) continue;
+      await this.loadSample(samplePath);
     }
     this.dispatchEvent('loading', false);
   }
