@@ -2,6 +2,35 @@ function encodeHashes(item: string) {
   return item.replace(/#/g, encodeURIComponent('#'));
 }
 
+function midiNameToNum(name: string | number) {
+  if (!name) return 0;
+  if (typeof name === 'number') return name;
+  const mapPitches: any = {
+    C: 0,
+    D: 2,
+    E: 4,
+    F: 5,
+    G: 7,
+    A: 9,
+    B: 11,
+  };
+  const letter = name[0];
+  let pc = mapPitches[letter.toUpperCase()];
+
+  const mapMods: any = { b: -1, '#': 1 };
+  const mod = name[1];
+  const trans = mapMods[mod] || 0;
+
+  pc += trans;
+
+  const octave = parseInt(name.slice(name.length - 1), 10);
+  if (octave) {
+    return pc + 12 * (octave + 1);
+  } else {
+    return ((pc % 12) + 12) % 12;
+  }
+}
+
 function pathDir(item: string, separator: string = '/'): string {
   return item.substring(0, item.lastIndexOf(separator) + 1);
 }
@@ -43,4 +72,4 @@ function pathSubDir(item: string, dir: string): string {
   return item.replace(dir, '');
 }
 
-export { encodeHashes, pathDir, pathExt, pathJoin, pathRoot, pathSubDir };
+export { encodeHashes, midiNameToNum, pathDir, pathExt, pathJoin, pathRoot, pathSubDir };

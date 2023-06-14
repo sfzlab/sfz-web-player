@@ -1,7 +1,7 @@
 import { AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion, AudioSfzVariables } from '../types/audio';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from './fileLoader';
-import { pathJoin } from './utils';
+import { midiNameToNum, pathJoin } from './utils';
 
 let loader: FileLoader;
 
@@ -121,8 +121,8 @@ function flattenSfzObject(sfzObject: AudioSfz) {
       delete valuesGroup.region;
       group.region?.forEach((region: AudioSfzRegion) => {
         const valuesRegion: any = { ...valuesGroup, ...region };
-        const start: number = valuesRegion.lokey || valuesRegion.key;
-        const end: number = valuesRegion.hikey || valuesRegion.key;
+        const start: number = midiNameToNum(valuesRegion.lokey || valuesRegion.key);
+        const end: number = midiNameToNum(valuesRegion.hikey || valuesRegion.key);
         for (let i = start; i <= end; i++) {
           if (!keys[i]) keys[i] = [];
           keys[i].push(valuesRegion);
