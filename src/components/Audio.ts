@@ -7,6 +7,8 @@ import { flattenSfzObject, parseSfz, setParserLoader } from '../utils/parser';
 import { pathDir, pathJoin } from '../utils/utils';
 import { pathSubDir } from '../utils/utils';
 
+const PRELOAD: boolean = true;
+
 class Audio extends Event {
   loader: FileLoader;
   private audio: AudioContext | undefined;
@@ -85,10 +87,12 @@ class Audio extends Event {
       end: Number(keys[keys.length - 1]),
     });
     this.dispatchEvent('preload', {});
-    for (const key in this.keys) {
-      const samplePath: string = this.keys[key][0].sample;
-      if (samplePath.includes('*')) continue;
-      await this.loadSample(samplePath);
+    if (PRELOAD) {
+      for (const key in this.keys) {
+        const samplePath: string = this.keys[key][0].sample;
+        if (samplePath.includes('*')) continue;
+        await this.loadSample(samplePath);
+      }
     }
     this.dispatchEvent('loading', false);
   }
