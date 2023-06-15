@@ -1,0 +1,173 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/01%20-%20amp%20lfo%20freq.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_depth": 6,
+              "amplfo_freq": 1,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+              "volume": -10,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/02%20-%20amp%20lfo%20freq%20cc1%20and%20after.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_depth": 6,
+              "amplfo_freq": 2,
+              "amplfo_freqcc1": -2,
+              "amplfo_freqchanaft": 2,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+              "volume": -10,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/03%20-%20amp%20lfo%20depth.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_depth": 12,
+              "amplfo_freq": 3,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/04%20-%20amp%20lfo%20depth%20on%20cc.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_depthcc1": 10,
+              "amplfo_freq": 5,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+              "volume": -10,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/05%20-%20amp%20lfo%20depth%20on%20channel%20aftertouch.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_depthchanaft": 6,
+              "amplfo_freq": 5,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+              "volume": -10,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/06%20-%20amp%20lfo%20delay.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_delay": 0.5,
+              "amplfo_depth": 3,
+              "amplfo_freq": 5,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+              "volume": -10,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`parseSfz "https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/07%20-%20amp%20lfo%20fade.sfz" 1`] = `
+{
+  "global": [
+    {
+      "group": [
+        {
+          "region": [
+            {
+              "amplfo_delay": 0.5,
+              "amplfo_depth": 12,
+              "amplfo_fade": 1,
+              "amplfo_freq": 5,
+              "loopend": 56728,
+              "loopmode": "loop_continuous",
+              "loopstart": 12629,
+              "sample": "..\\..\\samples\\440.wav",
+              "volume": -12,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
