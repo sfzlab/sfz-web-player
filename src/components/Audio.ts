@@ -56,7 +56,7 @@ class Audio extends Event {
     console.log('showFile', file);
     const prefix: string = pathDir(file.path);
     console.log('prefix', prefix);
-    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents, true);
+    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents);
     console.log('sfzObject', sfzObject);
     const sfzFlat: any = flattenSfzObject(sfzObject);
     console.log('sfzFlat', sfzFlat);
