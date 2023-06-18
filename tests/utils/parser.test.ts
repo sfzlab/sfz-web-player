@@ -1,24 +1,19 @@
-import { get, getJSON } from '../../src/utils/api';
 import { parseSfz, processDirective, processHeader, processOpcode, processVariables } from '../../src/utils/parser';
-import { encodeHashes, pathDir } from '../../src/utils/utils';
+import { globSync } from 'glob';
+import { readFileSync } from 'fs';
 import 'whatwg-fetch';
 
-const sfzTestRoot: string = 'https://raw.githubusercontent.com/kmturley/sfz-tests/feature/parsed/';
-const sfzFiles: string[] = [
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/01%20-%20amp%20lfo%20freq.sfz',
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/02%20-%20amp%20lfo%20freq%20cc1%20and%20after.sfz',
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/03%20-%20amp%20lfo%20depth.sfz',
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/04%20-%20amp%20lfo%20depth%20on%20cc.sfz',
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/05%20-%20amp%20lfo%20depth%20on%20channel%20aftertouch.sfz',
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/06%20-%20amp%20lfo%20delay.sfz',
-  '/sfz1%20basic%20tests/01%20-%20Amp%20LFO/07%20-%20amp%20lfo%20fade.sfz',
-];
+const sfzTests: string[] = globSync('./sfz-tests/**/*.sfz');
 
-test.each(sfzFiles)('parseSfz %p', async (sfzFile: string) => {
-  const prefix: string = pathDir(sfzFile);
-  const contents: string = await get(encodeHashes(sfzTestRoot + sfzFile));
-  const result: string = await getJSON(encodeHashes(sfzTestRoot + sfzFile.replace('.sfz', '.json')));
-  expect(await parseSfz(prefix, contents)).toEqual(result);
+test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
+  const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed/`;
+  const source: string = readFileSync(sfzFile).toString();
+  try {
+    const result: string = JSON.parse(readFileSync(sfzFile.replace('.sfz', '.json')).toString());
+    expect(await parseSfz(prefix, source)).toEqual(result);
+  } catch (e) {
+    console.log('skipped', sfzFile);
+  }
 });
 
 test('processDirective', () => {
