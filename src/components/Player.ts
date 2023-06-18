@@ -16,7 +16,7 @@ import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
 import Audio from './Audio';
 import { EventData } from '../types/event';
-import { getJSON } from '../utils/api';
+import { getGithubFiles } from '../utils/api';
 
 class Player extends Component {
   private audio?: Audio;
@@ -124,10 +124,7 @@ class Player extends Component {
   }
 
   async loadRemoteInstrument(repo: string) {
-    const response: any = await getJSON(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
-    const paths: string[] = response.tree.map(
-      (file: any) => `https://raw.githubusercontent.com/${repo}/main/${file.path}`
-    );
+    const paths: string[] = await getGithubFiles(repo);
     await this.loadDirectory(`https://raw.githubusercontent.com/${repo}/main/`, paths);
   }
 
