@@ -33,21 +33,18 @@ async function parseSfz(prefix: string, contents: string) {
     } else if (char === '<') {
       const matches: string[] = processHeader(line);
       header = matches[0];
-      values = {};
-      if (!map[header]) map[header] = { opcode: [] };
+      values = { opcode: [] };
+      if (!map[header]) map[header] = [];
+      map[header].push(values);
     } else {
       if (line.includes('$')) line = processVariables(line, variables);
       const opcodeGroups: any = processOpcode(line);
-      if (header) {
-        map[header].opcode = map[header].opcode.concat(opcodeGroups);
-      } else {
-        values = values.concat(opcodeGroups);
-      }
-      if (DEBUG) console.log(opcodeGroups);
+      values.opcode = values.opcode.concat(opcodeGroups);
+      if (DEBUG) console.log(line, opcodeGroups);
     }
     i = iEnd;
   }
-  if (!header) return map[header].opcode;
+  if (!header) return null;
   return map;
 }
 
@@ -113,10 +110,12 @@ function flattenSfzObject(sfzObject: AudioSfz) {
 }
 
 function findEnd(contents: string, startAt: number) {
+  const isComment: boolean = contents.charAt(startAt) === '/' && contents.charAt(startAt + 1) === '/';
   for (let index: number = startAt; index < contents.length; index++) {
     const char: string = contents.charAt(index);
+    if (isComment && char === '>') continue;
     if (endCharacters.includes(char)) return index;
-    if (char === '/' && contents.charAt(index + 1) === '/') return index;
+    if (index > startAt + 1 && char === '/' && contents.charAt(index + 1) === '/') return index;
   }
   return contents.length;
 }
@@ -126,6 +125,7 @@ function setParserLoader(fileLoader: FileLoader) {
 }
 
 export {
+  findEnd,
   flattenSfzObject,
   parseSfz,
   processDirective,
