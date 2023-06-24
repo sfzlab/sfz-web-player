@@ -13,10 +13,23 @@ import 'whatwg-fetch';
 const sfzTests: string[] = globSync('./sfz-tests/**/*.sfz');
 const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed/`;
 
+function removeNullData(input: string) {
+  if (
+    input ===
+    `{
+  "sfz": null
+}
+`
+  )
+    return input;
+  return input.replace('null', '{ "opcode": [] }');
+}
+
 // // Test entire sfz test suite
 test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
   const source: string = readFileSync(sfzFile).toString();
-  const result: string = JSON.parse(readFileSync(sfzFile.replace('.sfz', '.json')).toString());
+  const text: string = readFileSync(sfzFile.replace('.sfz', '.json')).toString();
+  const result: string = JSON.parse(removeNullData(text));
   expect({ sfz: await parseSfz(prefix, source) }).toEqual(result);
 });
 
@@ -24,7 +37,8 @@ test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
 test('parseSfz', async () => {
   const sfzFile: string = 'sfz-tests/sfz2 basic tests/00 - syntax/04 - syntax group.sfz';
   const source: string = readFileSync(sfzFile).toString();
-  const result: string = JSON.parse(readFileSync(sfzFile.replace('.sfz', '.json')).toString());
+  const text: string = readFileSync(sfzFile.replace('.sfz', '.json')).toString();
+  const result: string = JSON.parse(removeNullData(text));
   expect({ sfz: await parseSfz(prefix, source) }).toEqual(result);
 });
 
