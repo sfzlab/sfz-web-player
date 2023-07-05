@@ -1,4 +1,4 @@
-import { AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion, AudioSfzVariables } from '../types/audio';
+import { AudioSfz, AudioSfzOpcode, AudioSfzOpcodeObj, AudioSfzOpcodes, AudioSfzVariables } from '../types/audio';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from './fileLoader';
 import { midiNameToNum, pathJoin } from './utils';
@@ -13,7 +13,7 @@ const variables: any = {};
 async function parseSfz(prefix: string, contents: string) {
   let header: string = '';
   const map: any = {};
-  let values: any = [];
+  let values: any = {};
   for (let i: number = 0; i < contents.length; i++) {
     const char: string = contents.charAt(i);
     if (skipCharacters.includes(char)) continue; // skip character
@@ -25,7 +25,8 @@ async function parseSfz(prefix: string, contents: string) {
       const matches: string[] = processDirective(line);
       if (matches[0] === 'include') {
         const includeVal: any = await loadParseSfz(prefix, matches[1]);
-        if (DEBUG) console.log('include', matches[1], includeVal);
+        values = Object.assign(values, includeVal);
+        if (DEBUG) console.log('include', matches[1], JSON.stringify(includeVal));
       } else if (matches[0] === 'define') {
         variables[matches[1]] = matches[2];
         if (DEBUG) console.log('define', matches[1], variables[matches[1]]);
@@ -33,18 +34,20 @@ async function parseSfz(prefix: string, contents: string) {
     } else if (char === '<') {
       const matches: string[] = processHeader(line);
       header = matches[0];
-      values = { opcode: [] };
+      values = {};
       if (!map[header]) map[header] = [];
       map[header].push(values);
+      if (DEBUG) console.log(`<${header}>`);
     } else {
       if (line.includes('$')) line = processVariables(line, variables);
       const opcodeGroups: any = processOpcode(line);
+      if (!values.opcode) values.opcode = [];
       values.opcode = values.opcode.concat(opcodeGroups);
-      if (DEBUG) console.log(line, opcodeGroups);
+      if (DEBUG) console.log(line, values.opcode);
     }
     i = iEnd;
   }
-  if (!header) return null;
+  if (!header) return values;
   return map;
 }
 
@@ -64,15 +67,32 @@ function processHeader(input: string) {
 }
 
 function processOpcode(input: string) {
-  const output: any = [];
+  const output: AudioSfzOpcode[] = [];
   const labels: string[] = input.match(/\w+(?==)/g) || [];
   const values: string[] = input.split(/\w+(?==)/g) || [];
   values.forEach((val: string) => {
     if (!val.length) return;
     output.push({
-      '@name': labels[output.length],
-      '@value': val.trim().replace(/[='"]/g, ''),
+      name: labels[output.length],
+      value: val.trim().replace(/[='"]/g, ''),
     });
+  });
+  return output;
+}
+
+function processOpcodeObject(input: string) {
+  const output: AudioSfzOpcodeObj = {};
+  const labels: string[] = input.match(/\w+(?==)/g) || [];
+  const values: string[] = input.split(/\w+(?==)/g) || [];
+  values.forEach((val: string) => {
+    if (!val.length) return;
+    const opcodeName: string = labels[Object.keys(output).length];
+    const opcodeValue: string = val.trim().replace(/[='"]/g, '');
+    if (!isNaN(opcodeValue as any)) {
+      output[opcodeName] = Number(opcodeValue);
+    } else {
+      output[opcodeName] = opcodeValue;
+    }
   });
   return output;
 }
@@ -88,24 +108,33 @@ function processVariables(input: string, vars: AudioSfzVariables) {
 }
 
 function flattenSfzObject(sfzObject: AudioSfz) {
+  console.log(1, sfzObject);
   const keys: any = {};
-  sfzObject.global?.forEach((global: AudioSfzGlobal) => {
-    const valuesGlobal: any = { ...global };
-    delete valuesGlobal.group;
-    global.group?.forEach((group: AudioSfzGroup) => {
-      const valuesGroup: any = { ...valuesGlobal, ...group };
-      delete valuesGroup.region;
-      group.region?.forEach((region: AudioSfzRegion) => {
-        const valuesRegion: any = { ...valuesGroup, ...region };
-        const start: number = midiNameToNum(valuesRegion.lokey || valuesRegion.key);
-        const end: number = midiNameToNum(valuesRegion.hikey || valuesRegion.key);
-        for (let i = start; i <= end; i++) {
-          if (!keys[i]) keys[i] = [];
-          keys[i].push(valuesRegion);
-        }
-      });
-    });
-  });
+  // sfzObject.global?.forEach((global: AudioSfzGlobal) => {
+  //   const valuesGlobal: any = { ...global };
+  //   delete valuesGlobal.group;
+  //   global.group?.forEach((group: AudioSfzGroup) => {
+  //     const valuesGroup: any = { ...valuesGlobal, ...group };
+  //     delete valuesGroup.region;
+  //     group.region?.forEach((region: AudioSfzRegion) => {
+  //       const valuesRegion: any = { ...valuesGroup, ...region };
+  //       const start: number = midiNameToNum(valuesRegion.lokey || valuesRegion.key);
+  //       const end: number = midiNameToNum(valuesRegion.hikey || valuesRegion.key);
+  //       for (let i = start; i <= end; i++) {
+  //         if (!keys[i]) keys[i] = [];
+  //         keys[i].push(valuesRegion);
+  //       }
+  //     });
+  //   });
+  // });
+  // sfzObject.master.forEach((region: AudioSfzOpcodes) => {
+  //   const start: number = midiNameToNum(region.lokey || region.key);
+  //   const end: number = midiNameToNum(region.hikey || region.key);
+  //   for (let i = start; i <= end; i++) {
+  //     if (!keys[i]) keys[i] = [];
+  //     keys[i].push(region);
+  //   }
+  // });
   return keys;
 }
 
@@ -131,6 +160,7 @@ export {
   processDirective,
   processHeader,
   processOpcode,
+  processOpcodeObject,
   processVariables,
   setParserLoader,
 };

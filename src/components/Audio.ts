@@ -63,10 +63,10 @@ class Audio extends Event {
     this.keys = sfzFlat;
 
     // if file contains default path
-    let defaultPath: string = '';
-    if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
-      defaultPath = sfzObject.control[0].default_path;
-    }
+    const defaultPath: string = '';
+    // if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
+    //   defaultPath = sfzObject.control[0].default_path;
+    // }
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
