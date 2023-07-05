@@ -9,10 +9,11 @@ import {
   setParserLoader,
 } from '../../src/utils/parser';
 import { globSync } from 'glob';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import 'whatwg-fetch';
 import FileLoader from '../../src/utils/fileLoader';
 import { FileLocal } from '../../src/types/files';
+import { get } from '../../src/utils/api';
 
 const sfzTests: string[] = globSync('./sfz-tests/**/*.sfz');
 const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed/`;
@@ -39,6 +40,28 @@ function removeAtSymbols(input: string) {
   input = input.replace(/@name/g, 'name');
   return input.replace(/@value/g, 'value');
 }
+
+// Test individual file with complex includes structure
+test('parseSfz 01-green_keyswitch.sfz', async () => {
+  const directory: string =
+    'https://raw.githubusercontent.com/kmturley/karoryfer.black-and-green-guitars/main/Programs/';
+  const fileSfz: string = await get(`${directory}01-green_keyswitch.sfz`);
+  const fileJson: string = await get(`${directory}01-green_keyswitch.json`);
+  const input: any = JSON.parse(removeNullData(removeAtSymbols(fileJson)));
+  const output: any = { sfz: await parseSfz(directory, fileSfz) };
+
+  // For debugging json outputs
+  const property: string = 'global';
+  writeFileSync('input.json', JSON.stringify(input.sfz[property], null, 2));
+  writeFileSync('output.json', JSON.stringify(output.sfz[property], null, 2));
+
+  expect(output.sfz.control).toEqual(input.sfz.control);
+  expect(output.sfz.global).toEqual(input.sfz.global);
+  expect(output.sfz.master).toEqual(input.sfz.master);
+  expect(output.sfz.region).toEqual(input.sfz.region);
+  expect(output.sfz.group).toEqual(input.sfz.group);
+  expect(output.sfz.curve).toEqual(input.sfz.curve);
+});
 
 // Test individual file with includes
 test('parseSfz root_local.sfz', async () => {

@@ -25,8 +25,12 @@ async function parseSfz(prefix: string, contents: string) {
       const matches: string[] = processDirective(line);
       if (matches[0] === 'include') {
         const includeVal: any = await loadParseSfz(prefix, matches[1]);
-        values = Object.assign(values, includeVal);
-        if (DEBUG) console.log('include', matches[1], JSON.stringify(includeVal));
+        if (header) {
+          map[header].push(includeVal);
+        } else {
+          values = Object.assign(values, includeVal);
+        }
+        if (DEBUG) console.log('include', header, matches[1], JSON.stringify(includeVal));
       } else if (matches[0] === 'define') {
         variables[matches[1]] = matches[2];
         if (DEBUG) console.log('define', matches[1], variables[matches[1]]);
@@ -107,7 +111,7 @@ function processVariables(input: string, vars: AudioSfzVariables) {
   });
 }
 
-function flattenSfzObject(sfzObject: AudioSfz) {
+function flattenSfzObject(sfzObject: AudioSfzOpcodes[]) {
   console.log(1, sfzObject);
   const keys: any = {};
   // sfzObject.global?.forEach((global: AudioSfzGlobal) => {

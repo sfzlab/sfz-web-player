@@ -21,7 +21,7 @@ interface AudioSample {
   lokey: number;
   key: number;
   pitch_keycenter: number;
-  region: AudioSfzRegion[];
+  region: AudioRegion[];
   sample: string;
   seq_position: number;
   seq_length: number;
@@ -38,6 +38,7 @@ interface AudioSfz {
 
 interface AudioSfzOpcodes {
   opcode: AudioSfzOpcode[];
+  region: AudioSfzRegion[];
 }
 
 interface AudioSfzOpcode {
@@ -45,11 +46,15 @@ interface AudioSfzOpcode {
   value: string;
 }
 
+interface AudioSfzRegion {
+  opcode: AudioSfzOpcode[];
+}
+
 interface AudioSfzOpcodeObj {
   [name: string]: string | number;
 }
 
-interface AudioSfzRegion {
+interface AudioRegion {
   sample: string;
   seq_position: number;
 }
