@@ -1,0 +1,42 @@
+{
+  "sfz": {
+    "region": [
+      {
+        "opcode": [
+          {
+            "@name": "sample",
+            "@value": "piano.wav"
+          },
+          {
+            "@name": "pitch_keycenter",
+            "@value": "60"
+          },
+          {
+            "@name": "lokey",
+            "@value": "58"
+          },
+          {
+            "@name": "hikey",
+            "@value": "62"
+          },
+          {
+            "@name": "lovel",
+            "@value": "1"
+          },
+          {
+            "@name": "hivel",
+            "@value": "20"
+          },
+          {
+            "@name": "locc64",
+            "@value": "64"
+          },
+          {
+            "@name": "hicc64",
+            "@value": "127"
+          }
+        ]
+      }
+    ]
+  }
+}

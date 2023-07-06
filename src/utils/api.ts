@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import { xml2js } from 'xml-js';
 
 async function get(url: string): Promise<string> {

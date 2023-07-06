@@ -10,11 +10,11 @@ import {
 } from '../../src/utils/parser';
 import { globSync } from 'glob';
 import { readFileSync, writeFileSync } from 'fs';
-import 'whatwg-fetch';
 import FileLoader from '../../src/utils/fileLoader';
 import { FileLocal } from '../../src/types/files';
 import { get } from '../../src/utils/api';
 
+const directory: string = 'tests/syntax/';
 const sfzTests: string[] = globSync('./sfz-tests/**/*.sfz');
 const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed/`;
 let loader: FileLoader;
@@ -22,6 +22,7 @@ let loader: FileLoader;
 beforeAll(() => {
   loader = new FileLoader();
   setParserLoader(loader);
+  loader.setRoot(directory);
 });
 
 function removeNullData(input: string) {
@@ -41,19 +42,42 @@ function removeAtSymbols(input: string) {
   return input.replace(/@value/g, 'value');
 }
 
-// Test individual file with complex includes structure
+test('parseSfz 01-basic.sfz', async () => {
+  const filenames: string[] = ['01-basic.sfz', '01-basic.json'];
+  filenames.forEach((filename: string) => {
+    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
+  });
+  const fileSfz: FileLocal = (await loader.getFile('01-basic.sfz')) as FileLocal;
+  const fileJson: FileLocal = (await loader.getFile('01-basic.json')) as FileLocal;
+  const input: any = JSON.parse(removeNullData(removeAtSymbols(fileJson.contents)));
+  const output: any = { sfz: await parseSfz(directory, fileSfz.contents) };
+  expect(output).toEqual(input);
+});
+
+test('parseSfz 02-include.sfz', async () => {
+  const filenames: string[] = ['02-include.sfz', '02-include.json', 'modules/env.sfz', 'modules/region.sfz'];
+  filenames.forEach((filename: string) => {
+    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
+  });
+  const fileSfz: FileLocal = (await loader.getFile('02-include.sfz')) as FileLocal;
+  const fileJson: FileLocal = (await loader.getFile('02-include.json')) as FileLocal;
+  const input: any = JSON.parse(removeNullData(removeAtSymbols(fileJson.contents)));
+  const output: any = { sfz: await parseSfz(directory, fileSfz.contents) };
+  expect(output).toEqual(input);
+});
+
+// Test complex hand-coded instrument
 test('parseSfz 01-green_keyswitch.sfz', async () => {
-  const directory: string =
-    'https://raw.githubusercontent.com/kmturley/karoryfer.black-and-green-guitars/main/Programs/';
-  const fileSfz: string = await get(`${directory}01-green_keyswitch.sfz`);
-  const fileJson: string = await get(`${directory}01-green_keyswitch.json`);
+  const path: string = 'https://raw.githubusercontent.com/kmturley/karoryfer.black-and-green-guitars/main/Programs/';
+  const fileSfz: string = await get(`${path}01-green_keyswitch.sfz`);
+  const fileJson: string = await get(`${path}01-green_keyswitch.json`);
   const input: any = JSON.parse(removeNullData(removeAtSymbols(fileJson)));
-  const output: any = { sfz: await parseSfz(directory, fileSfz) };
+  const output: any = { sfz: await parseSfz(path, fileSfz) };
 
   // For debugging json outputs
-  const property: string = 'global';
-  writeFileSync('input.json', JSON.stringify(input.sfz[property], null, 2));
-  writeFileSync('output.json', JSON.stringify(output.sfz[property], null, 2));
+  // const property: string = 'region';
+  // writeFileSync('input.json', JSON.stringify(input.sfz[property], null, 2));
+  // writeFileSync('output.json', JSON.stringify(output.sfz[property], null, 2));
 
   expect(output.sfz.control).toEqual(input.sfz.control);
   expect(output.sfz.global).toEqual(input.sfz.global);
@@ -61,20 +85,6 @@ test('parseSfz 01-green_keyswitch.sfz', async () => {
   expect(output.sfz.region).toEqual(input.sfz.region);
   expect(output.sfz.group).toEqual(input.sfz.group);
   expect(output.sfz.curve).toEqual(input.sfz.curve);
-});
-
-// Test individual file with includes
-test('parseSfz root_local.sfz', async () => {
-  const directory: string = 'tests/other/';
-  loader.setRoot(directory);
-  const filenames: string[] = ['root_local.sfz', 'root_local.json', 'included.sfz'];
-  filenames.forEach((filename: string) => {
-    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
-  });
-  const fileSfz: FileLocal = (await loader.getFile('root_local.sfz')) as FileLocal;
-  const fileJson: FileLocal = (await loader.getFile('root_local.json')) as FileLocal;
-  const result: string = JSON.parse(removeNullData(removeAtSymbols(fileJson.contents)));
-  expect({ sfz: await parseSfz(directory, fileSfz.contents) }).toEqual(result);
 });
 
 // Test entire sfz test suite
@@ -119,6 +129,8 @@ test('processOpcode', () => {
     { name: 'lokey', value: 'c5' },
     { name: 'hikey', value: 'c#5' },
   ]);
+  expect(processOpcode('ampeg_hold=0.3')).toEqual([{ name: 'ampeg_hold', value: '0.3' }]);
+  expect(processOpcode('ampeg_decay_oncc70=-1.2')).toEqual([{ name: 'ampeg_decay_oncc70', value: '-1.2' }]);
 });
 
 test('processOpcodeObject', () => {

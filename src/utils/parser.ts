@@ -12,7 +12,7 @@ const variables: any = {};
 
 async function parseSfz(prefix: string, contents: string) {
   let header: string = '';
-  const map: any = {};
+  let map: any = {};
   let values: any = {};
   for (let i: number = 0; i < contents.length; i++) {
     const char: string = contents.charAt(i);
@@ -25,10 +25,17 @@ async function parseSfz(prefix: string, contents: string) {
       const matches: string[] = processDirective(line);
       if (matches[0] === 'include') {
         const includeVal: any = await loadParseSfz(prefix, matches[1]);
-        if (header) {
-          map[header].push(includeVal);
-        } else {
-          values = Object.assign(values, includeVal);
+        const includeHeader: string | undefined = containsHeader(includeVal);
+        if (Array.isArray(includeVal)) {
+          const parent: any = map[header][map[header].length - 1];
+          if (!parent.opcode) parent.opcode = [];
+          parent.opcode = parent.opcode.concat(includeVal);
+        } else if (includeHeader) {
+          if (map[includeHeader]) {
+            map[includeHeader] = map[includeHeader].concat(includeVal[includeHeader]);
+          } else {
+            map = Object.assign(map, includeVal);
+          }
         }
         if (DEBUG) console.log('include', header, matches[1], JSON.stringify(includeVal));
       } else if (matches[0] === 'define') {
@@ -45,14 +52,33 @@ async function parseSfz(prefix: string, contents: string) {
     } else {
       if (line.includes('$')) line = processVariables(line, variables);
       const opcodeGroups: any = processOpcode(line);
-      if (!values.opcode) values.opcode = [];
-      values.opcode = values.opcode.concat(opcodeGroups);
-      if (DEBUG) console.log(line, values.opcode);
+      if (header) {
+        if (!values.opcode) values.opcode = [];
+        values.opcode = values.opcode.concat(opcodeGroups);
+      } else {
+        if (!Array.isArray(values)) values = [];
+        values = values.concat(opcodeGroups);
+      }
+      if (DEBUG) console.log(line, opcodeGroups);
+      if (DEBUG) console.log(values);
     }
     i = iEnd;
   }
   if (!header) return values;
   return map;
+}
+
+function containsHeader(data: any) {
+  if (data.region) return 'region';
+  if (data.group) return 'group';
+  if (data.control) return 'control';
+  if (data.global) return 'global';
+  if (data.curve) return 'curve';
+  if (data.effect) return 'effect';
+  if (data.master) return 'master';
+  if (data.midi) return 'midi';
+  if (data.sample) return 'sample';
+  return undefined;
 }
 
 async function loadParseSfz(prefix: string, suffix: string) {
