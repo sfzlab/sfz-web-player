@@ -138,34 +138,29 @@ function processVariables(input: string, vars: AudioSfzVariables) {
 }
 
 function flattenSfzObject(sfzObject: AudioSfzOpcodes[]) {
-  console.log(1, sfzObject);
   const keys: any = {};
-  // sfzObject.global?.forEach((global: AudioSfzGlobal) => {
-  //   const valuesGlobal: any = { ...global };
-  //   delete valuesGlobal.group;
-  //   global.group?.forEach((group: AudioSfzGroup) => {
-  //     const valuesGroup: any = { ...valuesGlobal, ...group };
-  //     delete valuesGroup.region;
-  //     group.region?.forEach((region: AudioSfzRegion) => {
-  //       const valuesRegion: any = { ...valuesGroup, ...region };
-  //       const start: number = midiNameToNum(valuesRegion.lokey || valuesRegion.key);
-  //       const end: number = midiNameToNum(valuesRegion.hikey || valuesRegion.key);
-  //       for (let i = start; i <= end; i++) {
-  //         if (!keys[i]) keys[i] = [];
-  //         keys[i].push(valuesRegion);
-  //       }
-  //     });
-  //   });
-  // });
-  // sfzObject.master.forEach((region: AudioSfzOpcodes) => {
-  //   const start: number = midiNameToNum(region.lokey || region.key);
-  //   const end: number = midiNameToNum(region.hikey || region.key);
-  //   for (let i = start; i <= end; i++) {
-  //     if (!keys[i]) keys[i] = [];
-  //     keys[i].push(region);
-  //   }
-  // });
+  sfzObject.forEach((opcodes: AudioSfzOpcodes) => {
+    const opcodeObj: any = opcodesToObject(opcodes);
+    const start: number = midiNameToNum(opcodeObj.lokey || opcodeObj.key);
+    const end: number = midiNameToNum(opcodeObj.hikey || opcodeObj.key);
+    for (let i = start; i <= end; i++) {
+      if (!keys[i]) keys[i] = [];
+      keys[i].push(opcodeObj);
+    }
+  });
   return keys;
+}
+
+function opcodesToObject(opcodes: AudioSfzOpcodes) {
+  const properties: any = {};
+  opcodes.opcode.forEach((opcode: AudioSfzOpcode) => {
+    if (!isNaN(opcode.value as any)) {
+      properties[opcode.name] = Number(opcode.value);
+    } else {
+      properties[opcode.name] = opcode.value;
+    }
+  });
+  return properties;
 }
 
 function findEnd(contents: string, startAt: number) {

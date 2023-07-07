@@ -34,20 +34,16 @@ interface AudioSfz {
   global: AudioSfzOpcodes[];
   group: AudioSfzOpcodes[];
   master: AudioSfzOpcodes[];
+  region: AudioSfzOpcodes[];
 }
 
 interface AudioSfzOpcodes {
   opcode: AudioSfzOpcode[];
-  region: AudioSfzRegion[];
 }
 
 interface AudioSfzOpcode {
   name: string;
   value: string;
-}
-
-interface AudioSfzRegion {
-  opcode: AudioSfzOpcode[];
 }
 
 interface AudioSfzOpcodeObj {
