@@ -10,7 +10,7 @@ const skipCharacters: string[] = [' ', '\t', '\r', '\n'];
 const endCharacters: string[] = ['>', '\r', '\n'];
 const variables: any = {};
 
-async function parseSfz(prefix: string, contents: string) {
+async function parseSfz(prefix: string, contents: string, nested = false) {
   let header: string = '';
   let map: any = {};
   let values: any = {};
@@ -24,15 +24,20 @@ async function parseSfz(prefix: string, contents: string) {
     } else if (char === '#') {
       const matches: string[] = processDirective(line);
       if (matches[0] === 'include') {
-        const includeVal: any = await loadParseSfz(prefix, matches[1]);
+        const includeVal: any = await loadParseSfz(prefix, matches[1], nested);
         const includeHeader: string | undefined = containsHeader(includeVal);
+        const parent: any = map[header][map[header].length - 1];
         if (Array.isArray(includeVal)) {
-          const parent: any = map[header][map[header].length - 1];
           if (!parent.opcode) parent.opcode = [];
           parent.opcode = parent.opcode.concat(includeVal);
         } else if (includeHeader) {
           if (map[includeHeader]) {
-            map[includeHeader] = map[includeHeader].concat(includeVal[includeHeader]);
+            if (nested === true) {
+              if (!parent[includeHeader]) parent[includeHeader] = [];
+              parent[includeHeader] = parent[includeHeader].concat(includeVal[includeHeader]);
+            } else {
+              map[includeHeader] = map[includeHeader].concat(includeVal[includeHeader]);
+            }
           } else {
             map = Object.assign(map, includeVal);
           }
@@ -81,11 +86,11 @@ function containsHeader(data: any) {
   return undefined;
 }
 
-async function loadParseSfz(prefix: string, suffix: string) {
+async function loadParseSfz(prefix: string, suffix: string, nested = false) {
   const pathJoined: string = pathJoin(prefix, suffix);
   const fileRef: FileLocal | FileRemote | undefined = loader.files[pathJoined];
   const file: FileLocal | FileRemote | undefined = await loader.getFile(fileRef || pathJoined);
-  return await parseSfz(prefix, file?.contents);
+  return await parseSfz(prefix, file?.contents, nested);
 }
 
 function processDirective(input: string) {
@@ -137,23 +142,26 @@ function processVariables(input: string, vars: AudioSfzVariables) {
   });
 }
 
-function flattenSfzObject(sfzObject: AudioSfzOpcodes[]) {
+function flattenSfzObject(sfzObject: AudioSfzOpcodes, groupIndex = 0) {
   const keys: any = {};
-  sfzObject.forEach((opcodes: AudioSfzOpcodes) => {
-    const opcodeObj: any = opcodesToObject(opcodes);
-    const start: number = midiNameToNum(opcodeObj.lokey || opcodeObj.key);
-    const end: number = midiNameToNum(opcodeObj.hikey || opcodeObj.key);
+  const groupObj: any = opcodesToObject(sfzObject.opcode);
+  sfzObject.region?.forEach((region: AudioSfzOpcodes) => {
+    const regionObj: any = opcodesToObject(region.opcode);
+    const mergedObj: any = { ...groupObj, ...regionObj };
+    const start: number = midiNameToNum(regionObj.lokey || regionObj.key);
+    const end: number = midiNameToNum(regionObj.hikey || regionObj.key);
+    if (start === 0 && end === 0) return;
     for (let i = start; i <= end; i++) {
       if (!keys[i]) keys[i] = [];
-      keys[i].push(opcodeObj);
+      keys[i].push(mergedObj);
     }
   });
   return keys;
 }
 
-function opcodesToObject(opcodes: AudioSfzOpcodes) {
+function opcodesToObject(opcodes: AudioSfzOpcode[]) {
   const properties: any = {};
-  opcodes.opcode.forEach((opcode: AudioSfzOpcode) => {
+  opcodes.forEach((opcode: AudioSfzOpcode) => {
     if (!isNaN(opcode.value as any)) {
       properties[opcode.name] = Number(opcode.value);
     } else {

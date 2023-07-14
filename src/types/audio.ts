@@ -39,6 +39,7 @@ interface AudioSfz {
 
 interface AudioSfzOpcodes {
   opcode: AudioSfzOpcode[];
+  region?: AudioSfzOpcodes[];
 }
 
 interface AudioSfzOpcode {
