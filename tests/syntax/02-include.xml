@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<master>
+	<opcode name="sw_last" value="36" />
+	<opcode name="sw_label" value="Twang" />
+	<opcode name="hicc118" value="63" />
+	<opcode name="ampeg_hold" value="0.3" />
+	<opcode name="ampeg_hold_oncc70" value="-0.3" />
+	<opcode name="ampeg_hold_curvecc70" value="8" />
+	<opcode name="ampeg_decay" value="1.5" />
+	<opcode name="ampeg_decay_oncc70" value="-1.2" />
+	<opcode name="ampeg_decay_curvecc70" value="8" />
+	<opcode name="ampeg_sustain" value="100" />
+	<opcode name="ampeg_sustain_oncc70" value="-100" />
+	<opcode name="ampeg_sustain_curvecc70" value="7" />
+</master>
+<region>
+	<opcode name="sample" value="dummy.wav" />
+</region>
