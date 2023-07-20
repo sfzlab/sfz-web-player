@@ -1,23 +1,85 @@
+import {
+  findEnd,
+  parseSfz,
+  processDirective,
+  processHeader,
+  processOpcode,
+  processOpcodeObject,
+  processVariables,
+  setParserLoader,
+} from '../../src/utils/parser';
+import { globSync } from 'glob';
+import { readFileSync } from 'fs';
+import FileLoader from '../../src/utils/fileLoader';
+import { FileLocal } from '../../src/types/files';
 import { get } from '../../src/utils/api';
-import { parseSfz, processDirective, processHeader, processOpcode, processVariables } from '../../src/utils/parser';
-import { encodeHashes, pathDir } from '../../src/utils/utils';
-import 'whatwg-fetch';
+import { js2xml } from 'xml-js';
 
-const sfzFiles: string[] = [
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/01%20-%20amp%20lfo%20freq.sfz',
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/02%20-%20amp%20lfo%20freq%20cc1%20and%20after.sfz',
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/03%20-%20amp%20lfo%20depth.sfz',
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/04%20-%20amp%20lfo%20depth%20on%20cc.sfz',
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/05%20-%20amp%20lfo%20depth%20on%20channel%20aftertouch.sfz',
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/06%20-%20amp%20lfo%20delay.sfz',
-  'https://raw.githubusercontent.com/sfz/tests/master/sfz1%20basic%20tests/01%20-%20Amp%20LFO/07%20-%20amp%20lfo%20fade.sfz',
-];
+const directory: string = 'tests/syntax/';
+const sfzTests: string[] = globSync('./sfz-tests/**/*.sfz');
+const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed/`;
+let loader: FileLoader;
 
-test.each(sfzFiles)('parseSfz %p', async (sfzFile: string) => {
-  const prefix: string = pathDir(sfzFile);
-  const contents: string = await get(encodeHashes(sfzFile));
-  expect(await parseSfz(prefix, contents, true)).toMatchSnapshot();
+beforeAll(() => {
+  loader = new FileLoader();
+  setParserLoader(loader);
+  loader.setRoot(directory);
 });
+
+function convertToXml(elements: any) {
+  const xml: string = js2xml(
+    {
+      declaration: {
+        attributes: {
+          version: '1.0',
+        },
+      },
+      elements,
+    },
+    { spaces: '\t' }
+  );
+  // TODO do better
+  return xml.replace(/"\/>/g, '" />') + '\n';
+}
+
+test('parseSfz 01-basic.sfz', async () => {
+  const filenames: string[] = ['01-basic.sfz', '01-basic.xml'];
+  filenames.forEach((filename: string) => {
+    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
+  });
+  const fileSfz: FileLocal = (await loader.getFile('01-basic.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('01-basic.xml')) as FileLocal;
+  const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
+  expect(output).toEqual(fileXml.contents);
+});
+
+test('parseSfz 02-include.sfz', async () => {
+  const filenames: string[] = ['02-include.sfz', '02-include.xml', 'modules/env.sfz', 'modules/region.sfz'];
+  filenames.forEach((filename: string) => {
+    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
+  });
+  const fileSfz: FileLocal = (await loader.getFile('02-include.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('02-include.xml')) as FileLocal;
+  const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
+  expect(output).toEqual(fileXml.contents);
+});
+
+// Test complex hand-coded instrument
+// test('parseSfz 01-green_keyswitch.sfz', async () => {
+//   const path: string = 'https://raw.githubusercontent.com/kmturley/karoryfer.black-and-green-guitars/main/Programs/';
+//   const fileSfz: string = await get(`${path}01-green_keyswitch.sfz`);
+//   const fileXml: string = await get(`${path}01-green_keyswitch.xml`);
+//   const output: any = convertToXml(await parseSfz(path, fileSfz));
+//   expect(output).toEqual(fileXml);
+// });
+
+// Test entire sfz test suite
+// test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
+//   const source: string = readFileSync(sfzFile).toString();
+//   const text: string = readFileSync(sfzFile.replace('.sfz', '.xml')).toString();
+//   const result: string = JSON.parse(removeNullData(removeAtSymbols(text)));
+//   expect({ sfz: await parseSfz(prefix, source) }).toEqual(result);
+// });
 
 test('processDirective', () => {
   expect(processDirective('#include "green/stac_tp.sfz"')).toEqual(['include', 'green/stac_tp.sfz']);
@@ -33,21 +95,59 @@ test('processHeader', () => {
 });
 
 test('processOpcode', () => {
-  expect(processOpcode('seq_position=3')).toEqual({ seq_position: 3 });
-  expect(processOpcode('seq_position=3 pitch_keycenter=50')).toEqual({ seq_position: 3, pitch_keycenter: 50 });
-  expect(processOpcode('region_label=01 sample=harmLA0.$EXT')).toEqual({
+  expect(processOpcode('seq_position=3')).toEqual([{ name: 'seq_position', value: '3' }]);
+  expect(processOpcode('seq_position=3 pitch_keycenter=50')).toEqual([
+    { name: 'seq_position', value: '3' },
+    { name: 'pitch_keycenter', value: '50' },
+  ]);
+  expect(processOpcode('region_label=01 sample=harmLA0.$EXT')).toEqual([
+    { name: 'region_label', value: '01' },
+    { name: 'sample', value: 'harmLA0.$EXT' },
+  ]);
+  expect(processOpcode('label_cc27="Release vol"')).toEqual([{ name: 'label_cc27', value: 'Release vol' }]);
+  expect(processOpcode('label_cc27=Release vol')).toEqual([{ name: 'label_cc27', value: 'Release vol' }]);
+  expect(processOpcode('apple=An Apple banana=\'A Banana\' carrot="A Carrot"')).toEqual([
+    { name: 'apple', value: 'An Apple' },
+    { name: 'banana', value: 'A Banana' },
+    { name: 'carrot', value: 'A Carrot' },
+  ]);
+  expect(processOpcode('lokey=c5  hikey=c#5')).toEqual([
+    { name: 'lokey', value: 'c5' },
+    { name: 'hikey', value: 'c#5' },
+  ]);
+  expect(processOpcode('ampeg_hold=0.3')).toEqual([{ name: 'ampeg_hold', value: '0.3' }]);
+  expect(processOpcode('ampeg_decay_oncc70=-1.2')).toEqual([{ name: 'ampeg_decay_oncc70', value: '-1.2' }]);
+});
+
+test('processOpcodeObject', () => {
+  expect(processOpcodeObject('seq_position=3')).toEqual({ seq_position: 3 });
+  expect(processOpcodeObject('seq_position=3 pitch_keycenter=50')).toEqual({ seq_position: 3, pitch_keycenter: 50 });
+  expect(processOpcodeObject('region_label=01 sample=harmLA0.$EXT')).toEqual({
     region_label: 1,
     sample: 'harmLA0.$EXT',
   });
-  expect(processOpcode('label_cc27="Release vol"')).toEqual({ label_cc27: 'Release vol' });
-  expect(processOpcode('label_cc27=Release vol')).toEqual({ label_cc27: 'Release vol' });
-  expect(processOpcode('apple=An Apple banana=\'A Banana\' carrot="A Carrot"')).toEqual({
+  expect(processOpcodeObject('label_cc27="Release vol"')).toEqual({ label_cc27: 'Release vol' });
+  expect(processOpcodeObject('label_cc27=Release vol')).toEqual({ label_cc27: 'Release vol' });
+  expect(processOpcodeObject('apple=An Apple banana=\'A Banana\' carrot="A Carrot"')).toEqual({
     apple: 'An Apple',
     banana: 'A Banana',
     carrot: 'A Carrot',
   });
+  expect(processOpcodeObject('lokey=c5  hikey=c#5')).toEqual({ lokey: 'c5', hikey: 'c#5' });
 });
 
 test('processVariables', () => {
   expect(processVariables('sample=harmLA0.$EXT', { $EXT: 'flac' })).toEqual('sample=harmLA0.flac');
+});
+
+test('findEnd', () => {
+  const sfzHeader: string = `//----
+  //
+  // The <group> header
+  //`;
+  expect(findEnd(sfzHeader, 0)).toEqual(6);
+  expect(findEnd(sfzHeader, 9)).toEqual(11);
+  expect(findEnd(sfzHeader, 14)).toEqual(35);
+  expect(findEnd('sample=example.wav key=c4 // will play', 0)).toEqual(26);
+  expect(findEnd('/// long release group, cc1 < 64', 0)).toEqual(32);
 });
