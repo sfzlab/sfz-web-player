@@ -56,17 +56,17 @@ class Audio extends Event {
     console.log('showFile', file);
     const prefix: string = pathDir(file.path);
     console.log('prefix', prefix);
-    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents, true);
+    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents);
     console.log('sfzObject', sfzObject);
-    const sfzFlat: any = flattenSfzObject(sfzObject);
+    const sfzFlat: any = flattenSfzObject(sfzObject.master[1]);
     console.log('sfzFlat', sfzFlat);
     this.keys = sfzFlat;
 
     // if file contains default path
-    let defaultPath: string = '';
-    if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
-      defaultPath = sfzObject.control[0].default_path;
-    }
+    const defaultPath: string = '';
+    // if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
+    //   defaultPath = sfzObject.control[0].default_path;
+    // }
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;

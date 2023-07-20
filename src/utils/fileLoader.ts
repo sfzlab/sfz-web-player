@@ -41,6 +41,17 @@ class FileLoader {
     return this.files[fileKey];
   }
 
+  addFileContents(file: string, contents: any) {
+    const path: string = decodeURI(file);
+    const fileKey: string = pathSubDir(path, this.root);
+    this.files[fileKey] = {
+      ext: pathExt(path),
+      contents,
+      path,
+    };
+    return this.files[fileKey];
+  }
+
   addToFileTree(key: string) {
     key.split('/').reduce((o: any, k: string) => (o[k] = o[k] || {}), this.filesTree);
   }
@@ -53,7 +64,7 @@ class FileLoader {
       }
       return file;
     }
-    file.contents = await file.handle.text();
+    if (file.handle) file.contents = await file.handle.text();
     return file;
   }
 

@@ -21,7 +21,7 @@ interface AudioSample {
   lokey: number;
   key: number;
   pitch_keycenter: number;
-  region: AudioSfzRegion[];
+  region: AudioRegion[];
   sample: string;
   seq_position: number;
   seq_length: number;
@@ -30,32 +30,28 @@ interface AudioSample {
 }
 
 interface AudioSfz {
-  control: AudioControl[];
-  global: AudioSfzGlobal[];
-  variables: AudioSfzVariables;
+  control: AudioSfzOpcodes[];
+  global: AudioSfzOpcodes[];
+  group: AudioSfzOpcodes[];
+  master: AudioSfzOpcodes[];
+  region: AudioSfzOpcodes[];
 }
 
-interface AudioControl {
-  default_path: string;
+interface AudioSfzOpcodes {
+  opcode: AudioSfzOpcode[];
+  region?: AudioSfzOpcodes[];
 }
 
-interface AudioSfzGlobal {
-  ampeg_release?: number;
-  group: AudioSfzGroup[];
+interface AudioSfzOpcode {
+  name: string;
+  value: string;
 }
 
-interface AudioSfzGroup {
-  hikey: number;
-  lokey: number;
-  key: number;
-  pitch_keycenter: number;
-  region: AudioSfzRegion[];
-  seq_length: number;
-  tune: number;
-  volume: number;
+interface AudioSfzOpcodeObj {
+  [name: string]: string | number;
 }
 
-interface AudioSfzRegion {
+interface AudioRegion {
   sample: string;
   seq_position: number;
 }
@@ -65,13 +61,12 @@ interface AudioSfzVariables {
 }
 
 export {
-  AudioControl,
   AudioControlEvent,
   AudioKeys,
   AudioSample,
   AudioSfz,
-  AudioSfzGlobal,
-  AudioSfzGroup,
-  AudioSfzRegion,
+  AudioSfzOpcodes,
+  AudioSfzOpcode,
+  AudioSfzOpcodeObj,
   AudioSfzVariables,
 };

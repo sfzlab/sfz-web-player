@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<region>
+	<opcode name="sample" value="dummy.wav" />
+</region>
