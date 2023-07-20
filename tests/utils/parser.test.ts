@@ -74,7 +74,6 @@ test('parseSfz 01-green_keyswitch.sfz', async () => {
 });
 
 // Test entire sfz test suite
-console.log('sfzTests', sfzTests);
 test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
   const fileSfz: string = readFileSync(sfzFile).toString();
   const fileXml: string = readFileSync(sfzFile.replace('.sfz', '.xml')).toString();
