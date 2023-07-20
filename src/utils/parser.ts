@@ -12,7 +12,7 @@ const variables: any = {};
 
 async function parseSfz(prefix: string, contents: string) {
   let elements: any[] = [];
-  const element: any = {};
+  let element: any = {};
   for (let i: number = 0; i < contents.length; i++) {
     const char: string = contents.charAt(i);
     if (skipCharacters.includes(char)) continue; // skip character
@@ -36,8 +36,11 @@ async function parseSfz(prefix: string, contents: string) {
       }
     } else if (char === '<') {
       const matches: string[] = processHeader(line);
-      element.type = 'element';
-      element.name = matches[0];
+      element = {
+        type: 'element',
+        name: matches[0],
+        elements: [],
+      };
       elements.push(element);
       if (DEBUG) console.log(`<${element.name}>`);
     } else {

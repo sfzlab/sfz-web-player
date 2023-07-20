@@ -17,7 +17,7 @@ import { js2xml } from 'xml-js';
 
 const directory: string = 'tests/syntax/';
 const sfzTests: string[] = globSync('./sfz-tests/**/*.sfz');
-const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed/`;
+const prefix: string = `https://github.com/kmturley/sfz-tests/tree/feature/parsed-xml/`;
 let loader: FileLoader;
 
 beforeAll(() => {
@@ -39,7 +39,7 @@ function convertToXml(elements: any) {
     { spaces: '\t' }
   );
   // TODO do better
-  return xml.replace(/"\/>/g, '" />') + '\n';
+  return xml.replace(/\/>/g, ' />') + '\n';
 }
 
 test('parseSfz 01-basic.sfz', async () => {
@@ -65,21 +65,21 @@ test('parseSfz 02-include.sfz', async () => {
 });
 
 // Test complex hand-coded instrument
-// test('parseSfz 01-green_keyswitch.sfz', async () => {
-//   const path: string = 'https://raw.githubusercontent.com/kmturley/karoryfer.black-and-green-guitars/main/Programs/';
-//   const fileSfz: string = await get(`${path}01-green_keyswitch.sfz`);
-//   const fileXml: string = await get(`${path}01-green_keyswitch.xml`);
-//   const output: any = convertToXml(await parseSfz(path, fileSfz));
-//   expect(output).toEqual(fileXml);
-// });
+test('parseSfz 01-green_keyswitch.sfz', async () => {
+  const path: string = 'https://raw.githubusercontent.com/kmturley/karoryfer.black-and-green-guitars/main/Programs/';
+  const fileSfz: string = await get(`${path}01-green_keyswitch.sfz`);
+  const fileXml: string = await get(`${path}01-green_keyswitch.xml`);
+  const output: any = convertToXml(await parseSfz(path, fileSfz));
+  expect(output).toEqual(fileXml);
+});
 
 // Test entire sfz test suite
-// test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
-//   const source: string = readFileSync(sfzFile).toString();
-//   const text: string = readFileSync(sfzFile.replace('.sfz', '.xml')).toString();
-//   const result: string = JSON.parse(removeNullData(removeAtSymbols(text)));
-//   expect({ sfz: await parseSfz(prefix, source) }).toEqual(result);
-// });
+test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
+  const fileSfz: string = readFileSync(sfzFile).toString();
+  const fileXml: string = readFileSync(sfzFile.replace('.sfz', '.xml')).toString();
+  const output: any = convertToXml(await parseSfz(prefix, fileSfz));
+  expect(output).toEqual(fileXml);
+});
 
 test('processDirective', () => {
   expect(processDirective('#include "green/stac_tp.sfz"')).toEqual(['include', 'green/stac_tp.sfz']);
