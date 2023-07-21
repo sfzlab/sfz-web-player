@@ -29,20 +29,31 @@ interface AudioSample {
   volume: number;
 }
 
-interface AudioSfz {
-  control: AudioSfzOpcodes[];
-  global: AudioSfzOpcodes[];
-  group: AudioSfzOpcodes[];
-  master: AudioSfzOpcodes[];
-  region: AudioSfzOpcodes[];
+enum AudioOpcodes {
+  region = 'region',
+  group = 'group',
+  control = 'control',
+  global = 'global',
+  curve = 'curve',
+  effect = 'effect',
+  master = 'master',
+  midi = 'midi',
+  sample = 'sample',
 }
 
-interface AudioSfzOpcodes {
-  opcode: AudioSfzOpcode[];
-  region?: AudioSfzOpcodes[];
+interface AudioSfzHeader {
+  elements: AudioSfzOpcode[];
+  name: AudioOpcodes;
+  type: 'element';
 }
 
 interface AudioSfzOpcode {
+  attributes: AudioSfzAttribute;
+  name: 'opcode';
+  type: 'element';
+}
+
+interface AudioSfzAttribute {
   name: string;
   value: string;
 }
@@ -63,9 +74,10 @@ interface AudioSfzVariables {
 export {
   AudioControlEvent,
   AudioKeys,
+  AudioOpcodes,
   AudioSample,
-  AudioSfz,
-  AudioSfzOpcodes,
+  AudioSfzAttribute,
+  AudioSfzHeader,
   AudioSfzOpcode,
   AudioSfzOpcodeObj,
   AudioSfzVariables,

@@ -1,4 +1,11 @@
-import { AudioSfz, AudioSfzOpcode, AudioSfzOpcodeObj, AudioSfzOpcodes, AudioSfzVariables } from '../types/audio';
+import {
+  AudioOpcodes,
+  AudioSfzAttribute,
+  AudioSfzHeader,
+  AudioSfzOpcode,
+  AudioSfzOpcodeObj,
+  AudioSfzVariables,
+} from '../types/audio';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from './fileLoader';
 import { midiNameToNum, pathJoin } from './utils';
@@ -23,13 +30,15 @@ async function parseSfz(prefix: string, contents: string) {
     } else if (char === '#') {
       const matches: string[] = processDirective(line);
       if (matches[0] === 'include') {
-        const includeVal: any = await loadParseSfz(prefix, matches[1]);
-        if (includeVal.elements) {
+        let includePath: string = matches[1];
+        if (includePath.includes('$')) includePath = processVariables(includePath, variables);
+        const includeVal: any = await loadParseSfz(prefix, includePath);
+        if (element.elements && includeVal.elements) {
           element.elements = element.elements.concat(includeVal.elements);
         } else {
           elements = elements.concat(includeVal);
         }
-        if (DEBUG) console.log('include', matches[1], JSON.stringify(includeVal));
+        if (DEBUG) console.log('include', includePath, JSON.stringify(includeVal));
       } else if (matches[0] === 'define') {
         variables[matches[1]] = matches[2];
         if (DEBUG) console.log('define', matches[1], variables[matches[1]]);
@@ -48,15 +57,15 @@ async function parseSfz(prefix: string, contents: string) {
       if (!element.elements) {
         element.elements = [];
       }
-      const opcodes: AudioSfzOpcode[] = processOpcode(line);
-      opcodes.forEach((opcode: AudioSfzOpcode) => {
+      const attributes: AudioSfzAttribute[] = processOpcode(line);
+      attributes.forEach((attribute: AudioSfzAttribute) => {
         element.elements.push({
           type: 'element',
           name: 'opcode',
-          attributes: opcode,
+          attributes: attribute,
         });
       });
-      if (DEBUG) console.log(line, opcodes);
+      if (DEBUG) console.log(line, attributes);
     }
     i = iEnd;
   }
@@ -93,7 +102,7 @@ function processHeader(input: string) {
 }
 
 function processOpcode(input: string) {
-  const output: AudioSfzOpcode[] = [];
+  const output: AudioSfzAttribute[] = [];
   const labels: string[] = input.match(/\w+(?==)/g) || [];
   const values: string[] = input.split(/\w+(?==)/g) || [];
   values.forEach((val: string) => {
@@ -133,30 +142,34 @@ function processVariables(input: string, vars: AudioSfzVariables) {
   });
 }
 
-function flattenSfzObject(sfzObject: AudioSfzOpcodes, groupIndex = 0) {
+function flattenSfzObject(headers: AudioSfzHeader[]) {
   const keys: any = {};
-  const groupObj: any = opcodesToObject(sfzObject.opcode);
-  sfzObject.region?.forEach((region: AudioSfzOpcodes) => {
-    const regionObj: any = opcodesToObject(region.opcode);
-    const mergedObj: any = { ...groupObj, ...regionObj };
-    const start: number = midiNameToNum(regionObj.lokey || regionObj.key);
-    const end: number = midiNameToNum(regionObj.hikey || regionObj.key);
-    if (start === 0 && end === 0) return;
-    for (let i = start; i <= end; i++) {
-      if (!keys[i]) keys[i] = [];
-      keys[i].push(mergedObj);
+  let groupObj: AudioSfzOpcodeObj = {};
+  headers.forEach((header: AudioSfzHeader) => {
+    if (header.name === AudioOpcodes.group) {
+      groupObj = opcodesToObject(header.elements);
+    } else if (header.name === AudioOpcodes.region) {
+      const regionObj: AudioSfzOpcodeObj = opcodesToObject(header.elements);
+      const mergedObj: AudioSfzOpcodeObj = { ...groupObj, ...regionObj };
+      const start: number = midiNameToNum(mergedObj.lokey || mergedObj.key);
+      const end: number = midiNameToNum(mergedObj.hikey || mergedObj.key);
+      if (start === 0 && end === 0) return;
+      for (let i = start; i <= end; i++) {
+        if (!keys[i]) keys[i] = [];
+        keys[i].push(mergedObj);
+      }
     }
   });
   return keys;
 }
 
 function opcodesToObject(opcodes: AudioSfzOpcode[]) {
-  const properties: any = {};
+  const properties: AudioSfzOpcodeObj = {};
   opcodes.forEach((opcode: AudioSfzOpcode) => {
-    if (!isNaN(opcode.value as any)) {
-      properties[opcode.name] = Number(opcode.value);
+    if (!isNaN(opcode.attributes.value as any)) {
+      properties[opcode.attributes.name] = Number(opcode.attributes.value);
     } else {
-      properties[opcode.name] = opcode.value;
+      properties[opcode.attributes.name] = opcode.attributes.value;
     }
   });
   return properties;
@@ -180,6 +193,7 @@ function setParserLoader(fileLoader: FileLoader) {
 export {
   findEnd,
   flattenSfzObject,
+  opcodesToObject,
   parseSfz,
   processDirective,
   processHeader,

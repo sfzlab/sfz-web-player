@@ -1,9 +1,16 @@
-import { AudioControlEvent, AudioKeys, AudioSample, AudioSfz } from '../types/audio';
+import {
+  AudioControlEvent,
+  AudioKeys,
+  AudioOpcodes,
+  AudioSample,
+  AudioSfzHeader,
+  AudioSfzOpcodeObj,
+} from '../types/audio';
 import { AudioOptions } from '../types/player';
 import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
-import { flattenSfzObject, parseSfz, setParserLoader } from '../utils/parser';
+import { flattenSfzObject, opcodesToObject, parseSfz, setParserLoader } from '../utils/parser';
 import { pathDir, pathJoin } from '../utils/utils';
 import { pathSubDir } from '../utils/utils';
 
@@ -56,17 +63,24 @@ class Audio extends Event {
     console.log('showFile', file);
     const prefix: string = pathDir(file.path);
     console.log('prefix', prefix);
-    const sfzObject: AudioSfz = await parseSfz(prefix, file?.contents);
-    console.log('sfzObject', sfzObject);
-    const sfzFlat: any = flattenSfzObject(sfzObject.master[1]);
+    const headers: AudioSfzHeader[] = await parseSfz(prefix, file?.contents);
+    console.log('headers', headers);
+    const sfzFlat: any = flattenSfzObject(headers);
     console.log('sfzFlat', sfzFlat);
     this.keys = sfzFlat;
 
     // if file contains default path
-    const defaultPath: string = '';
-    // if (sfzObject.control && sfzObject.control[0] && sfzObject.control[0].default_path) {
-    //   defaultPath = sfzObject.control[0].default_path;
-    // }
+    let defaultPath: string = '';
+    headers.forEach((header: AudioSfzHeader) => {
+      if (header.name === AudioOpcodes.control) {
+        const controlObj: AudioSfzOpcodeObj = opcodesToObject(header.elements);
+        if (controlObj.default_path) {
+          defaultPath = controlObj.default_path as string;
+          console.log('defaultPath', defaultPath);
+        }
+      }
+    });
+
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
@@ -90,7 +104,7 @@ class Audio extends Event {
     if (PRELOAD) {
       for (const key in this.keys) {
         const samplePath: string = this.keys[key][0].sample;
-        if (samplePath.includes('*')) continue;
+        if (!samplePath || samplePath.includes('*')) continue;
         await this.loadSample(samplePath);
       }
     }
