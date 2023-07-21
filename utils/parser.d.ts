@@ -1,10 +1,13 @@
-import { AudioSfz, AudioSfzVariables } from '../types/audio';
+import { AudioSfzAttribute, AudioSfzHeader, AudioSfzOpcode, AudioSfzOpcodeObj, AudioSfzVariables } from '../types/audio';
 import FileLoader from './fileLoader';
-declare function parseSfz(prefix: string, contents: string, root?: boolean): Promise<any>;
+declare function parseSfz(prefix: string, contents: string): Promise<any>;
 declare function processDirective(input: string): RegExpMatchArray | [];
 declare function processHeader(input: string): RegExpMatchArray | [];
-declare function processOpcode(input: string): any;
+declare function processOpcode(input: string): AudioSfzAttribute[];
+declare function processOpcodeObject(input: string): AudioSfzOpcodeObj;
 declare function processVariables(input: string, vars: AudioSfzVariables): string;
-declare function flattenSfzObject(sfzObject: AudioSfz): any;
+declare function flattenSfzObject(headers: AudioSfzHeader[]): any;
+declare function opcodesToObject(opcodes: AudioSfzOpcode[]): AudioSfzOpcodeObj;
+declare function findEnd(contents: string, startAt: number): number;
 declare function setParserLoader(fileLoader: FileLoader): void;
-export { flattenSfzObject, parseSfz, processDirective, processHeader, processOpcode, processVariables, setParserLoader, };
+export { findEnd, flattenSfzObject, opcodesToObject, parseSfz, processDirective, processHeader, processOpcode, processOpcodeObject, processVariables, setParserLoader, };

@@ -18,40 +18,46 @@ interface AudioSample {
     lokey: number;
     key: number;
     pitch_keycenter: number;
-    region: AudioSfzRegion[];
+    region: AudioRegion[];
     sample: string;
     seq_position: number;
     seq_length: number;
     tune: number;
     volume: number;
 }
-interface AudioSfz {
-    control: AudioControl[];
-    global: AudioSfzGlobal[];
-    variables: AudioSfzVariables;
+declare enum AudioOpcodes {
+    region = "region",
+    group = "group",
+    control = "control",
+    global = "global",
+    curve = "curve",
+    effect = "effect",
+    master = "master",
+    midi = "midi",
+    sample = "sample"
 }
-interface AudioControl {
-    default_path: string;
+interface AudioSfzHeader {
+    elements: AudioSfzOpcode[];
+    name: AudioOpcodes;
+    type: 'element';
 }
-interface AudioSfzGlobal {
-    ampeg_release?: number;
-    group: AudioSfzGroup[];
+interface AudioSfzOpcode {
+    attributes: AudioSfzAttribute;
+    name: 'opcode';
+    type: 'element';
 }
-interface AudioSfzGroup {
-    hikey: number;
-    lokey: number;
-    key: number;
-    pitch_keycenter: number;
-    region: AudioSfzRegion[];
-    seq_length: number;
-    tune: number;
-    volume: number;
+interface AudioSfzAttribute {
+    name: string;
+    value: string;
 }
-interface AudioSfzRegion {
+interface AudioSfzOpcodeObj {
+    [name: string]: string | number;
+}
+interface AudioRegion {
     sample: string;
     seq_position: number;
 }
 interface AudioSfzVariables {
     [name: string]: string;
 }
-export { AudioControl, AudioControlEvent, AudioKeys, AudioSample, AudioSfz, AudioSfzGlobal, AudioSfzGroup, AudioSfzRegion, AudioSfzVariables, };
+export { AudioControlEvent, AudioKeys, AudioOpcodes, AudioSample, AudioSfzAttribute, AudioSfzHeader, AudioSfzOpcode, AudioSfzOpcodeObj, AudioSfzVariables, };

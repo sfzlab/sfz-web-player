@@ -8,6 +8,7 @@ declare class FileLoader {
     constructor();
     addDirectory(files: string[] | FileWithDirectoryAndFileHandle[]): void;
     addFile(file: string | FileWithDirectoryAndFileHandle): FileRemote | undefined;
+    addFileContents(file: string, contents: any): FileLocal | FileRemote;
     addToFileTree(key: string): void;
     loadFileLocal(file: FileLocal, buffer?: boolean): Promise<FileLocal>;
     loadFileRemote(file: FileRemote, buffer?: boolean): Promise<FileRemote>;
