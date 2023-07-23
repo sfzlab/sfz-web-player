@@ -55,5 +55,10 @@
     "browser-fs-access": "^0.33.0",
     "node-fetch": "^2.6.12",
     "xml-js": "^1.6.11"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   }
 }
