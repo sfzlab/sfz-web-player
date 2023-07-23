@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<control />
+<region>
+	<opcode name="key" value="36" />
+	<opcode name="sample" value="kick.wav" />
+</region>
+<region>
+	<opcode name="key" value="38" />
+	<opcode name="sample" value="snare.wav" />
+</region>
+<region>
+	<opcode name="key" value="42" />
+	<opcode name="sample" value="closedhat.wav" />
+</region>
+<region>
+	<opcode name="volume" value="-12" />
+	<opcode name="sample" value="*sine" />
+</region>

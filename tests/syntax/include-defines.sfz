@@ -1,0 +1,3 @@
+#define $directory modules
+#define $filename region
+#include "$directory/$filename.sfz"

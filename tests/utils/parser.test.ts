@@ -42,24 +42,47 @@ function convertToXml(elements: any) {
   return xml.replace(/\/>/g, ' />') + '\n';
 }
 
-test('parseSfz 01-basic.sfz', async () => {
-  const filenames: string[] = ['01-basic.sfz', '01-basic.xml'];
-  filenames.forEach((filename: string) => {
-    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
-  });
-  const fileSfz: FileLocal = (await loader.getFile('01-basic.sfz')) as FileLocal;
-  const fileXml: FileLocal = (await loader.getFile('01-basic.xml')) as FileLocal;
+test('parseSfz basic.sfz', async () => {
+  loader.addFilesContents(directory, ['basic.sfz', 'basic.xml']);
+  const fileSfz: FileLocal = (await loader.getFile('basic.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('basic.xml')) as FileLocal;
   const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
   expect(output).toEqual(fileXml.contents);
 });
 
-test('parseSfz 02-include.sfz', async () => {
-  const filenames: string[] = ['02-include.sfz', '02-include.xml', 'modules/env.sfz', 'modules/region.sfz'];
-  filenames.forEach((filename: string) => {
-    loader.addFileContents(directory + filename, readFileSync(directory + filename).toString());
-  });
-  const fileSfz: FileLocal = (await loader.getFile('02-include.sfz')) as FileLocal;
-  const fileXml: FileLocal = (await loader.getFile('02-include.xml')) as FileLocal;
+test('parseSfz defines.sfz', async () => {
+  loader.addFilesContents(directory, ['defines.sfz', 'defines.xml']);
+  const fileSfz: FileLocal = (await loader.getFile('defines.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('defines.xml')) as FileLocal;
+  const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
+  expect(output).toEqual(fileXml.contents);
+});
+
+test('parseSfz groups.sfz', async () => {
+  loader.addFilesContents(directory, ['groups.sfz', 'groups.xml']);
+  const fileSfz: FileLocal = (await loader.getFile('groups.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('groups.xml')) as FileLocal;
+  const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
+  expect(output).toEqual(fileXml.contents);
+});
+
+test('parseSfz include-defines.sfz', async () => {
+  loader.addFilesContents(directory, [
+    'include-defines.sfz',
+    'include-defines.xml',
+    'modules/env.sfz',
+    'modules/region.sfz',
+  ]);
+  const fileSfz: FileLocal = (await loader.getFile('include-defines.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('include-defines.xml')) as FileLocal;
+  const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
+  expect(output).toEqual(fileXml.contents);
+});
+
+test('parseSfz include.sfz', async () => {
+  loader.addFilesContents(directory, ['include.sfz', 'include.xml', 'modules/env.sfz', 'modules/region.sfz']);
+  const fileSfz: FileLocal = (await loader.getFile('include.sfz')) as FileLocal;
+  const fileXml: FileLocal = (await loader.getFile('include.xml')) as FileLocal;
   const output: any = convertToXml(await parseSfz(directory, fileSfz.contents));
   expect(output).toEqual(fileXml.contents);
 });

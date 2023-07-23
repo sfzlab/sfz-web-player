@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<group>
+	<opcode name="key" value="36" />
+	<opcode name="volume" value="6" />
+</group>
+<region>
+	<opcode name="lovel" value="1" />
+	<opcode name="hivel" value="26" />
+	<opcode name="sample" value="36-CajonCenter-1.wav" />
+</region>
+<region>
+	<opcode name="lovel" value="27" />
+	<opcode name="hivel" value="52" />
+	<opcode name="sample" value="36-CajonCenter-2.wav" />
+</region>
+<region>
+	<opcode name="lovel" value="53" />
+	<opcode name="hivel" value="77" />
+	<opcode name="sample" value="36-CajonCenter-3.wav" />
+</region>
+<region>
+	<opcode name="lovel" value="78" />
+	<opcode name="hivel" value="102" />
+	<opcode name="sample" value="36-CajonCenter-4.wav" />
+</region>
+<region>
+	<opcode name="lovel" value="103" />
+	<opcode name="hivel" value="127" />
+	<opcode name="sample" value="36-CajonCenter-5.wav" />
+</region>

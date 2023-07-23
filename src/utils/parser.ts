@@ -69,8 +69,8 @@ async function parseSfz(prefix: string, contents: string) {
     }
     i = iEnd;
   }
-  if (!element.type) return element;
-  return elements;
+  if (elements.length > 0) return elements;
+  return element;
 }
 
 function containsHeader(data: any) {

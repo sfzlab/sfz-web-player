@@ -1,4 +1,5 @@
 import { FileWithDirectoryAndFileHandle } from 'browser-fs-access';
+import { readFileSync } from 'fs';
 import { FileLocal, FileRemote, FilesMap, FilesTree } from '../types/files';
 import { get, getRaw } from './api';
 import { encodeHashes, pathExt, pathSubDir } from './utils';
@@ -50,6 +51,12 @@ class FileLoader {
       path,
     };
     return this.files[fileKey];
+  }
+
+  addFilesContents(directory: string, filenames: string[]) {
+    filenames.forEach((filename: string) => {
+      this.addFileContents(directory + filename, readFileSync(directory + filename).toString());
+    });
   }
 
   addToFileTree(key: string) {
