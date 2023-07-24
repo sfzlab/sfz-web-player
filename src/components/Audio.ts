@@ -47,15 +47,6 @@ class Audio extends Event {
     }
   }
 
-  async loadSample(path: string) {
-    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[path];
-    if (fileRef) {
-      return await this.loader.getFile(fileRef, true);
-    }
-    const file: FileLocal | FileRemote | undefined = this.loader.addFile(path);
-    return this.loader.getFile(file, true);
-  }
-
   async showFile(file: FileLocal | FileRemote | undefined) {
     this.dispatchEvent('loading', true);
     file = await this.loader.getFile(file);
@@ -105,7 +96,7 @@ class Audio extends Event {
       for (const key in this.keys) {
         const samplePath: string = this.keys[key][0].sample;
         if (!samplePath || samplePath.includes('*')) continue;
-        await this.loadSample(samplePath);
+        await this.loader.getFile(samplePath, true);
       }
     }
     this.dispatchEvent('loading', false);
@@ -129,6 +120,7 @@ class Audio extends Event {
     }
     if (!this.keys[event.note]) return;
     const keySample: AudioSample = this.keys[event.note][0];
+    if (keySample.sample.includes('*')) return;
     console.log('sample', event.note, keySample);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);

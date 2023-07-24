@@ -66,12 +66,12 @@ class FileLoader {
   async loadFileLocal(file: FileLocal, buffer = false) {
     if (buffer === true) {
       const arrayBuffer: ArrayBuffer = await file.handle.arrayBuffer();
-      if (this.audio) {
+      if (this.audio && arrayBuffer) {
         file.contents = await this.audio.decodeAudioData(arrayBuffer);
       }
-      return file;
+    } else if (file.handle) {
+      file.contents = await file.handle.text();
     }
-    if (file.handle) file.contents = await file.handle.text();
     return file;
   }
 
@@ -81,9 +81,9 @@ class FileLoader {
       if (this.audio) {
         file.contents = await this.audio.decodeAudioData(arrayBuffer);
       }
-      return file;
+    } else {
+      file.contents = await get(encodeHashes(file.path));
     }
-    file.contents = await get(encodeHashes(file.path));
     return file;
   }
 
@@ -94,9 +94,11 @@ class FileLoader {
       const fileKey: string = pathSubDir(file, this.root);
       let fileRef: FileLocal | FileRemote | undefined = this.files[fileKey];
       if (!fileRef) fileRef = this.addFile(file);
+      if (fileRef?.contents) return fileRef;
       if (file.startsWith('http')) return await this.loadFileRemote(fileRef as FileRemote, buffer);
       return await this.loadFileLocal(fileRef as FileLocal, buffer);
     }
+    if (file.contents) return file;
     if ('handle' in file) return await this.loadFileLocal(file, buffer);
     return await this.loadFileRemote(file, buffer);
   }
