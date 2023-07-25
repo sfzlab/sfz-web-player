@@ -106,7 +106,10 @@ test.each(sfzTests)('parseSfz %p', async (sfzFile: string) => {
 
 test('processDirective', () => {
   expect(processDirective('#include "green/stac_tp.sfz"')).toEqual(['include', 'green/stac_tp.sfz']);
+  expect(processDirective('#include "Individual Patchs/In.sfz"')).toEqual(['include', 'Individual Patchs/In.sfz']);
+  expect(processDirective('#include "$directory/$filename.sfz"')).toEqual(['include', '$directory/$filename.sfz']);
   expect(processDirective('#define $KICKKEY 36')).toEqual(['define', '$KICKKEY', '36']);
+  expect(processDirective('#define $filename region')).toEqual(['define', '$filename', 'region']);
 });
 
 test('processHeader', () => {

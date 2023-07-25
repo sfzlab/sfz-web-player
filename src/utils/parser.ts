@@ -94,7 +94,7 @@ async function loadParseSfz(prefix: string, suffix: string) {
 }
 
 function processDirective(input: string) {
-  return input.match(/[^# "]+/g) || [];
+  return input.match(/(?<=")[^#"]+(?=")|[^# \r\n"]+/g) || [];
 }
 
 function processHeader(input: string) {
