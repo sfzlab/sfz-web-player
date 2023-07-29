@@ -72,18 +72,20 @@ class Audio extends Event {
       }
     });
 
+    const rootPath: string = pathSubDir(pathDir(file.path), this.loader.root);
     for (const key in this.keys) {
       for (const i in this.keys[key]) {
         let samplePath: string = this.keys[key][i].sample;
-        if (!samplePath) continue;
-        if (samplePath.startsWith('https')) continue;
-        if (samplePath.includes('\\')) samplePath = samplePath.replace(/\\/g, '/');
-        if (file?.path.startsWith('https')) {
+        // Temporary fix for recurring samples.
+        if (this.keys[key][i].modified) continue;
+        if (!samplePath || samplePath.startsWith('https')) continue;
+        if (file.path.startsWith('https')) {
           samplePath = pathJoin(pathDir(file.path), defaultPath, samplePath);
-        } else {
-          samplePath = pathJoin(pathSubDir(pathDir(file.path), this.loader.root), defaultPath, samplePath);
+        } else if (!samplePath.startsWith(rootPath)) {
+          samplePath = pathJoin(rootPath, defaultPath, samplePath);
         }
         this.keys[key][i].sample = samplePath;
+        this.keys[key][i].modified = true;
       }
     }
     const keys: string[] = Object.keys(this.keys);

@@ -150,7 +150,7 @@ function flattenSfzObject(headers: AudioSfzHeader[]) {
       groupObj = opcodesToObject(header.elements);
     } else if (header.name === AudioOpcodes.region) {
       const regionObj: AudioSfzOpcodeObj = opcodesToObject(header.elements);
-      const mergedObj: AudioSfzOpcodeObj = { ...groupObj, ...regionObj };
+      const mergedObj: AudioSfzOpcodeObj = Object.assign({}, groupObj, regionObj);
       const start: number = midiNameToNum(mergedObj.lokey || mergedObj.key);
       const end: number = midiNameToNum(mergedObj.hikey || mergedObj.key);
       if (start === 0 && end === 0) return;

@@ -41,6 +41,10 @@ function pathExt(item: string): string {
 
 function pathJoin(...segments: any) {
   const parts = segments.reduce((partItems: any, segment: any) => {
+    // Replace backslashes with forward slashes
+    if (segment.includes('\\')) {
+      segment = segment.replace(/\\/g, '/');
+    }
     // Remove leading slashes from non-first part.
     if (partItems.length > 0) {
       segment = segment.replace(/^\//, '');
@@ -50,7 +54,9 @@ function pathJoin(...segments: any) {
     return partItems.concat(segment.split('/'));
   }, []);
   const resultParts = [];
-  for (const part of parts) {
+  for (let part of parts) {
+    if (part === 'https:') part += '/';
+    if (part === '') continue;
     if (part === '.') {
       continue;
     }

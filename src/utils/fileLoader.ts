@@ -64,12 +64,13 @@ class FileLoader {
   }
 
   async loadFileLocal(file: FileLocal, buffer = false) {
+    if (!file.handle) return file;
     if (buffer === true) {
       const arrayBuffer: ArrayBuffer = await file.handle.arrayBuffer();
       if (this.audio && arrayBuffer) {
         file.contents = await this.audio.decodeAudioData(arrayBuffer);
       }
-    } else if (file.handle) {
+    } else {
       file.contents = await file.handle.text();
     }
     return file;

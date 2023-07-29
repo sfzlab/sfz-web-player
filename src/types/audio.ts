@@ -27,6 +27,7 @@ interface AudioSample {
   seq_length: number;
   tune: number;
   volume: number;
+  modified: boolean;
 }
 
 enum AudioOpcodes {
