@@ -22,6 +22,7 @@ class Interface extends Component {
   private keyboardStart: number = 0;
   private keyboardEnd: number = 200;
   private instrument: { [name: string]: any[] } = {};
+  private loadingScreen: HTMLDivElement;
   private tabs: HTMLDivElement;
   loader: FileLoader;
 
@@ -34,6 +35,10 @@ class Interface extends Component {
     this.addTab('Controls');
     this.getEl().appendChild(this.tabs);
     this.addKeyboard();
+
+    this.loadingScreen = document.createElement('div');
+    this.loadingScreen.className = 'loadingScreen';
+    this.getEl().appendChild(this.loadingScreen);
 
     if (options.loader) {
       this.loader = options.loader;
@@ -158,9 +163,9 @@ class Interface extends Component {
     this.keyboard.setNote(event.velocity, event.note);
   }
 
-  setKeyboardState(loading: boolean) {
-    if (loading) this.keyboard.classList.add('loading');
-    else this.keyboard.classList.remove('loading');
+  setLoadingState(loading: boolean) {
+    if (loading) this.getEl().classList.add('loading');
+    else this.getEl().classList.remove('loading');
   }
 
   setKeyboardRange(start: number, end: number) {
@@ -168,6 +173,10 @@ class Interface extends Component {
     this.keyboardStart = start || 0;
     this.keyboardEnd = end || 100;
     this.resizeKeyboard();
+  }
+
+  setLoadingText(text: string) {
+    this.loadingScreen.innerHTML = text;
   }
 
   addTab(name: string) {

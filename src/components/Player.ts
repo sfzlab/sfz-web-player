@@ -46,8 +46,11 @@ class Player extends Component {
     this.audio.addEvent('range', (event: EventData) => {
       if (this.interface) this.interface.setKeyboardRange(event.data.start, event.data.end);
     });
+    this.audio.addEvent('preload', (event: EventData) => {
+      if (this.interface) this.interface.setLoadingText(event.data.status);
+    });
     this.audio.addEvent('loading', (event: EventData) => {
-      if (this.interface) this.interface.setKeyboardState(event.data);
+      if (this.interface) this.interface.setLoadingState(event.data);
     });
   }
 
@@ -58,7 +61,7 @@ class Player extends Component {
       if (this.audio) this.audio.setSynth(event.data);
     });
     this.getEl().appendChild(this.interface.getEl());
-    this.interface.setKeyboardState(true);
+    this.interface.setLoadingState(true);
   }
 
   setupEditor(options: EditorOptions) {

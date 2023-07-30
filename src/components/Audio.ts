@@ -48,6 +48,9 @@ class Audio extends Event {
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
+    this.dispatchEvent('preload', {
+      status: `Loading sfz files`,
+    });
     this.dispatchEvent('loading', true);
     file = await this.loader.getFile(file);
     if (!file) return;
@@ -93,12 +96,17 @@ class Audio extends Event {
       start: Number(keys[0]),
       end: Number(keys[keys.length - 1]),
     });
-    this.dispatchEvent('preload', {});
     if (PRELOAD) {
+      let start: number = 0;
+      const end: number = Object.keys(this.keys).length - 1;
       for (const key in this.keys) {
+        this.dispatchEvent('preload', {
+          status: `Loading audio files: ${start} of ${end}`,
+        });
         const samplePath: string = this.keys[key][0].sample;
         if (!samplePath || samplePath.includes('*')) continue;
         await this.loader.getFile(samplePath, true);
+        start += 1;
       }
     }
     this.dispatchEvent('loading', false);
@@ -121,9 +129,11 @@ class Audio extends Event {
       return;
     }
     if (!this.keys[event.note]) return;
-    const keySample: AudioSample = this.keys[event.note][0];
+    const keySamples: AudioSample[] = this.keys[event.note];
+    const randomSample: number = Math.floor(Math.random() * keySamples.length);
+    const keySample: AudioSample = keySamples[0];
     if (keySample.sample.includes('*')) return;
-    console.log('sample', event.note, keySample);
+    console.log('sample', event.note, randomSample, keySample);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
     if (this.audio) {
