@@ -24,6 +24,7 @@ interface AudioSample {
     seq_length: number;
     tune: number;
     volume: number;
+    modified: boolean;
 }
 declare enum AudioOpcodes {
     region = "region",

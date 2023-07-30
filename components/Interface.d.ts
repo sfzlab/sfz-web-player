@@ -12,6 +12,7 @@ declare class Interface extends Component {
     private keyboardStart;
     private keyboardEnd;
     private instrument;
+    private loadingScreen;
     private tabs;
     loader: FileLoader;
     constructor(options: InterfaceOptions);
@@ -30,8 +31,9 @@ declare class Interface extends Component {
     addKeyboard(): void;
     resizeKeyboard(): void;
     setKeyboard(event: AudioControlEvent): void;
-    setKeyboardState(loading: boolean): void;
+    setLoadingState(loading: boolean): void;
     setKeyboardRange(start: number, end: number): void;
+    setLoadingText(text: string): void;
     addTab(name: string): void;
     addText(text: PlayerText): HTMLSpanElement;
     parseXML(file: FileLocal | FileRemote | undefined): {
