@@ -91,24 +91,21 @@ class Audio extends Event {
         this.keys[key][i].modified = true;
       }
     }
-    const keys: string[] = Object.keys(this.keys);
-    this.dispatchEvent('range', {
-      start: Number(keys[0]),
-      end: Number(keys[keys.length - 1]),
-    });
-    if (PRELOAD) {
-      let start: number = 0;
-      const end: number = Object.keys(this.keys).length - 1;
-      for (const key in this.keys) {
-        this.dispatchEvent('preload', {
-          status: `Loading audio files: ${start} of ${end}`,
-        });
-        const samplePath: string = this.keys[key][0].sample;
-        if (!samplePath || samplePath.includes('*')) continue;
-        await this.loader.getFile(samplePath, true);
-        start += 1;
-      }
-    }
+
+    // Quick test using https://github.com/kmturley/sfz.js
+
+    const SfzLib = require('../lib/sfz');
+    console.log('SfzLib', SfzLib);
+
+    const instrumentDefinition = sfzFlat;
+    instrumentDefinition.type = "Instrument";
+    if (SfzLib.WebAudioSynth) instrumentDefinition.driver = SfzLib.WebAudioSynth;
+    if (this.audio) instrumentDefinition.audioContext = this.audio;
+    console.log('instrumentDefinition', instrumentDefinition);
+
+    const instrument = new SfzLib.Instrument(instrumentDefinition);
+    console.log('instrument', instrument);
+
     this.dispatchEvent('loading', false);
   }
 

@@ -143,24 +143,20 @@ function processVariables(input: string, vars: AudioSfzVariables) {
 }
 
 function flattenSfzObject(headers: AudioSfzHeader[]) {
-  const keys: any = {};
+  const list: any = {};
   let groupObj: AudioSfzOpcodeObj = {};
   headers.forEach((header: AudioSfzHeader) => {
     if (header.name === AudioOpcodes.group) {
       groupObj = opcodesToObject(header.elements);
     } else if (header.name === AudioOpcodes.region) {
+      const headerName: string = header.name + 's';
       const regionObj: AudioSfzOpcodeObj = opcodesToObject(header.elements);
       const mergedObj: AudioSfzOpcodeObj = Object.assign({}, groupObj, regionObj);
-      const start: number = midiNameToNum(mergedObj.lokey || mergedObj.key);
-      const end: number = midiNameToNum(mergedObj.hikey || mergedObj.key);
-      if (start === 0 && end === 0) return;
-      for (let i = start; i <= end; i++) {
-        if (!keys[i]) keys[i] = [];
-        keys[i].push(mergedObj);
-      }
+      if (!list[headerName]) list[headerName] = [];
+      list[headerName].push(mergedObj);
     }
   });
-  return keys;
+  return list;
 }
 
 function opcodesToObject(opcodes: AudioSfzOpcode[]) {
