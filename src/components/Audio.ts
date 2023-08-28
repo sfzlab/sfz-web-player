@@ -101,7 +101,7 @@ class Audio extends Event {
     console.log('SfzLib', SfzLib);
 
     const instrumentDefinition = sfzFlat;
-    instrumentDefinition.type = "Instrument";
+    instrumentDefinition.type = 'Instrument';
     if (SfzLib.WebAudioSynth) instrumentDefinition.driver = SfzLib.WebAudioSynth;
     if (this.audio) instrumentDefinition.audioContext = this.audio;
     console.log('instrumentDefinition', instrumentDefinition);
