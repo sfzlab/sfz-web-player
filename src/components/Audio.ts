@@ -21,6 +21,7 @@ class Audio extends Event {
   private audio: AudioContext | undefined;
   private audioBuffer: AudioBufferSourceNode | undefined;
   private keys: AudioKeys = [];
+  private instrument: any;
 
   constructor(options: AudioOptions) {
     super();
@@ -93,8 +94,10 @@ class Audio extends Event {
     }
 
     // Quick test using https://github.com/kmturley/sfz.js
+    // Fork of https://github.com/mwise/sfz.js
 
-    const SfzLib = require('../lib/sfz');
+    const SfzLib = require('../lib/sfz.js/sfz');
+    SfzLib.WebAudioSynth = require('../lib/sfz.js/client/web_audio_synth');
     console.log('SfzLib', SfzLib);
 
     const instrumentDefinition = sfzFlat;
@@ -103,15 +106,15 @@ class Audio extends Event {
     if (this.audio) instrumentDefinition.audioContext = this.audio;
     console.log('instrumentDefinition', instrumentDefinition);
 
-    const instrument = new SfzLib.Instrument(instrumentDefinition);
-    console.log('instrument', instrument);
+    this.instrument = new SfzLib.Instrument(instrumentDefinition);
+    console.log('instrument', this.instrument);
 
     this.dispatchEvent('loading', false);
   }
 
   onKeyboard(event: any) {
     const controlEvent: AudioControlEvent = {
-      channel: 0x90,
+      channel: 1,
       note: event.data[1],
       velocity: event.data[0] === 128 ? 0 : event.data[2],
     };
@@ -120,25 +123,7 @@ class Audio extends Event {
   }
 
   async setSynth(event: AudioControlEvent) {
-    // prototype using samples
-    if (event.velocity === 0) {
-      // this.audioBuffer.stop();
-      return;
-    }
-    if (!this.keys[event.note]) return;
-    const keySamples: AudioSample[] = this.keys[event.note];
-    const randomSample: number = Math.floor(Math.random() * keySamples.length);
-    const keySample: AudioSample = keySamples[0];
-    if (keySample.sample.includes('*')) return;
-    console.log('sample', event.note, randomSample, keySample);
-    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
-    const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
-    if (this.audio) {
-      this.audioBuffer = this.audio.createBufferSource();
-      this.audioBuffer.buffer = newFile?.contents;
-      this.audioBuffer.connect(this.audio.destination);
-      this.audioBuffer.start(0);
-    }
+    this.instrument.noteOn(event.channel, event.note, event.velocity);
   }
 
   reset() {

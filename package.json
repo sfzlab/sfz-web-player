@@ -54,6 +54,7 @@
   "dependencies": {
     "browser-fs-access": "^0.33.0",
     "node-fetch": "^2.6.12",
+    "underscore": "^1.13.6",
     "xml-js": "^1.6.11"
   },
   "browser": {
