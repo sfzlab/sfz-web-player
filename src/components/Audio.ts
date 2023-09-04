@@ -13,27 +13,23 @@ import FileLoader from '../utils/fileLoader';
 import { flattenSfzObject, opcodesToObject, parseSfz, setParserLoader } from '../utils/parser';
 import { pathDir, pathJoin } from '../utils/utils';
 import { pathSubDir } from '../utils/utils';
+import Sampler from './Sampler';
 
 const PRELOAD: boolean = true;
 
 class Audio extends Event {
   loader: FileLoader;
-  private audio: AudioContext | undefined;
-  private audioBuffer: AudioBufferSourceNode | undefined;
   private keys: AudioKeys = [];
+  private sampler: Sampler;
 
   constructor(options: AudioOptions) {
     super();
-    if (window.AudioContext) {
-      this.audio = new window.AudioContext();
-      this.audioBuffer = this.audio.createBufferSource();
-    }
+    this.sampler = new Sampler();
     if (window.webAudioControlsWidgetManager) {
       window.webAudioControlsWidgetManager.addMidiListener((event: any) => this.onKeyboard(event));
     } else {
       console.log('webaudio-controls not found, add to a <script> tag.');
     }
-
     if (options.loader) {
       this.loader = options.loader;
     } else {
@@ -118,11 +114,11 @@ class Audio extends Event {
       note: event.data[1],
       velocity: event.data[0] === 128 ? 0 : event.data[2],
     };
-    this.setSynth(controlEvent);
+    this.update(controlEvent);
     this.dispatchEvent('change', controlEvent);
   }
 
-  async setSynth(event: AudioControlEvent) {
+  async update(event: AudioControlEvent) {
     // prototype using samples
     if (event.velocity === 0) {
       // this.audioBuffer.stop();
@@ -136,16 +132,11 @@ class Audio extends Event {
     console.log('sample', event.note, randomSample, keySample);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
-    if (this.audio) {
-      this.audioBuffer = this.audio.createBufferSource();
-      this.audioBuffer.buffer = newFile?.contents;
-      this.audioBuffer.connect(this.audio.destination);
-      this.audioBuffer.start(0);
-    }
+    this.sampler.play(newFile?.contents);
   }
 
   reset() {
-    this.audioBuffer?.stop();
+    this.sampler.stop();
     this.keys = [];
   }
 }

@@ -58,7 +58,7 @@ class Player extends Component {
     options.loader = this.loader;
     this.interface = new Interface(options);
     this.interface.addEvent('change', (event: EventData) => {
-      if (this.audio) this.audio.setSynth(event.data);
+      if (this.audio) this.audio.update(event.data);
     });
     this.getEl().appendChild(this.interface.getEl());
     this.interface.setLoadingState(true);
