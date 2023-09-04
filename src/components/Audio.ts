@@ -13,18 +13,19 @@ import FileLoader from '../utils/fileLoader';
 import { flattenSfzObject, opcodesToObject, parseSfz, setParserLoader } from '../utils/parser';
 import { pathDir, pathJoin } from '../utils/utils';
 import { pathSubDir } from '../utils/utils';
-import Sampler from './Sampler';
+import Sample from './Sample';
 
 const PRELOAD: boolean = true;
 
 class Audio extends Event {
   loader: FileLoader;
   private keys: AudioKeys = [];
-  private sampler: Sampler;
+  private context: AudioContext;
 
   constructor(options: AudioOptions) {
     super();
-    this.sampler = new Sampler();
+    if (!window.AudioContext) window.alert('Browser does not support WebAudio');
+    this.context = new window.AudioContext();
     if (window.webAudioControlsWidgetManager) {
       window.webAudioControlsWidgetManager.addMidiListener((event: any) => this.onKeyboard(event));
     } else {
@@ -132,11 +133,12 @@ class Audio extends Event {
     console.log('sample', event.note, randomSample, keySample);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
-    this.sampler.play(newFile?.contents);
+    const sample = new Sample(this.context, newFile?.contents, keySample);
+    sample.play();
   }
 
   reset() {
-    this.sampler.stop();
+    // this.sampler.stop();
     this.keys = [];
   }
 }

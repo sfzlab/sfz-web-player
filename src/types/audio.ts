@@ -17,9 +17,11 @@ interface AudioKeys {
 
 interface AudioSample {
   ampeg_release?: number;
+  end: number;
   hikey: number;
   lokey: number;
   key: number;
+  offset: number;
   pitch_keycenter: number;
   region: AudioRegion[];
   sample: string;
