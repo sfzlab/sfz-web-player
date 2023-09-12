@@ -134,7 +134,7 @@ class Interface extends Component {
     keyboard.setAttribute('width', '775');
     keyboard.addEventListener('change', (event: any) => {
       const controlEvent: AudioControlEvent = {
-        channel: 0x90,
+        channel: 1,
         note: event.note[1],
         velocity: event.note[0] ? 100 : 0,
       };

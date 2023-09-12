@@ -142,8 +142,8 @@ function processVariables(input: string, vars: AudioSfzVariables) {
   });
 }
 
-function flattenSfzObject(headers: AudioSfzHeader[]) {
-  const keys: any = {};
+function getRegions(headers: AudioSfzHeader[]) {
+  const regions: any = [];
   let groupObj: AudioSfzOpcodeObj = {};
   headers.forEach((header: AudioSfzHeader) => {
     if (header.name === AudioOpcodes.group) {
@@ -151,16 +151,10 @@ function flattenSfzObject(headers: AudioSfzHeader[]) {
     } else if (header.name === AudioOpcodes.region) {
       const regionObj: AudioSfzOpcodeObj = opcodesToObject(header.elements);
       const mergedObj: AudioSfzOpcodeObj = Object.assign({}, groupObj, regionObj);
-      const start: number = midiNameToNum(mergedObj.lokey || mergedObj.key);
-      const end: number = midiNameToNum(mergedObj.hikey || mergedObj.key);
-      if (start === 0 && end === 0) return;
-      for (let i = start; i <= end; i++) {
-        if (!keys[i]) keys[i] = [];
-        keys[i].push(mergedObj);
-      }
+      regions.push(mergedObj);
     }
   });
-  return keys;
+  return regions;
 }
 
 function opcodesToObject(opcodes: AudioSfzOpcode[]) {
@@ -192,7 +186,7 @@ function setParserLoader(fileLoader: FileLoader) {
 
 export {
   findEnd,
-  flattenSfzObject,
+  getRegions,
   opcodesToObject,
   parseSfz,
   processDirective,

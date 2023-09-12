@@ -62,7 +62,7 @@ interface AudioSfzAttribute {
 }
 
 interface AudioSfzOpcodeObj {
-  [name: string]: string | number;
+  [name: string]: any;
 }
 
 interface AudioRegion {

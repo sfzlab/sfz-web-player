@@ -1,12 +1,12 @@
-import { AudioSample } from '../types/audio';
+import { AudioSfzOpcodeObj } from '../types/audio';
 
 class Sample {
   private context: AudioContext;
-  private region: AudioSample;
+  private region: AudioSfzOpcodeObj;
   private source: AudioBufferSourceNode;
   private sampleRate: number = 48000;
 
-  constructor(context: AudioContext, buffer: AudioBuffer, region: AudioSample) {
+  constructor(context: AudioContext, buffer: AudioBuffer, region: AudioSfzOpcodeObj) {
     this.context = context;
     this.region = region;
     this.source = this.context.createBufferSource();
