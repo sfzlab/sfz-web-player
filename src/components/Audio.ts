@@ -25,6 +25,24 @@ class Audio extends Event {
   private chanaft: number = 64;
   private polyaft: number = 64;
   private bpm: number = 120;
+  private regionDefaults: any = {
+    lochan: 0,
+    hichan: 15,
+    lokey: 0,
+    hikey: 127,
+    lovel: 0,
+    hivel: 127,
+    lobend: -8192,
+    hibend: 8192,
+    lochanaft: 0,
+    hichanaft: 127,
+    lopolyaft: 0,
+    hipolyaft: 127,
+    lorand: 0,
+    hirand: 1,
+    lobpm: 0,
+    hibpm: 500,
+  };
 
   constructor(options: AudioOptions) {
     super();
@@ -123,25 +141,25 @@ class Audio extends Event {
   }
 
   checkRegion(region: AudioSfzOpcodeObj, controlEvent: AudioControlEvent, rand: number) {
-    if (!region.sample) return false;
-    if (region.lochan && region.lochan > controlEvent.channel) return false;
-    if (region.hichan && region.hichan < controlEvent.channel) return false;
-    if (region.lokey && region.lokey > controlEvent.note) return false;
-    if (region.hikey && region.hikey < controlEvent.note) return false;
-    if (region.lovel && region.lovel > controlEvent.velocity) return false;
-    if (region.hivel && region.hivel < controlEvent.velocity) return false;
-    if (region.lobend && region.lobend > this.bend) return false;
-    if (region.hibend && region.hibend < this.bend) return false;
-    if (region.lochanaft && region.lochanaft > this.chanaft) return false;
-    if (region.hichanaft && region.hichanaft < this.chanaft) return false;
-    if (region.lopolyaft && region.lopolyaft > this.polyaft) return false;
-    if (region.hipolyaft && region.hipolyaft < this.polyaft) return false;
-    if (region.lorand && region.lorand > rand) return false;
-    if (region.hirand && region.hirand < rand) return false;
-    if (region.lobpm && region.lobpm > this.bpm) return false;
-    if (region.hibpm && region.hibpm < this.bpm) return false;
-    if (region.key && region.key !== controlEvent.note) return false;
-    return true;
+    return (
+      region.sample != null &&
+      region.lochan <= controlEvent.channel &&
+      region.hichan >= controlEvent.channel &&
+      region.lokey <= controlEvent.note &&
+      region.hikey >= controlEvent.note &&
+      region.lovel <= controlEvent.velocity &&
+      region.hivel >= controlEvent.velocity &&
+      region.lobend <= this.bend &&
+      region.hibend >= this.bend &&
+      region.lochanaft <= this.chanaft &&
+      region.hichanaft >= this.chanaft &&
+      region.lopolyaft <= this.polyaft &&
+      region.hipolyaft >= this.polyaft &&
+      region.lorand <= rand &&
+      region.hirand >= rand &&
+      region.lobpm <= this.bpm &&
+      region.hibpm >= this.bpm
+    );
   }
 
   onKeyboard(event: any) {
@@ -160,18 +178,22 @@ class Audio extends Event {
       return;
     }
     console.log('event', event);
-    const regionsFiltered = this.regions.filter((region: AudioSfzOpcodeObj) =>
-      this.checkRegion(region, event, Math.random())
-    );
+    const random = Math.random();
+    const regionsFiltered = this.regions.filter((region: AudioSfzOpcodeObj) => {
+      if (!region.lokey && region.key) region.lokey = region.key;
+      if (!region.hikey && region.key) region.hikey = region.key;
+      const merged = Object.assign({}, this.regionDefaults, region);
+      return this.checkRegion(merged, event, random);
+    });
     console.log('regionsFiltered', regionsFiltered);
     if (!regionsFiltered.length) return;
     const randomSample: number = Math.floor(Math.random() * regionsFiltered.length);
-    console.log('randomSample', randomSample);
     const keySample: AudioSfzOpcodeObj = regionsFiltered[randomSample];
     console.log('keySample', keySample);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
     const sample = new Sample(this.context, newFile?.contents, keySample);
+    sample.setPlaybackRate(event);
     sample.play();
   }
 
