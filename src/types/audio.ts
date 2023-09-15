@@ -11,6 +11,10 @@ interface AudioControlEvent {
   velocity: number;
 }
 
+interface AudioKeyboardMap {
+  [name: number]: boolean;
+}
+
 interface AudioKeys {
   [key: number]: AudioSample[];
 }
@@ -76,6 +80,7 @@ interface AudioSfzVariables {
 
 export {
   AudioControlEvent,
+  AudioKeyboardMap,
   AudioKeys,
   AudioOpcodes,
   AudioSample,

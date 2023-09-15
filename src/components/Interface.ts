@@ -13,14 +13,13 @@ import {
   PlayerText,
 } from '../types/interface';
 import FileLoader from '../utils/fileLoader';
-import { AudioControlEvent } from '../types/audio';
+import { AudioControlEvent, AudioKeyboardMap } from '../types/audio';
 
 class Interface extends Component {
   private width: number = 775;
   private height: number = 330;
   private keyboard: any;
-  private keyboardStart: number = 0;
-  private keyboardEnd: number = 200;
+  private keyboardMap: AudioKeyboardMap = {};
   private instrument: { [name: string]: any[] } = {};
   private loadingScreen: HTMLDivElement;
   private tabs: HTMLDivElement;
@@ -147,16 +146,19 @@ class Interface extends Component {
   }
 
   resizeKeyboard() {
+    const keyboardMapKeys: string[] = Object.keys(this.keyboardMap);
+    const keyStart: number = Number(keyboardMapKeys[0]);
+    const keyEnd: number = Number(keyboardMapKeys[keyboardMapKeys.length - 1]);
     const keysFit: number = Math.floor(this.getEl().clientWidth / 13);
-    const keysRange: number = this.keyboardEnd - this.keyboardStart;
+    const keysRange: number = keyEnd - keyStart;
     const keysDiff: number = Math.floor(keysFit / 2 - keysRange / 2);
-    this.keyboard.min = Math.max(this.keyboardStart - keysDiff, 0);
+    this.keyboard.min = Math.max(keyStart - keysDiff, 0);
     this.keyboard.keys = keysFit;
     this.keyboard.width = this.getEl().clientWidth;
-    // This feature is only available if this PR is merged
-    // https://github.com/g200kg/webaudio-controls/pull/52
-    this.keyboard.setDisabledRange(1, 0, this.keyboardStart);
-    this.keyboard.setDisabledRange(1, this.keyboardEnd, 200);
+    for (let i = 0; i < 200; i += 1) {
+      this.keyboard.setdisabledvalues(!this.keyboardMap[i], Number(i));
+    }
+    this.keyboard.redraw();
   }
 
   setKeyboard(event: AudioControlEvent) {
@@ -168,10 +170,9 @@ class Interface extends Component {
     else this.getEl().classList.remove('loading');
   }
 
-  setKeyboardRange(start: number, end: number) {
-    console.log('setKeyboardRange', start, end);
-    this.keyboardStart = start || 0;
-    this.keyboardEnd = end || 100;
+  setKeyboardMap(map: AudioKeyboardMap) {
+    console.log('keyboardMap', map);
+    this.keyboardMap = map;
     this.resizeKeyboard();
   }
 

@@ -43,8 +43,8 @@ class Player extends Component {
     this.audio.addEvent('change', (event: EventData) => {
       if (this.interface) this.interface.setKeyboard(event.data);
     });
-    this.audio.addEvent('range', (event: EventData) => {
-      if (this.interface) this.interface.setKeyboardRange(event.data.start, event.data.end);
+    this.audio.addEvent('keyboardMap', (event: EventData) => {
+      if (this.interface) this.interface.setKeyboardMap(event.data);
     });
     this.audio.addEvent('preload', (event: EventData) => {
       if (this.interface) this.interface.setLoadingText(event.data.status);

@@ -1,11 +1,4 @@
-import {
-  AudioControlEvent,
-  AudioKeys,
-  AudioOpcodes,
-  AudioSample,
-  AudioSfzHeader,
-  AudioSfzOpcodeObj,
-} from '../types/audio';
+import { AudioControlEvent, AudioKeyboardMap, AudioOpcodes, AudioSfzHeader, AudioSfzOpcodeObj } from '../types/audio';
 import { AudioOptions } from '../types/player';
 import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
@@ -111,19 +104,16 @@ class Audio extends Event {
       this.regions[key].sample = samplePath;
       this.regions[key].modified = true;
     }
-    this.dispatchEvent('range', this.getRange(this.regions));
+    this.dispatchEvent('keyboardMap', this.getKeyboardMap(this.regions));
   }
 
-  getRange(regions: AudioSfzOpcodeObj[]) {
-    let start: number = Infinity;
-    let end: number = 0;
-    regions.forEach((region: AudioSfzOpcodeObj) => {
-      if (region.key && region.key < start) start = region.key;
-      if (region.lokey && region.lokey < start) start = region.lokey;
-      if (region.key && region.key > end) end = region.key;
-      if (region.hikey && region.hikey > end) end = region.hikey;
-    });
-    return { start, end };
+  getKeyboardMap(regions: AudioSfzOpcodeObj[]) {
+    const keyboardMap: AudioKeyboardMap = {};
+    for (let i = 0; i < 200; i += 1) {
+      const regionsFiltered = this.checkRegions(regions, { channel: 1, note: i, velocity: 100 });
+      if (regionsFiltered.length) keyboardMap[i] = true;
+    }
+    return keyboardMap;
   }
 
   async preloadFiles(regions: AudioSfzOpcodeObj[]) {
@@ -162,6 +152,16 @@ class Audio extends Event {
     );
   }
 
+  checkRegions(regions: AudioSfzOpcodeObj[], controlEvent: AudioControlEvent) {
+    const random = Math.random();
+    return regions.filter((region: AudioSfzOpcodeObj) => {
+      if (!region.lokey && region.key) region.lokey = region.key;
+      if (!region.hikey && region.key) region.hikey = region.key;
+      const merged = Object.assign({}, this.regionDefaults, region);
+      return this.checkRegion(merged, controlEvent, random);
+    });
+  }
+
   onKeyboard(event: any) {
     const controlEvent: AudioControlEvent = {
       channel: 1,
@@ -178,13 +178,7 @@ class Audio extends Event {
       return;
     }
     console.log('event', event);
-    const random = Math.random();
-    const regionsFiltered = this.regions.filter((region: AudioSfzOpcodeObj) => {
-      if (!region.lokey && region.key) region.lokey = region.key;
-      if (!region.hikey && region.key) region.hikey = region.key;
-      const merged = Object.assign({}, this.regionDefaults, region);
-      return this.checkRegion(merged, event, random);
-    });
+    const regionsFiltered = this.checkRegions(this.regions, event);
     console.log('regionsFiltered', regionsFiltered);
     if (!regionsFiltered.length) return;
     const randomSample: number = Math.floor(Math.random() * regionsFiltered.length);
