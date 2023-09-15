@@ -49,6 +49,8 @@ class Interface extends Component {
     if (options.file) {
       const file: FileLocal | FileRemote | undefined = this.loader.addFile(options.file);
       this.showFile(file);
+    } else {
+      this.reset();
     }
   }
 

@@ -24,8 +24,8 @@
   <script>
     var sfzPlayer = new Sfz.Player("sfzPlayer", {
       audio: {
-        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Programs/01-green_keyswitch.sfz',
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Programs/',
+        file: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/Hang-D-minor-20220330.sfz',
+        root: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/',
       },
       header: {
         local: true,
@@ -37,7 +37,8 @@
           },
           {
             name: 'Hang D Minor',
-            id: 'freepats/hang-d-minor'
+            id: 'freepats/hang-d-minor',
+            selected: true
           },
           {
             name: 'Synthesizer Percussion',
@@ -81,8 +82,7 @@
           },
           {
             name: 'Black and Green Guitars',
-            id: 'studiorack/black-and-green-guitars',
-            selected: true
+            id: 'studiorack/black-and-green-guitars'
           },
           {
             name: 'Horse Pulse',
@@ -127,23 +127,17 @@
         ]
       },
       editor: {
-        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
+        file: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/Hang-D-minor-20220330.sfz',
         directory: [
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/Hang-D-minor-20220330.sfz',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/README.md',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/plugins.json',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/.github/workflows/release.yml',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/.github/workflows/test.yml'
         ],
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/',
+        root: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/',
       },
-      interface: {
-        file: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml',
-        directory: [
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/aria_info.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/GUI/01-green_keyswitch.xml',
-          'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/Black%20And%20Green%20Guitars.bank.xml'
-        ],
-        root: 'https://raw.githubusercontent.com/studiorack/black-and-green-guitars/main/'
-      }
+      interface: {}
     });
   </script>
 </body>
