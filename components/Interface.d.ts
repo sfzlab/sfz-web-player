@@ -4,13 +4,12 @@ import Component from './component';
 import { FileLocal, FileRemote } from '../types/files';
 import { PlayerElement, PlayerElements, PlayerImage, PlayerText } from '../types/interface';
 import FileLoader from '../utils/fileLoader';
-import { AudioControlEvent } from '../types/audio';
+import { AudioControlEvent, AudioKeyboardMap } from '../types/audio';
 declare class Interface extends Component {
     private width;
     private height;
     private keyboard;
-    private keyboardStart;
-    private keyboardEnd;
+    private keyboardMap;
     private instrument;
     private loadingScreen;
     private tabs;
@@ -32,7 +31,7 @@ declare class Interface extends Component {
     resizeKeyboard(): void;
     setKeyboard(event: AudioControlEvent): void;
     setLoadingState(loading: boolean): void;
-    setKeyboardRange(start: number, end: number): void;
+    setKeyboardMap(map: AudioKeyboardMap): void;
     setLoadingText(text: string): void;
     addTab(name: string): void;
     addText(text: PlayerText): HTMLSpanElement;

@@ -9,14 +9,19 @@ interface AudioControlEvent {
     note: number;
     velocity: number;
 }
+interface AudioKeyboardMap {
+    [name: number]: boolean;
+}
 interface AudioKeys {
     [key: number]: AudioSample[];
 }
 interface AudioSample {
     ampeg_release?: number;
+    end: number;
     hikey: number;
     lokey: number;
     key: number;
+    offset: number;
     pitch_keycenter: number;
     region: AudioRegion[];
     sample: string;
@@ -52,7 +57,7 @@ interface AudioSfzAttribute {
     value: string;
 }
 interface AudioSfzOpcodeObj {
-    [name: string]: string | number;
+    [name: string]: any;
 }
 interface AudioRegion {
     sample: string;
@@ -61,4 +66,4 @@ interface AudioRegion {
 interface AudioSfzVariables {
     [name: string]: string;
 }
-export { AudioControlEvent, AudioKeys, AudioOpcodes, AudioSample, AudioSfzAttribute, AudioSfzHeader, AudioSfzOpcode, AudioSfzOpcodeObj, AudioSfzVariables, };
+export { AudioControlEvent, AudioKeyboardMap, AudioKeys, AudioOpcodes, AudioSample, AudioSfzAttribute, AudioSfzHeader, AudioSfzOpcode, AudioSfzOpcodeObj, AudioSfzVariables, };
