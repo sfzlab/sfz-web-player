@@ -1,7 +1,0 @@
-<master>
-sw_last=36
-sw_label=Twang
-hicc118=63
-#include "modules/env.sfz"
-
-#include "modules/region.sfz"

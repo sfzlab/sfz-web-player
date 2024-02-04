@@ -1,8 +1,9 @@
-import { AudioControlEvent, AudioSfzOpcodeObj } from '../types/audio';
+import { ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
+import { AudioControlEvent } from '../types/audio';
 
 class Sample {
   private context: AudioContext;
-  private region: AudioSfzOpcodeObj;
+  private region: ParseOpcodeObj;
   private source: AudioBufferSourceNode;
   private sampleRate: number = 48000;
   private sampleDefaults: any = {
@@ -16,7 +17,7 @@ class Sample {
     veltrack: 0,
   };
 
-  constructor(context: AudioContext, buffer: AudioBuffer, region: AudioSfzOpcodeObj) {
+  constructor(context: AudioContext, buffer: AudioBuffer, region: ParseOpcodeObj) {
     this.context = context;
     this.region = Object.assign({}, this.sampleDefaults, region);
     this.source = this.context.createBufferSource();

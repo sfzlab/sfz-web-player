@@ -11,12 +11,12 @@ import Editor from './Editor';
 import Interface from './Interface';
 import './Player.scss';
 import { directoryOpen, FileWithDirectoryAndFileHandle } from 'browser-fs-access';
-import { pathDir, pathExt, pathRoot } from '../utils/utils';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
 import Audio from './Audio';
 import { EventData } from '../types/event';
-import { getJSON } from '../utils/api';
+import { pathGetExt, pathGetRoot } from '@sfz-tools/core/dist/utils';
+import { apiJson } from '@sfz-tools/core/dist/api';
 
 class Player extends Component {
   private audio?: Audio;
@@ -117,7 +117,7 @@ class Player extends Component {
         recursive: true,
       })) as FileWithDirectoryAndFileHandle[];
       console.log(`${blobs.length} files selected.`);
-      this.loadDirectory(pathRoot(blobs[0].webkitRelativePath), blobs);
+      this.loadDirectory(pathGetRoot(blobs[0].webkitRelativePath), blobs);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         return console.error(err);
@@ -127,7 +127,7 @@ class Player extends Component {
   }
 
   async loadRemoteInstrument(repo: string) {
-    const response: any = await getJSON(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
+    const response: any = await apiJson(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
     const paths: string[] = response.tree.map(
       (file: any) => `https://raw.githubusercontent.com/${repo}/main/${file.path}`
     );
@@ -142,11 +142,11 @@ class Player extends Component {
     for (const file of files) {
       const path: string = typeof file === 'string' ? file : file.webkitRelativePath;
       const depth: number = path.match(/\//g)?.length || 0;
-      if (pathExt(path) === 'sfz' && depth < audioFileDepth) {
+      if (pathGetExt(path) === 'sfz' && depth < audioFileDepth) {
         audioFile = file;
         audioFileDepth = depth;
       }
-      if (pathExt(path) === 'xml' && depth < interfaceFileDepth) {
+      if (pathGetExt(path) === 'xml' && depth < interfaceFileDepth) {
         interfaceFile = file;
         interfaceFileDepth = depth;
       }

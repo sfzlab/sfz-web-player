@@ -1,18 +1,18 @@
-import { AudioControlEvent, AudioKeyboardMap, AudioOpcodes, AudioSfzHeader, AudioSfzOpcodeObj } from '../types/audio';
+import { AudioControlEvent, AudioKeyboardMap } from '../types/audio';
 import { AudioOptions } from '../types/player';
 import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
-import { getRegions, opcodesToObject, parseSfz, setParserLoader } from '../utils/parser';
-import { pathDir, pathJoin } from '../utils/utils';
-import { pathSubDir } from '../utils/utils';
 import Sample from './Sample';
+import { pathGetDirectory, pathGetSubDirectory, pathJoin } from '@sfz-tools/core/dist/utils';
+import { parseOpcodeObject, parseRegions, parseSfz } from '@sfz-tools/core/dist/parse';
+import { ParseHeader, ParseHeaderNames, ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
 
 const PRELOAD: boolean = true;
 
 class Audio extends Event {
   loader: FileLoader;
-  private regions: AudioSfzOpcodeObj[] = [];
+  private regions: ParseOpcodeObj[] = [];
   private context: AudioContext;
   private bend: number = 0;
   private chanaft: number = 64;
@@ -51,7 +51,8 @@ class Audio extends Event {
     } else {
       this.loader = new FileLoader();
     }
-    setParserLoader(this.loader);
+    // Use shared loader
+    // parseSetLoader(this.loader);
     if (options.root) this.loader.setRoot(options.root);
     if (options.file) {
       const file: FileLocal | FileRemote | undefined = this.loader.addFile(options.file);
@@ -67,37 +68,37 @@ class Audio extends Event {
     file = await this.loader.getFile(file);
     if (!file) return;
     console.log('showFile', file);
-    const prefix: string = pathDir(file.path);
+    const prefix: string = pathGetDirectory(file.path);
     console.log('prefix', prefix);
-    const headers: AudioSfzHeader[] = await parseSfz(prefix, file?.contents);
+    const headers: ParseHeader[] = await parseSfz(file?.contents, prefix);
     console.log('headers', headers);
-    this.regions = getRegions(headers);
+    this.regions = parseRegions(headers);
     console.log('regions', this.regions);
     this.fixPaths(headers, file);
     if (PRELOAD) await this.preloadFiles(this.regions);
     this.dispatchEvent('loading', false);
   }
 
-  fixPaths(headers: AudioSfzHeader[], file: FileLocal | FileRemote) {
+  fixPaths(headers: ParseHeader[], file: FileLocal | FileRemote) {
     // if file contains default path
     let defaultPath: string = '';
-    headers.forEach((header: AudioSfzHeader) => {
-      if (header.name === AudioOpcodes.control) {
-        const controlObj: AudioSfzOpcodeObj = opcodesToObject(header.elements);
+    headers.forEach((header: ParseHeader) => {
+      if (header.name === ParseHeaderNames.control) {
+        const controlObj: ParseOpcodeObj = parseOpcodeObject(header.elements);
         if (controlObj.default_path) {
           defaultPath = controlObj.default_path as string;
           console.log('defaultPath', defaultPath);
         }
       }
     });
-    const rootPath: string = pathSubDir(pathDir(file.path), this.loader.root);
+    const rootPath: string = pathGetSubDirectory(pathGetDirectory(file.path), this.loader.root);
     for (const key in this.regions) {
       let samplePath: string = this.regions[key].sample;
       // Temporary fix for recurring samples.
       if (this.regions[key].modified) continue;
       if (!samplePath || samplePath.startsWith('https')) continue;
       if (file.path.startsWith('https')) {
-        samplePath = pathJoin(pathDir(file.path), defaultPath, samplePath);
+        samplePath = pathJoin(pathGetDirectory(file.path), defaultPath, samplePath);
       } else if (!samplePath.startsWith(rootPath)) {
         samplePath = pathJoin(rootPath, defaultPath, samplePath);
       }
@@ -107,7 +108,7 @@ class Audio extends Event {
     this.dispatchEvent('keyboardMap', this.getKeyboardMap(this.regions));
   }
 
-  getKeyboardMap(regions: AudioSfzOpcodeObj[]) {
+  getKeyboardMap(regions: ParseOpcodeObj[]) {
     const keyboardMap: AudioKeyboardMap = {};
     for (let i = 0; i < 200; i += 1) {
       const regionsFiltered = this.checkRegions(regions, { channel: 1, note: i, velocity: 100 });
@@ -116,7 +117,7 @@ class Audio extends Event {
     return keyboardMap;
   }
 
-  async preloadFiles(regions: AudioSfzOpcodeObj[]) {
+  async preloadFiles(regions: ParseOpcodeObj[]) {
     let start: number = 0;
     const end: number = Object.keys(regions).length - 1;
     for (const key in regions) {
@@ -130,7 +131,7 @@ class Audio extends Event {
     }
   }
 
-  checkRegion(region: AudioSfzOpcodeObj, controlEvent: AudioControlEvent, rand: number) {
+  checkRegion(region: ParseOpcodeObj, controlEvent: AudioControlEvent, rand: number) {
     return (
       region.sample != null &&
       region.lochan <= controlEvent.channel &&
@@ -152,9 +153,9 @@ class Audio extends Event {
     );
   }
 
-  checkRegions(regions: AudioSfzOpcodeObj[], controlEvent: AudioControlEvent) {
+  checkRegions(regions: ParseOpcodeObj[], controlEvent: AudioControlEvent) {
     const random = Math.random();
-    return regions.filter((region: AudioSfzOpcodeObj) => {
+    return regions.filter((region: ParseOpcodeObj) => {
       if (!region.lokey && region.key) region.lokey = region.key;
       if (!region.hikey && region.key) region.hikey = region.key;
       const merged = Object.assign({}, this.regionDefaults, region);
@@ -182,7 +183,7 @@ class Audio extends Event {
     console.log('regionsFiltered', regionsFiltered);
     if (!regionsFiltered.length) return;
     const randomSample: number = Math.floor(Math.random() * regionsFiltered.length);
-    const keySample: AudioSfzOpcodeObj = regionsFiltered[randomSample];
+    const keySample: ParseOpcodeObj = regionsFiltered[randomSample];
     console.log('keySample', keySample);
     const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
     const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
