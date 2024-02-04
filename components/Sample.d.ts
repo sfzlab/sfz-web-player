@@ -1,11 +1,12 @@
-import { AudioControlEvent, AudioSfzOpcodeObj } from '../types/audio';
+import { ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
+import { AudioControlEvent } from '../types/audio';
 declare class Sample {
     private context;
     private region;
     private source;
     private sampleRate;
     private sampleDefaults;
-    constructor(context: AudioContext, buffer: AudioBuffer, region: AudioSfzOpcodeObj);
+    constructor(context: AudioContext, buffer: AudioBuffer, region: ParseOpcodeObj);
     getCents(note: number, bend: number): number;
     pitchToFreq(pitch: number): number;
     setPlaybackRate(event: AudioControlEvent, bend?: number): void;
