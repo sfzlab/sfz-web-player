@@ -4,9 +4,9 @@ import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
 import Sample from './Sample';
-import { pathGetDirectory, pathGetSubDirectory, pathJoin } from '@sfz-tools/core/dist/utils';
-import { parseOpcodeObject, parseRegions, parseSfz } from '@sfz-tools/core/dist/parse';
-import { ParseHeader, ParseHeaderNames, ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
+import { pathGetDirectory } from '@sfz-tools/core/dist/utils';
+import { parseHeaders, parseSfz } from '@sfz-tools/core/dist/parse';
+import { ParseHeader, ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
 
 const PRELOAD: boolean = true;
 
@@ -70,50 +70,38 @@ class Audio extends Event {
     console.log('showFile', file);
     const prefix: string = pathGetDirectory(file.path);
     console.log('prefix', prefix);
-    const headers: ParseHeader[] = await parseSfz(file?.contents, prefix);
-    console.log('headers', headers);
-    this.regions = parseRegions(headers);
-    console.log('regions', this.regions);
-    this.fixPaths(headers, file);
-    if (PRELOAD) await this.preloadFiles(this.regions);
-    this.dispatchEvent('loading', false);
-  }
 
-  fixPaths(headers: ParseHeader[], file: FileLocal | FileRemote) {
-    // if file contains default path
-    let defaultPath: string = '';
-    headers.forEach((header: ParseHeader) => {
-      if (header.name === ParseHeaderNames.control) {
-        const controlObj: ParseOpcodeObj = parseOpcodeObject(header.elements);
-        if (controlObj.default_path) {
-          defaultPath = controlObj.default_path as string;
-          console.log('defaultPath', defaultPath);
-        }
-      }
-    });
-    const rootPath: string = pathGetSubDirectory(pathGetDirectory(file.path), this.loader.root);
-    for (const key in this.regions) {
-      let samplePath: string = this.regions[key].sample;
-      // Temporary fix for recurring samples.
-      if (this.regions[key].modified) continue;
-      if (!samplePath || samplePath.startsWith('https')) continue;
-      if (file.path.startsWith('https')) {
-        samplePath = pathJoin(pathGetDirectory(file.path), defaultPath, samplePath);
-      } else if (!samplePath.startsWith(rootPath)) {
-        samplePath = pathJoin(rootPath, defaultPath, samplePath);
-      }
-      this.regions[key].sample = samplePath;
-      this.regions[key].modified = true;
-    }
+    console.time('parseSfz');
+    const headers: ParseHeader[] = await parseSfz(file?.contents, prefix);
+    console.timeEnd('parseSfz');
+    console.log('headers', headers);
+
+    console.time('parseHeaders');
+    this.regions = parseHeaders(headers, prefix);
+    console.timeEnd('parseHeaders');
+    console.log('regions', this.regions);
+
+    console.time('getKeyboardMap');
     this.dispatchEvent('keyboardMap', this.getKeyboardMap(this.regions));
+    console.timeEnd('getKeyboardMap');
+
+    console.time('preloadFiles');
+    if (PRELOAD) await this.preloadFiles(this.regions);
+    console.timeEnd('preloadFiles');
+
+    this.dispatchEvent('loading', false);
   }
 
   getKeyboardMap(regions: ParseOpcodeObj[]) {
     const keyboardMap: AudioKeyboardMap = {};
-    for (let i = 0; i < 200; i += 1) {
-      const regionsFiltered = this.checkRegions(regions, { channel: 1, note: i, velocity: 100 });
-      if (regionsFiltered.length) keyboardMap[i] = true;
-    }
+    regions.forEach((region: ParseOpcodeObj) => {
+      if (!region.lokey && region.key) region.lokey = region.key;
+      if (!region.hikey && region.key) region.hikey = region.key;
+      const merged = Object.assign({}, this.regionDefaults, region);
+      for (let i = merged.lokey; i <= merged.hikey; i += 1) {
+        keyboardMap[i] = true;
+      }
+    });
     return keyboardMap;
   }
 
