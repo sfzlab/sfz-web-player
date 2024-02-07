@@ -71,11 +71,17 @@ class Audio extends Event {
     const prefix: string = pathGetDirectory(file.path);
     console.log('prefix', prefix);
 
-    console.time('parseSfz');
-    const headers: ParseHeader[] = await parseSfz(file?.contents, prefix);
-    console.timeEnd('parseSfz');
-    console.log('headers', headers);
-
+    let headers: ParseHeader[] = [];
+    if (file.ext === 'sfz') {
+      console.time('parseSfz');
+      headers = await parseSfz(file?.contents, prefix);
+      console.timeEnd('parseSfz');
+      console.log('headers', headers);
+    } else if (file.ext === 'json') {
+      console.time('JSON.parse');
+      headers = JSON.parse(file?.contents).elements;
+      console.timeEnd('JSON.parse');
+    }
     console.time('parseHeaders');
     this.regions = parseHeaders(headers, prefix);
     console.timeEnd('parseHeaders');

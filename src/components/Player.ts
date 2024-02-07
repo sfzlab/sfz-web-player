@@ -88,8 +88,13 @@ class Player extends Component {
       inputRemote.type = 'button';
       inputRemote.value = 'Remote directory';
       inputRemote.addEventListener('click', async (e) => {
-        const repo: string | null = window.prompt('Enter a GitHub owner/repo', 'studiorack/black-and-green-guitars');
-        if (repo) await this.loadRemoteInstrument(repo);
+        const id: string | null = window.prompt('Enter a GitHub owner/repo', 'studiorack/black-and-green-guitars');
+        if (id)
+          await this.loadRemoteInstrument({
+            branch: 'main',
+            id,
+            name: 'Custom',
+          });
       });
       div.appendChild(inputRemote);
     }
@@ -103,7 +108,7 @@ class Player extends Component {
       });
       inputPresets.addEventListener('change', async (e) => {
         const preset: HeaderPreset = options.presets[inputPresets.selectedIndex];
-        await this.loadRemoteInstrument(preset.id);
+        await this.loadRemoteInstrument(preset);
       });
       div.appendChild(inputPresets);
     }
@@ -126,17 +131,20 @@ class Player extends Component {
     }
   }
 
-  async loadRemoteInstrument(repo: string) {
-    const response: any = await apiJson(`https://api.github.com/repos/${repo}/git/trees/main?recursive=1`);
+  async loadRemoteInstrument(preset: HeaderPreset) {
+    const branch: string = preset.branch || 'main';
+    const response: any = await apiJson(`https://api.github.com/repos/${preset.id}/git/trees/${branch}?recursive=1`);
     const paths: string[] = response.tree.map(
-      (file: any) => `https://raw.githubusercontent.com/${repo}/main/${file.path}`
+      (file: any) => `https://raw.githubusercontent.com/${preset.id}/${branch}/${file.path}`
     );
-    await this.loadDirectory(`https://raw.githubusercontent.com/${repo}/main/`, paths);
+    await this.loadDirectory(`https://raw.githubusercontent.com/${preset.id}/${branch}/`, paths);
   }
 
   async loadDirectory(root: string, files: string[] | FileWithDirectoryAndFileHandle[]) {
     let audioFile: string | FileWithDirectoryAndFileHandle | undefined;
     let audioFileDepth: number = 1000;
+    let audioFileJson: string | FileWithDirectoryAndFileHandle | undefined;
+    let audioFileJsonDepth: number = 1000;
     let interfaceFile: string | FileWithDirectoryAndFileHandle | undefined;
     let interfaceFileDepth: number = 1000;
     for (const file of files) {
@@ -146,12 +154,17 @@ class Player extends Component {
         audioFile = file;
         audioFileDepth = depth;
       }
+      if (path.endsWith('.sfz.json') && depth < audioFileJsonDepth) {
+        audioFileJson = file;
+        audioFileJsonDepth = depth;
+      }
       if (pathGetExt(path) === 'xml' && depth < interfaceFileDepth) {
         interfaceFile = file;
         interfaceFileDepth = depth;
       }
     }
     console.log('audioFile', audioFile);
+    console.log('audioFileJson', audioFileJson);
     console.log('interfaceFile', interfaceFile);
     this.loader.resetFiles();
     this.loader.setRoot(root);
@@ -177,8 +190,9 @@ class Player extends Component {
       }
     }
     if (this.audio) {
-      if (audioFile) {
-        const file: FileLocal | FileRemote | undefined = this.audio.loader.addFile(audioFile);
+      const audioFilePriority: string | FileWithDirectoryAndFileHandle | undefined = audioFileJson || audioFile;
+      if (audioFilePriority) {
+        const file: FileLocal | FileRemote | undefined = this.audio.loader.addFile(audioFilePriority);
         await this.audio.showFile(file);
       } else {
         this.audio.reset();

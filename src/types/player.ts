@@ -21,6 +21,7 @@ interface HeaderOptions {
 }
 
 interface HeaderPreset {
+  branch?: string;
   name: string;
   id: string;
   selected?: boolean;
@@ -37,7 +38,7 @@ interface PlayerOptions {
   audio?: AudioOptions;
   editor?: EditorOptions;
   header?: HeaderOptions;
-  instrument?: string;
+  instrument?: HeaderPreset;
   interface?: InterfaceOptions;
 }
 
