@@ -61,6 +61,7 @@ class Audio extends Event {
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
+    console.time('showFile');
     this.dispatchEvent('preload', {
       status: `Loading sfz files`,
     });
@@ -96,6 +97,7 @@ class Audio extends Event {
     console.timeEnd('preloadFiles');
 
     this.dispatchEvent('loading', false);
+    console.timeEnd('showFile');
   }
 
   getKeyboardMap(regions: ParseOpcodeObj[]) {
