@@ -1,4 +1,4 @@
-import { AudioOptions, EditorOptions, HeaderOptions, InterfaceOptions, PlayerOptions } from '../types/player';
+import { AudioOptions, EditorOptions, HeaderOptions, HeaderPreset, InterfaceOptions, PlayerOptions } from '../types/player';
 import Component from './component';
 import './Player.scss';
 import { FileWithDirectoryAndFileHandle } from 'browser-fs-access';
@@ -14,7 +14,7 @@ declare class Player extends Component {
     setupEditor(options: EditorOptions): void;
     setupHeader(options: HeaderOptions): void;
     loadLocalInstrument(): Promise<void>;
-    loadRemoteInstrument(repo: string): Promise<void>;
+    loadRemoteInstrument(preset: HeaderPreset): Promise<void>;
     loadDirectory(root: string, files: string[] | FileWithDirectoryAndFileHandle[]): Promise<void>;
 }
 export default Player;
