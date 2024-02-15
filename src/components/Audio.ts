@@ -1,5 +1,5 @@
 import { AudioControlEvent, AudioKeyboardMap } from '../types/audio';
-import { AudioOptions } from '../types/player';
+import { AudioOptions, AudioPreload } from '../types/player';
 import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
@@ -8,10 +8,9 @@ import { pathGetDirectory } from '@sfz-tools/core/dist/utils';
 import { parseHeaders, parseSfz } from '@sfz-tools/core/dist/parse';
 import { ParseHeader, ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
 
-const PRELOAD: boolean = true;
-
 class Audio extends Event {
   loader: FileLoader;
+  private preload: AudioPreload = AudioPreload.ON_DEMAND;
   private regions: ParseOpcodeObj[] = [];
   private context: AudioContext;
   private bend: number = 0;
@@ -58,10 +57,10 @@ class Audio extends Event {
       const file: FileLocal | FileRemote | undefined = this.loader.addFile(options.file);
       this.showFile(file);
     }
+    if (options.preload) this.preload = options.preload;
   }
 
   async showFile(file: FileLocal | FileRemote | undefined) {
-    console.time('showFile');
     this.dispatchEvent('preload', {
       status: `Loading sfz files`,
     });
@@ -74,46 +73,44 @@ class Audio extends Event {
 
     let headers: ParseHeader[] = [];
     if (file.ext === 'sfz') {
-      console.time('parseSfz');
       headers = await parseSfz(file?.contents, prefix);
-      console.timeEnd('parseSfz');
       console.log('headers', headers);
     } else if (file.ext === 'json') {
-      console.time('JSON.parse');
       headers = JSON.parse(file?.contents).elements;
-      console.timeEnd('JSON.parse');
     }
-    console.time('parseHeaders');
+
     this.regions = parseHeaders(headers, prefix);
-    console.timeEnd('parseHeaders');
     console.log('regions', this.regions);
 
-    console.time('getKeyboardMap');
-    this.dispatchEvent('keyboardMap', this.getKeyboardMap(this.regions));
-    console.timeEnd('getKeyboardMap');
-
-    console.time('preloadFiles');
-    if (PRELOAD) await this.preloadFiles(this.regions);
-    console.timeEnd('preloadFiles');
-
+    console.log('preload', this.preload);
+    if (this.preload === AudioPreload.SEQUENTIAL) {
+      await this.preloadFiles(this.regions);
+    } else {
+      this.dispatchEvent('keyboardMap', this.getKeyboardMap(this.regions));
+    }
     this.dispatchEvent('loading', false);
-    console.timeEnd('showFile');
   }
 
   getKeyboardMap(regions: ParseOpcodeObj[]) {
     const keyboardMap: AudioKeyboardMap = {};
     regions.forEach((region: ParseOpcodeObj) => {
-      if (!region.lokey && region.key) region.lokey = region.key;
-      if (!region.hikey && region.key) region.hikey = region.key;
-      const merged = Object.assign({}, this.regionDefaults, region);
-      for (let i = merged.lokey; i <= merged.hikey; i += 1) {
-        keyboardMap[i] = true;
-      }
+      this.updateKeyboardMap(region, keyboardMap);
     });
     return keyboardMap;
   }
 
+  updateKeyboardMap(region: ParseOpcodeObj, keyboardMap: AudioKeyboardMap) {
+    if (!region.lokey && region.key) region.lokey = region.key;
+    if (!region.hikey && region.key) region.hikey = region.key;
+    const merged = Object.assign({}, this.regionDefaults, region);
+    for (let i = merged.lokey; i <= merged.hikey; i += 1) {
+      keyboardMap[i] = true;
+    }
+  }
+
   async preloadFiles(regions: ParseOpcodeObj[]) {
+    const keyboardMap: AudioKeyboardMap = {};
+    this.dispatchEvent('keyboardMap', keyboardMap);
     let start: number = 0;
     const end: number = Object.keys(regions).length - 1;
     for (const key in regions) {
@@ -124,6 +121,8 @@ class Audio extends Event {
       if (!samplePath || samplePath.includes('*')) continue;
       await this.loader.getFile(samplePath, true);
       start += 1;
+      this.updateKeyboardMap(regions[key], keyboardMap);
+      this.dispatchEvent('keyboardMap', keyboardMap);
     }
   }
 

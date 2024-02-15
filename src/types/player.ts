@@ -4,7 +4,17 @@ import FileLoader from '../utils/fileLoader';
 interface AudioOptions {
   file?: string | FileWithDirectoryAndFileHandle;
   loader?: FileLoader;
+  preload?: AudioPreload;
   root?: string;
+}
+
+enum AudioPreload {
+  // No preloading, samples is loaded when key is pressed.
+  ON_DEMAND = 'on-demand',
+  // Loop through each key, and preload one sample for each key.
+  PROGRESSIVE = 'progressive',
+  // Loop through order of the file, and preload each sample.
+  SEQUENTIAL = 'sequential',
 }
 
 interface EditorOptions {
@@ -42,4 +52,4 @@ interface PlayerOptions {
   interface?: InterfaceOptions;
 }
 
-export { AudioOptions, EditorOptions, HeaderOptions, HeaderPreset, InterfaceOptions, PlayerOptions };
+export { AudioOptions, AudioPreload, EditorOptions, HeaderOptions, HeaderPreset, InterfaceOptions, PlayerOptions };

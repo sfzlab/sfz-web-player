@@ -173,7 +173,6 @@ class Interface extends Component {
   }
 
   setKeyboardMap(map: AudioKeyboardMap) {
-    console.log('keyboardMap', map);
     this.keyboardMap = map;
     this.resizeKeyboard();
   }
