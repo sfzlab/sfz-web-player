@@ -6,6 +6,7 @@ import FileLoader from '../utils/fileLoader';
 import { ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
 declare class Audio extends Event {
     loader: FileLoader;
+    private preload;
     private regions;
     private context;
     private bend;
@@ -16,6 +17,7 @@ declare class Audio extends Event {
     constructor(options: AudioOptions);
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
     getKeyboardMap(regions: ParseOpcodeObj[]): AudioKeyboardMap;
+    updateKeyboardMap(region: ParseOpcodeObj, keyboardMap: AudioKeyboardMap): void;
     preloadFiles(regions: ParseOpcodeObj[]): Promise<void>;
     checkRegion(region: ParseOpcodeObj, controlEvent: AudioControlEvent, rand: number): boolean;
     checkRegions(regions: ParseOpcodeObj[], controlEvent: AudioControlEvent): ParseOpcodeObj[];

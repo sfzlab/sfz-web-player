@@ -23,9 +23,10 @@
   <script src="../sfz.min.js"></script>
   <script>
     var sfzPlayer = new Sfz.Player("sfzPlayer", {
-      audio: {
-        file: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/Hang-D-minor-20220330.sfz',
-        root: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/',
+      audio: {},
+      instrument: {
+        name: 'Hang D Minor',
+        id: 'freepats/hang-d-minor'
       },
       header: {
         local: true,
@@ -85,11 +86,6 @@
             id: 'studiorack/black-and-green-guitars'
           },
           {
-            branch: 'compact',
-            name: 'Black and Green Guitars (Compact)',
-            id: 'studiorack/black-and-green-guitars'
-          },
-          {
             name: 'Horse Pulse',
             id: 'studiorack/horse-pulse'
           },
@@ -132,15 +128,15 @@
         ]
       },
       editor: {
-        file: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/Hang-D-minor-20220330.sfz',
+        file: 'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/Hang-D-minor-20220330.sfz',
         directory: [
-          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/Hang-D-minor-20220330.sfz',
-          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/README.md',
-          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/plugins.json',
-          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/.github/workflows/release.yml',
-          'https://raw.githubusercontent.com/freepats/hang-D-minor/main/.github/workflows/test.yml'
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/Hang-D-minor-20220330.sfz',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/README.md',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/plugins.json',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/.github/workflows/release.yml',
+          'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/.github/workflows/test.yml'
         ],
-        root: 'https://raw.githubusercontent.com/freepats/hang-D-minor/main/',
+        root: 'https://raw.githubusercontent.com/freepats/hang-D-minor/compact/',
       },
       interface: {}
     });

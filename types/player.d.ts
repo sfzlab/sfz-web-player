@@ -3,7 +3,13 @@ import FileLoader from '../utils/fileLoader';
 interface AudioOptions {
     file?: string | FileWithDirectoryAndFileHandle;
     loader?: FileLoader;
+    preload?: AudioPreload;
     root?: string;
+}
+declare enum AudioPreload {
+    ON_DEMAND = "on-demand",
+    PROGRESSIVE = "progressive",
+    SEQUENTIAL = "sequential"
 }
 interface EditorOptions {
     directory?: string[] | FileWithDirectoryAndFileHandle[];
@@ -35,4 +41,4 @@ interface PlayerOptions {
     instrument?: HeaderPreset;
     interface?: InterfaceOptions;
 }
-export { AudioOptions, EditorOptions, HeaderOptions, HeaderPreset, InterfaceOptions, PlayerOptions };
+export { AudioOptions, AudioPreload, EditorOptions, HeaderOptions, HeaderPreset, InterfaceOptions, PlayerOptions };
