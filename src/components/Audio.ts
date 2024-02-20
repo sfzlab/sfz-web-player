@@ -4,7 +4,7 @@ import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
 import Sample from './Sample';
-import { pathGetDirectory } from '@sfz-tools/core/dist/utils';
+import { midiNameToNum, pathGetDirectory } from '@sfz-tools/core/dist/utils';
 import { parseHeaders, parseSfz } from '@sfz-tools/core/dist/parse';
 import { ParseHeader, ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
 
@@ -80,6 +80,7 @@ class Audio extends Event {
     }
 
     this.regions = parseHeaders(headers, prefix);
+    this.regions = this.midiNamesToNum(this.regions);
     console.log('regions', this.regions);
 
     console.log('preload', this.preload);
@@ -97,6 +98,24 @@ class Audio extends Event {
       this.updateKeyboardMap(region, keyboardMap);
     });
     return keyboardMap;
+  }
+
+  midiNameToNumConvert(val: string | number) {
+    if (typeof val === 'number') return val;
+    const isLetters: RegExp = /[a-zA-Z]/g;
+    if (isLetters.test(val)) return midiNameToNum(val);
+    return parseInt(val, 10);
+  }
+
+  midiNamesToNum(regions: ParseOpcodeObj[]) {
+    for (const key in regions) {
+      const region: ParseOpcodeObj = regions[key];
+      if (region.lokey) region.lokey = this.midiNameToNumConvert(region.lokey);
+      if (region.hikey) region.hikey = this.midiNameToNumConvert(region.hikey);
+      if (region.key) region.key = this.midiNameToNumConvert(region.key);
+      if (region.pitch_keycenter) region.pitch_keycenter = this.midiNameToNumConvert(region.pitch_keycenter);
+    }
+    return regions;
   }
 
   updateKeyboardMap(region: ParseOpcodeObj, keyboardMap: AudioKeyboardMap) {
