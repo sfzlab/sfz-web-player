@@ -17,6 +17,8 @@ declare class Audio extends Event {
     constructor(options: AudioOptions);
     showFile(file: FileLocal | FileRemote | undefined): Promise<void>;
     getKeyboardMap(regions: ParseOpcodeObj[]): AudioKeyboardMap;
+    midiNameToNumConvert(val: string | number): number | void;
+    midiNamesToNum(regions: ParseOpcodeObj[]): ParseOpcodeObj[];
     updateKeyboardMap(region: ParseOpcodeObj, keyboardMap: AudioKeyboardMap): void;
     preloadFiles(regions: ParseOpcodeObj[]): Promise<void>;
     checkRegion(region: ParseOpcodeObj, controlEvent: AudioControlEvent, rand: number): boolean;
