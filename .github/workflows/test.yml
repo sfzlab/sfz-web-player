@@ -19,7 +19,7 @@ jobs:
           npm install
       - name: Audit
         run: |
-          npm audit
+          npm audit --audit-level high
       - name: Lint
         run: |
           npm run lint
