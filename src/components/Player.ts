@@ -91,7 +91,7 @@ class Player extends Component {
         const id: string | null = window.prompt('Enter a GitHub owner/repo', 'studiorack/black-and-green-guitars');
         if (id)
           await this.loadRemoteInstrument({
-            branch: 'compact',
+            // branch: 'compact',
             id,
             name: 'Custom',
           });
@@ -132,7 +132,7 @@ class Player extends Component {
   }
 
   async loadRemoteInstrument(preset: HeaderPreset) {
-    const branch: string = preset.branch || 'compact';
+    const branch: string = preset.branch || 'main'; // compact branch with .ogg files later
     const response: any = await apiJson(`https://api.github.com/repos/${preset.id}/git/trees/${branch}?recursive=1`);
     const paths: string[] = response.tree.map(
       (file: any) => `https://raw.githubusercontent.com/${preset.id}/${branch}/${file.path}`
