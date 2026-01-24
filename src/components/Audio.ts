@@ -3,7 +3,7 @@ import { AudioOptions, AudioPreload } from '../types/player';
 import Event from './event';
 import { FileLocal, FileRemote } from '../types/files';
 import FileLoader from '../utils/fileLoader';
-import Sample from './Sample';
+import { VoiceManager } from './VoiceManager';
 import { midiNameToNum, pathGetDirectory } from '@sfz-tools/core/dist/utils';
 import { parseHeaders, parseSfz } from '@sfz-tools/core/dist/parse';
 import { ParseHeader, ParseOpcodeObj } from '@sfz-tools/core/dist/types/parse';
@@ -13,10 +13,13 @@ class Audio extends Event {
   private preload: AudioPreload = AudioPreload.ON_DEMAND;
   private regions: ParseOpcodeObj[] = [];
   private context: AudioContext;
+  private voiceManager: VoiceManager;
   private bend: number = 0;
   private chanaft: number = 64;
   private polyaft: number = 64;
   private bpm: number = 120;
+  private activeNotes: Set<number> = new Set();
+  private roundRobinCounters: Map<string, number> = new Map(); // Track round-robin per note
   private regionDefaults: any = {
     lochan: 0,
     hichan: 15,
@@ -40,6 +43,11 @@ class Audio extends Event {
     super();
     if (!window.AudioContext) window.alert('Browser does not support WebAudio');
     this.context = new window.AudioContext();
+    this.voiceManager = new VoiceManager(this.context, 64);
+    
+    // Start audio processing loop
+    this.startAudioLoop();
+    
     if (window.webAudioControlsWidgetManager) {
       window.webAudioControlsWidgetManager.addMidiListener((event: any) => this.onKeyboard(event));
     } else {
@@ -178,37 +186,100 @@ class Audio extends Event {
   }
 
   onKeyboard(event: any) {
-    const controlEvent: AudioControlEvent = {
-      channel: 1,
-      note: event.data[1],
-      velocity: event.data[0] === 128 ? 0 : event.data[2],
-    };
+    console.log('🎹 Raw event:', event);
+    
+    // Handle both MIDI input and virtual keyboard events
+    let controlEvent: AudioControlEvent;
+    
+    if (event.data) {
+      // MIDI input event
+      const [status, note, velocity] = event.data;
+      const isNoteOn = (status & 0xF0) === 0x90 && velocity > 0;
+      const isNoteOff = (status & 0xF0) === 0x80 || ((status & 0xF0) === 0x90 && velocity === 0);
+      
+      console.log(`🎵 MIDI: status=0x${status.toString(16)}, note=${note}, vel=${velocity}, isOn=${isNoteOn}, isOff=${isNoteOff}`);
+      
+      controlEvent = {
+        channel: (status & 0x0F) + 1,
+        note: note,
+        velocity: isNoteOff ? 0 : velocity / 127, // Normalize to 0-1
+      };
+    } else {
+      // Virtual keyboard event (already processed in Interface)
+      console.log('🎹 Virtual keyboard event:', event);
+      controlEvent = event;
+    }
+    
+    console.log('🎶 Final controlEvent:', controlEvent);
     this.update(controlEvent);
     this.dispatchEvent('change', controlEvent);
   }
 
+  private startAudioLoop() {
+    const processAudio = () => {
+      this.voiceManager.renderBlock(128); // Process 128 samples per block
+      requestAnimationFrame(processAudio);
+    };
+    processAudio();
+  }
+
   async update(event: AudioControlEvent) {
-    // prototype using samples
+    console.log(`🎵 Update: note=${event.note}, vel=${event.velocity}, activeNotes=${Array.from(this.activeNotes)}`);
+    
     if (event.velocity === 0) {
+      console.log(`🔴 Note OFF: ${event.note}`);
+      this.activeNotes.delete(event.note);
+      this.voiceManager.noteOff(event.note);
       return;
     }
-    console.log('event', event);
+
+    if (this.activeNotes.has(event.note)) {
+      console.log(`⚠️ Note ${event.note} already active, ignoring retrigger`);
+      return;
+    }
+
+    console.log(`🔵 Note ON: ${event.note}, velocity=${event.velocity}`);
+    this.activeNotes.add(event.note);
+    
     const regionsFiltered = this.checkRegions(this.regions, event);
-    console.log('regionsFiltered', regionsFiltered);
-    if (!regionsFiltered.length) return;
-    const randomSample: number = Math.floor(Math.random() * regionsFiltered.length);
-    const keySample: ParseOpcodeObj = regionsFiltered[randomSample];
-    console.log('keySample', keySample);
-    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[keySample.sample];
-    const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || keySample.sample, true);
-    const sample = new Sample(this.context, newFile?.contents, keySample);
-    sample.setPlaybackRate(event);
-    sample.play();
+    console.log(`🎯 Found ${regionsFiltered.length} matching regions:`, regionsFiltered.map(r => r.sample));
+    
+    if (!regionsFiltered.length) {
+      this.activeNotes.delete(event.note);
+      return;
+    }
+
+    if (regionsFiltered.length === 1) {
+      const region = regionsFiltered[0];
+      await this.triggerVoiceForRegion(region, event);
+    } else if (regionsFiltered.length > 1) {
+      const noteKey = `${event.note}`;
+      const currentIndex = this.roundRobinCounters.get(noteKey) || 0;
+      const region = regionsFiltered[currentIndex % regionsFiltered.length];
+      
+      console.log(`🎯 Round-robin: selecting ${currentIndex % regionsFiltered.length + 1}/${regionsFiltered.length} for note ${event.note}`);
+      
+      this.roundRobinCounters.set(noteKey, currentIndex + 1);
+      await this.triggerVoiceForRegion(region, event);
+    }
+  }
+
+  private async triggerVoiceForRegion(region: ParseOpcodeObj, event: AudioControlEvent) {
+    const fileRef: FileLocal | FileRemote | undefined = this.loader.files[region.sample];
+    const newFile: FileLocal | FileRemote | undefined = await this.loader.getFile(fileRef || region.sample, true);
+    
+    if (newFile?.contents) {
+      console.log(`🎵 Triggering voice for sample: ${region.sample}`);
+      this.voiceManager.triggerVoice(region, newFile.contents, event);
+    } else {
+      console.warn(`⚠️ Failed to load sample: ${region.sample}`);
+      this.activeNotes.delete(event.note);
+    }
   }
 
   reset() {
-    // this.sampler.stop();
-    // this.keys = [];
+    this.voiceManager.stopAll();
+    this.activeNotes.clear();
   }
 }
 

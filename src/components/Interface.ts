@@ -134,11 +134,15 @@ class Interface extends Component {
     keyboard.setAttribute('height', '70');
     keyboard.setAttribute('width', '775');
     keyboard.addEventListener('change', (event: any) => {
+      console.log('🎹 Keyboard raw event:', event, 'note array:', event.note);
+      
       const controlEvent: AudioControlEvent = {
         channel: 1,
         note: event.note[1],
-        velocity: event.note[0] ? 100 : 0,
+        velocity: event.note[0] ? 0.8 : 0, // Use reasonable velocity for note-on, 0 for note-off
       };
+      
+      console.log('🎹 Keyboard controlEvent:', controlEvent);
       this.dispatchEvent('change', controlEvent);
     });
     this.getEl().appendChild(keyboard);

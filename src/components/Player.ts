@@ -134,6 +134,13 @@ class Player extends Component {
   async loadRemoteInstrument(preset: HeaderPreset) {
     const branch: string = preset.branch || 'main'; // compact branch with .ogg files later
     const response: any = await apiJson(`https://api.github.com/repos/${preset.id}/git/trees/${branch}?recursive=1`);
+    if (!response || !response.tree) {
+      console.error('Failed to load remote instrument:', response);
+      if (response?.message) {
+        window.alert(response.message);
+      }
+      return;
+    }
     const paths: string[] = response.tree.map(
       (file: any) => `https://raw.githubusercontent.com/${preset.id}/${branch}/${file.path}`
     );
