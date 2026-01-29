@@ -133,18 +133,61 @@ class Interface extends Component {
     keyboard.setAttribute('keys', '88');
     keyboard.setAttribute('height', '70');
     keyboard.setAttribute('width', '775');
+    
+    // Debounce rapid events to prevent immediate note-off
+    let lastNoteTime: Map<number, number> = new Map();
+    let eventTimeouts: Map<number, any> = new Map();
+    
     keyboard.addEventListener('change', (event: any) => {
       console.log('🎹 Keyboard raw event:', event, 'note array:', event.note);
       
+      const noteNumber = event.note[1];
+      const isNoteOn = event.note[0] === 1;
+      const currentTime = Date.now();
+      
+      // For note-on events, clear any pending note-off timeout
+      if (isNoteOn) {
+        const timeoutId = eventTimeouts.get(noteNumber);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          eventTimeouts.delete(noteNumber);
+        }
+      }
+      
+      // For note-off events, add a small delay to ensure note-on is processed first
+      if (!isNoteOn) {
+        const timeSinceLastOn = currentTime - (lastNoteTime.get(noteNumber) || 0);
+        
+        // If note-off comes too quickly after note-on (< 10ms), delay it slightly
+        if (timeSinceLastOn < 10) {
+          const timeoutId = setTimeout(() => {
+            const controlEvent: AudioControlEvent = {
+              channel: 1,
+              note: noteNumber,
+              velocity: 0,
+            };
+            console.log('🎹 Keyboard controlEvent (delayed):', controlEvent);
+            this.dispatchEvent('change', controlEvent);
+            eventTimeouts.delete(noteNumber);
+          }, 10);
+          
+          eventTimeouts.set(noteNumber, timeoutId);
+          return;
+        }
+      } else {
+        lastNoteTime.set(noteNumber, currentTime);
+      }
+      
       const controlEvent: AudioControlEvent = {
         channel: 1,
-        note: event.note[1],
-        velocity: event.note[0] ? 0.8 : 0, // Use reasonable velocity for note-on, 0 for note-off
+        note: noteNumber,
+        velocity: isNoteOn ? 100 : 0,
       };
       
       console.log('🎹 Keyboard controlEvent:', controlEvent);
       this.dispatchEvent('change', controlEvent);
     });
+    
     this.getEl().appendChild(keyboard);
     this.keyboard = keyboard;
     window.addEventListener('resize', () => this.resizeKeyboard());
@@ -169,6 +212,19 @@ class Interface extends Component {
 
   setKeyboard(event: AudioControlEvent) {
     this.keyboard.setNote(event.velocity, event.note);
+  }
+
+  /**
+   * Handle CC events - particularly sustain pedal (CC64)
+   */
+  handleCC(ccNumber: number, ccValue: number) {
+    // Dispatch CC event to be handled by the player
+    const ccEvent: any = {
+      type: 'cc',
+      ccNumber: ccNumber,
+      ccValue: ccValue
+    };
+    this.dispatchEvent('cc', ccEvent);
   }
 
   setLoadingState(loading: boolean) {

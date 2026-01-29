@@ -9,81 +9,309 @@ export enum VoiceState {
   CleanUp
 }
 
+export enum EnvelopeStage {
+  Delay = 'delay',
+  Attack = 'attack',
+  Hold = 'hold',
+  Decay = 'decay',
+  Sustain = 'sustain',
+  Release = 'release',
+  Fadeout = 'fadeout',
+  Done = 'done',
+  Idle = 'idle'
+}
+
 export class ADSREnvelope {
-  private attack: number = 0;
-  private decay: number = 0;
-  private sustain: number = 1;
-  private releaseTime: number = 0.1;
-  private stage: 'attack' | 'decay' | 'sustain' | 'release' | 'idle' = 'idle';
-  private value: number = 0;
-  private targetValue: number = 0;
-  private rate: number = 0;
   private sampleRate: number;
+  private desc: any;
+  private dynamic: boolean = false;
+  private triggerVelocity: number = 0;
+  private midiState: any;
+  
+  // Envelope parameters
+  private delay: number = 0;
+  private attackStep: number = 0;
+  private decayRate: number = 0;
+  private releaseRate: number = 0;
+  private hold: number = 0;
+  private sustain: number = 1;
+  private start: number = 0;
+  private sustainThreshold: number = 0;
+  
+  // State variables
+  private currentState: EnvelopeStage = EnvelopeStage.Idle;
+  private currentValue: number = 0;
+  private shouldRelease: boolean = false;
+  private releaseDelay: number = 0;
+  private transitionDelta: number = 0;
+  private freeRunning: boolean = false;
+  
+  // Constants from C++ implementation
+  private readonly OFF_TIME: number = 0.03;
+  private readonly SUSTAIN_FREE_RUNNING_THRESHOLD: number = 0.001;
+  private readonly VIRTUALLY_ZERO: number = 0.00001;
+  private readonly EG_RELEASE_THRESHOLD: number = 0.0001;
+  private readonly EG_TRANSITION_TIME: number = 0.001;
 
   constructor(sampleRate: number) {
     this.sampleRate = sampleRate;
   }
 
-  setADSR(attack: number, decay: number, sustain: number, release: number) {
-    this.attack = Math.max(0.001, attack);
-    this.decay = Math.max(0.001, decay);
-    this.sustain = Math.max(0, Math.min(1, sustain));
-    this.releaseTime = Math.max(0.001, release);
+  reset(desc: any, region: any, delay: number, velocity: number): void {
+    this.desc = desc;
+    this.dynamic = desc?.dynamic || false;
+    this.triggerVelocity = velocity;
+    this.currentState = EnvelopeStage.Delay;
+    
+    this.updateValues(delay);
+    this.releaseDelay = 0;
+    this.shouldRelease = false;
+    this.freeRunning = (
+      (this.sustain <= this.SUSTAIN_FREE_RUNNING_THRESHOLD) ||
+      (region.loop_mode === 'one_shot' && region.isOscillator)
+    );
+    this.currentValue = this.start;
   }
 
-  trigger() {
-    this.stage = 'attack';
-    this.targetValue = 1;
-    this.rate = 1 / (this.attack * this.sampleRate);
+  updateValues(delay: number): void {
+    if (this.currentState === EnvelopeStage.Delay) {
+      this.delay = delay + this.secondsToSamples(this.getDelay());
+    }
+    
+    this.attackStep = this.secondsToLinRate(this.getAttack());
+    this.decayRate = this.secondsToExpRate(this.getDecay());
+    this.releaseRate = this.secondsToExpRate(this.getRelease());
+    this.hold = this.secondsToSamples(this.getHold());
+    this.sustain = Math.max(0, Math.min(1, this.getSustain()));
+    this.start = Math.max(0, Math.min(1, this.getStart()));
+    this.sustainThreshold = this.sustain + this.VIRTUALLY_ZERO;
   }
 
-  startRelease() {
-    if (this.stage !== 'idle') {
-      this.stage = 'release';
-      this.targetValue = 0;
-      this.rate = this.value / (this.releaseTime * this.sampleRate);
+  private secondsToSamples(timeInSeconds: number): number {
+    if (timeInSeconds <= 0) return 0;
+    return Math.floor(timeInSeconds * this.sampleRate);
+  }
+
+  private secondsToLinRate(timeInSeconds: number): number {
+    if (timeInSeconds <= 0) return 1;
+    return 1 / (this.sampleRate * timeInSeconds);
+  }
+
+  private secondsToExpRate(timeInSeconds: number): number {
+    if (timeInSeconds <= 0) return 0.0;
+    
+    timeInSeconds = Math.max(this.OFF_TIME, timeInSeconds);
+    return Math.exp(-9.0 / (timeInSeconds * this.sampleRate));
+  }
+
+  getBlock(output: Float32Array): void {
+    if (this.dynamic) {
+      let processed = 0;
+      let remaining = output.length;
+      while (remaining > 0) {
+        const chunkSize = Math.min(128, remaining); // processChunkSize equivalent
+        this.updateValues(processed);
+        this.getBlockInternal(output.subarray(processed, processed + chunkSize));
+        processed += chunkSize;
+        remaining -= chunkSize;
+      }
+    } else {
+      this.getBlockInternal(output);
     }
   }
 
-  process(): number {
-    switch (this.stage) {
-      case 'attack':
-        this.value += this.rate;
-        if (this.value >= 1) {
-          this.value = 1;
-          this.stage = 'decay';
-          this.targetValue = this.sustain;
-          this.rate = (1 - this.sustain) / (this.decay * this.sampleRate);
+  private getBlockInternal(output: Float32Array): void {
+    let currentState = this.currentState;
+    let currentValue = this.currentValue;
+    let shouldRelease = this.shouldRelease;
+    let releaseDelay = this.releaseDelay;
+    let transitionDelta = this.transitionDelta;
+
+    let index = 0;
+    while (index < output.length) {
+      if (shouldRelease && releaseDelay === 0) {
+        currentState = EnvelopeStage.Release;
+        releaseDelay = -1;
+      } else if (shouldRelease && releaseDelay > 0) {
+        const remaining = output.length - index;
+        const chunkSize = Math.min(remaining, releaseDelay);
+        // Process chunk without release
+        for (let i = 0; i < chunkSize; i++) {
+          output[index++] = this.processSample(currentState, currentValue, shouldRelease, releaseDelay, transitionDelta);
+        }
+        releaseDelay -= chunkSize;
+        continue;
+      }
+
+      // Process samples for current state
+      const remaining = output.length - index;
+      const chunkSize = Math.min(remaining, 128); // processChunkSize equivalent
+      
+      for (let i = 0; i < chunkSize; i++) {
+        const result = this.processSample(currentState, currentValue, shouldRelease, releaseDelay, transitionDelta);
+        output[index++] = result;
+        currentValue = result;
+        
+        // Update state based on current value and stage
+        currentState = this.updateState(currentState, currentValue, shouldRelease);
+      }
+    }
+
+    this.currentState = currentState;
+    this.currentValue = currentValue;
+    this.shouldRelease = shouldRelease;
+    this.releaseDelay = releaseDelay;
+    this.transitionDelta = transitionDelta;
+  }
+
+  private processSample(currentState: EnvelopeStage, currentValue: number, shouldRelease: boolean, releaseDelay: number, transitionDelta: number): number {
+    switch (currentState) {
+      case EnvelopeStage.Delay:
+        if (this.delay > 0) {
+          this.delay--;
+          return this.start;
+        } else {
+          return 1; // Attack starts at 1
+        }
+
+      case EnvelopeStage.Attack:
+        currentValue += this.attackStep;
+        if (currentValue >= 1) {
+          currentValue = 1;
+        }
+        return currentValue;
+
+      case EnvelopeStage.Hold:
+        if (this.hold > 0) {
+          this.hold--;
+          return currentValue;
+        } else {
+          return currentValue; // Will transition to decay
+        }
+
+      case EnvelopeStage.Decay:
+        currentValue *= this.decayRate;
+        if (currentValue <= this.sustainThreshold) {
+          currentValue = Math.max(this.sustain, currentValue);
+          transitionDelta = (this.sustain - currentValue) / (this.sampleRate * this.EG_TRANSITION_TIME);
+        }
+        return currentValue;
+
+      case EnvelopeStage.Sustain:
+        if (!shouldRelease && this.freeRunning) {
+          shouldRelease = true;
+        }
+        if (currentValue > this.sustain) {
+          currentValue += transitionDelta;
+        }
+        return currentValue;
+
+      case EnvelopeStage.Release:
+        const previousValue = currentValue;
+        currentValue *= this.releaseRate;
+        if (currentValue <= this.EG_RELEASE_THRESHOLD) {
+          currentState = EnvelopeStage.Fadeout;
+          currentValue = previousValue;
+          transitionDelta = -Math.max(this.EG_RELEASE_THRESHOLD, currentValue) / (this.sampleRate * this.EG_TRANSITION_TIME);
+        }
+        return previousValue;
+
+      case EnvelopeStage.Fadeout:
+        currentValue += transitionDelta;
+        if (currentValue <= 0) {
+          currentState = EnvelopeStage.Done;
+          currentValue = 0;
+        }
+        return currentValue;
+
+      default:
+        return 0;
+    }
+  }
+
+  private updateState(currentState: EnvelopeStage, currentValue: number, shouldRelease: boolean): EnvelopeStage {
+    switch (currentState) {
+      case EnvelopeStage.Delay:
+        if (this.delay <= 0) {
+          return EnvelopeStage.Attack;
         }
         break;
-      case 'decay':
-        this.value -= this.rate;
-        if (this.value <= this.sustain) {
-          this.value = this.sustain;
-          this.stage = 'sustain';
+
+      case EnvelopeStage.Attack:
+        if (currentValue >= 1) {
+          return EnvelopeStage.Hold;
         }
         break;
-      case 'sustain':
-        this.value = this.sustain;
+
+      case EnvelopeStage.Hold:
+        if (this.hold <= 0) {
+          return EnvelopeStage.Decay;
+        }
         break;
-      case 'release':
-        this.value -= this.rate;
-        if (this.value <= 0) {
-          this.value = 0;
-          this.stage = 'idle';
+
+      case EnvelopeStage.Decay:
+        if (currentValue <= this.sustainThreshold) {
+          return EnvelopeStage.Sustain;
+        }
+        break;
+
+      case EnvelopeStage.Release:
+        if (currentValue <= this.EG_RELEASE_THRESHOLD) {
+          return EnvelopeStage.Fadeout;
+        }
+        break;
+
+      case EnvelopeStage.Fadeout:
+        if (currentValue <= 0) {
+          return EnvelopeStage.Done;
         }
         break;
     }
-    return this.value;
+    return currentState;
+  }
+
+  startRelease(releaseDelay: number = 0): void {
+    this.shouldRelease = true;
+    this.releaseDelay = releaseDelay;
+  }
+
+  cancelRelease(delay: number): void {
+    this.currentState = EnvelopeStage.Sustain;
+    this.shouldRelease = false;
+    this.releaseDelay = -1;
+  }
+
+  setReleaseTime(timeInSeconds: number): void {
+    this.releaseRate = this.secondsToExpRate(timeInSeconds);
   }
 
   isActive(): boolean {
-    return this.stage !== 'idle';
+    return this.currentState !== EnvelopeStage.Idle && this.currentState !== EnvelopeStage.Done;
   }
 
   isReleased(): boolean {
-    return this.stage === 'release' || this.stage === 'idle';
+    return this.currentState === EnvelopeStage.Release || 
+           this.currentState === EnvelopeStage.Fadeout || 
+           this.currentState === EnvelopeStage.Done;
   }
+
+  /**
+   * Process a single sample - maintains compatibility with existing Voice class
+   */
+  process(): number {
+    const output = new Float32Array(1);
+    this.getBlock(output);
+    return output[0];
+  }
+
+  // Helper methods to get envelope parameters (simplified for now)
+  private getDelay(): number { return this.desc?.delay || 0; }
+  private getAttack(): number { return this.desc?.attack || 0.001; }
+  private getDecay(): number { return this.desc?.decay || 0.001; }
+  private getRelease(): number { return this.desc?.release || 1.0; }
+  private getHold(): number { return this.desc?.hold || 0; }
+  private getSustain(): number { return this.desc?.sustain !== undefined ? this.desc.sustain : 1; }
+  private getStart(): number { return this.desc?.start || 0; }
 }
 
 export class Voice {
@@ -105,6 +333,7 @@ export class Voice {
   private isNoteOff: boolean = false;
   private sfzEngine: SFZEngine;
   private crossfadeGain: number = 1;
+  private sustainState: 'Up' | 'Sustaining' = 'Up';
 
   constructor(context: AudioContext) {
     this.context = context;
@@ -123,6 +352,13 @@ export class Voice {
     this.state = VoiceState.Playing;
     this.age = 0;
     this.isNoteOff = false;
+    
+    // Check if the note was already released before the voice was created
+    // This can happen with async voice triggering where note-off is processed before voice creation
+    if (event.velocity === 0) {
+      console.log(`🎵 Voice.startVoice: note already released, will trigger immediate release after voice starts`);
+      this.isNoteOff = true;
+    }
 
     // Setup envelope from region with proper defaults
     const attack = Math.max(0.001, (region.ampeg_attack || 0) / 1000);
@@ -131,10 +367,25 @@ export class Voice {
     const release = Math.max(0.1, (region.ampeg_release || 1000) / 1000);
     
     console.log(`📊 Envelope: A=${attack}s, D=${decay}s, S=${sustain}, R=${release}s`);
-    this.ampEnvelope.setADSR(attack, decay, sustain, release);
-
-    this.ampEnvelope.trigger();
+    
+    // Create envelope description for the new implementation
+    const envelopeDesc = {
+      attack,
+      decay,
+      sustain,
+      release,
+      dynamic: false
+    };
+    
+    this.ampEnvelope.reset(envelopeDesc, region, 0, event.velocity);
     console.log('🚀 Voice started successfully');
+    
+    // If the note was already released, immediately trigger release
+    if (this.isNoteOff) {
+      console.log(`🎵 Voice.startVoice: triggering immediate release for already released note`);
+      this.ampEnvelope.startRelease();
+      this.state = VoiceState.Released;
+    }
     
     this.crossfadeGain = this.sfzEngine.calculateCrossfade(region, event.velocity, event.note);
     if (this.crossfadeGain <= 0) {
@@ -206,20 +457,44 @@ export class Voice {
   }
 
   renderBlock(outputBuffer: Float32Array[], blockSize: number) {
-    if (this.state !== VoiceState.Playing && this.state !== VoiceState.Released) return;
+    // Only process if voice is active
+    if (this.state !== VoiceState.Playing && this.state !== VoiceState.Released) {
+      return;
+    }
 
-    for (let i = 0; i < blockSize; i++) {
-      const envValue = this.ampEnvelope.process();
-      
-      if (!this.ampEnvelope.isActive()) {
-        this.state = VoiceState.CleanUp;
-        break;
+    // Process envelope block for better performance and accuracy
+    const envelopeBlock = new Float32Array(blockSize);
+    this.ampEnvelope.getBlock(envelopeBlock);
+    
+    // Check if envelope is finished
+    if (!this.ampEnvelope.isActive()) {
+      console.log('📊 Envelope finished, cleaning up voice');
+      // For loop_continuous voices, stop the loop when envelope is done
+      if (this.region?.loop_mode === 'loop_continuous' && this.source) {
+        console.log('📊 Loop continuous: envelope finished, stopping loop');
+        this.source.loop = false;
       }
+      this.state = VoiceState.CleanUp;
+      return;
+    }
 
-      // Apply envelope to gain
-      if (this.gainNode) {
-        const currentTime = this.context.currentTime + (i / this.context.sampleRate);
-        this.gainNode.gain.setValueAtTime(envValue * this.crossfadeGain, currentTime);
+    // For loop_continuous voices, stop the loop when envelope enters Release stage
+    if (this.region?.loop_mode === 'loop_continuous' && this.source && this.ampEnvelope.isReleased()) {
+      console.log('📊 Loop continuous: envelope in Release stage, stopping loop');
+      this.source.loop = false;
+    }
+
+    // Apply envelope to gain using exponential smoothing for better audio quality
+    if (this.gainNode) {
+      // Get the final envelope value for this block
+      const finalEnvValue = envelopeBlock[blockSize - 1] * this.crossfadeGain;
+      
+      // Apply the final envelope value to the gain node
+      this.gainNode.gain.setValueAtTime(finalEnvValue, this.context.currentTime);
+      
+      // Only log when envelope value changes significantly or when in Release stage
+      if (finalEnvValue < 0.95 || this.ampEnvelope.isReleased()) {
+        console.log(`🔊 Envelope applied: final=${finalEnvValue.toFixed(3)}, crossfade=${this.crossfadeGain}`);
       }
     }
 
@@ -230,7 +505,18 @@ export class Voice {
     console.log(`🔴 Voice.handleNoteOff: ${noteNumber}, myNote=${this.triggerEvent?.note}, isNoteOff=${this.isNoteOff}, state=${this.state}`);
     
     // Only handle note-off if this voice matches the note and hasn't already been released
-    if (this.triggerEvent?.note !== noteNumber || this.isNoteOff || this.state !== VoiceState.Playing) {
+    if (this.triggerEvent?.note !== noteNumber) {
+      console.log(`🔴 Voice.handleNoteOff: note mismatch, myNote=${this.triggerEvent?.note}, target=${noteNumber}`);
+      return;
+    }
+    
+    if (this.isNoteOff) {
+      console.log(`🔴 Voice.handleNoteOff: already released`);
+      return;
+    }
+    
+    if (this.state !== VoiceState.Playing) {
+      console.log(`🔴 Voice.handleNoteOff: not playing, state=${this.state}`);
       return;
     }
     
@@ -244,12 +530,15 @@ export class Voice {
         this.source.loop = false;
       }
     } else if (this.region?.loop_mode === 'loop_continuous') {
-      console.log('🔄 Continuous loop: triggering release');
+      console.log('🔄 Continuous loop: triggering release (will stop loop after envelope completes)');
+      // For loop_continuous, we don't stop the loop immediately
+      // The envelope release will handle the fade-out, then we'll stop the loop
     }
     
     // Always trigger envelope release for proper tail-off
     this.ampEnvelope.startRelease();
     this.state = VoiceState.Released;
+    console.log(`📊 Voice state set to Released`);
   }
 
   stop() {
@@ -286,5 +575,47 @@ export class Voice {
 
   getTriggerEvent(): AudioControlEvent | null {
     return this.triggerEvent;
+  }
+
+  /**
+   * Handle sustain pedal release - trigger release for sustaining voices
+   */
+  handleSustainRelease() {
+    if (this.state === VoiceState.Playing && this.region?.loop_mode === 'loop_sustain') {
+      console.log(`📊 Sustain pedal release: stopping loop for note ${this.triggerEvent?.note}`);
+      if (this.source) {
+        this.source.loop = false;
+      }
+      this.ampEnvelope.startRelease();
+      this.state = VoiceState.Released;
+    }
+  }
+
+  /**
+   * Register CC event - handle sustain pedal release
+   */
+  registerCC(delay: number, ccNumber: number, ccValue: number) {
+    if (!this.region || this.state !== VoiceState.Playing) {
+      return;
+    }
+
+    // Handle sustain pedal (CC64)
+    if (ccNumber === 64) {
+      const sustainThreshold = this.region.sustain_threshold || 64;
+      const sustainPressed = ccValue >= sustainThreshold;
+      
+      if (!sustainPressed && this.sustainState === 'Sustaining') {
+        this.sustainState = 'Up';
+        
+        // Check if note is off and loop mode is not one_shot
+        if (this.isNoteOff && this.region.loop_mode !== 'one_shot') {
+          console.log(`📊 Sustain pedal release: triggering release for note ${this.triggerEvent?.note}`);
+          this.ampEnvelope.startRelease();
+          this.state = VoiceState.Released;
+        }
+      } else if (sustainPressed) {
+        this.sustainState = 'Sustaining';
+      }
+    }
   }
 }

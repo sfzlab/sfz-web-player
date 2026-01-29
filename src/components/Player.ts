@@ -24,6 +24,11 @@ class Player extends Component {
   private interface?: Interface;
   public loader: FileLoader;
 
+  // Expose audio instance for testing
+  getAudio(): Audio | undefined {
+    return this.audio;
+  }
+
   constructor(id: string, options: PlayerOptions) {
     super('player');
     this.loader = new FileLoader();
@@ -52,6 +57,15 @@ class Player extends Component {
     this.audio.addEvent('loading', (event: EventData) => {
       if (this.interface) this.interface.setLoadingState(event.data);
     });
+    
+    // Handle CC events from interface
+    if (this.interface) {
+      this.interface.addEvent('cc', (event: EventData) => {
+        if (this.audio) {
+          this.audio.handleCC(event.data.ccNumber, event.data.ccValue);
+        }
+      });
+    }
   }
 
   setupInterface(options: InterfaceOptions) {

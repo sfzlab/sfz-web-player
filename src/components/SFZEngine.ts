@@ -187,6 +187,67 @@ export class SFZEngine {
   }
 
   /**
+   * Get S-curve for smooth crossfading (matches C++ implementation)
+   */
+  private getScurve(): Float32Array {
+    const N = 1024;
+    const curve = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const x = i / (N - 1);
+      curve[i] = (1.0 - Math.cos(Math.PI * x)) * 0.5;
+    }
+    return curve;
+  }
+
+  /**
+   * Apply loop crossfading for smooth transitions
+   */
+  applyLoopCrossfade(buffer: Float32Array, loopStart: number, loopEnd: number, crossfadeSize: number): void {
+    if (crossfadeSize <= 0 || loopStart >= loopEnd) return;
+
+    const curve = this.getScurve();
+    const actualCrossfade = Math.min(crossfadeSize, loopEnd - loopStart);
+    
+    // Apply crossfade at loop end (fade out)
+    const fadeOutStart = Math.max(0, loopEnd - actualCrossfade);
+    for (let i = fadeOutStart; i < loopEnd && i < buffer.length; i++) {
+      const pos = (i - fadeOutStart) / actualCrossfade;
+      const curveIndex = Math.min(Math.floor(pos * (curve.length - 1)), curve.length - 1);
+      const fadeValue = 1.0 - curve[curveIndex];
+      buffer[i] *= fadeValue;
+    }
+
+    // Apply crossfade at loop start (fade in)
+    const fadeInEnd = Math.min(buffer.length, loopStart + actualCrossfade);
+    for (let i = loopStart; i < fadeInEnd; i++) {
+      const pos = (i - loopStart) / actualCrossfade;
+      const curveIndex = Math.min(Math.floor(pos * (curve.length - 1)), curve.length - 1);
+      const fadeValue = curve[curveIndex];
+      buffer[i] *= fadeValue;
+    }
+  }
+
+  /**
+   * Process loop crossfading with proper state management
+   */
+  processLoopCrossfade(region: ParseOpcodeObj, buffer: Float32Array, sourcePosition: number, playbackRate: number): void {
+    const loopMode = region.loop_mode;
+    if (loopMode !== 'loop_continuous' && loopMode !== 'loop_sustain') return;
+
+    const loopStart = region.loop_start || 0;
+    const loopEnd = region.loop_end || buffer.length;
+    const crossfadeSize = region.loop_crossfade || 0;
+
+    if (crossfadeSize > 0) {
+      // Calculate effective loop boundaries considering playback rate
+      const effectiveLoopStart = Math.floor(loopStart * playbackRate);
+      const effectiveLoopEnd = Math.floor(loopEnd * playbackRate);
+      
+      this.applyLoopCrossfade(buffer, effectiveLoopStart, effectiveLoopEnd, crossfadeSize);
+    }
+  }
+
+  /**
    * Calculate pitch modulation from various sources
    */
   calculatePitchModulation(region: ParseOpcodeObj, note: number, velocity: number, bend: number = 0): number {
