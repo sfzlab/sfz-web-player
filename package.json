@@ -8,6 +8,7 @@
   "scripts": {
     "analyze": "webpack --config webpack.prod.js --profile --json > stats.json",
     "build": "webpack --config webpack.dev.js && webpack --config webpack.prod.js",
+    "check": "npm run format && npm run lint && npm run build && npm test",
     "dev": "webpack serve --config webpack.dev.js",
     "format": "prettier --write 'src/**/*.{ts,tsx}' && prettier --write 'tests/**/*.{ts,tsx}'",
     "lint": "tslint --project tsconfig.json && tslint 'tests/**/*.{ts,tsx}'",

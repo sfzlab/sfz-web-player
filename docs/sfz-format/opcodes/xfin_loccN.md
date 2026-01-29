@@ -1,0 +1,43 @@
+---
+template: "sfz/opcode.j2"
+title: "xfin_loccN / xfin_hiccN"
+---
+`xfin_loccN` and `xfin_hiccN` set the range of values in the MIDI continuous
+controller N which will perform a fade-in in the region.
+
+The volume of the region will be zero for values of the MIDI continuous
+controller N lower than or equal to `xfin_loccN`, and maximum (as defined by the
+volume opcode) for values greater than or equal to `xfin_hiccN`.
+
+## Examples
+
+```sfz
+xfin_locc1=64
+xfin_hicc1=127
+```
+
+This is used alongside [xfout_loccN / xfout_hiccN] to create
+crossfaded dynamic layers for sustained instruments, for example to use the mod
+wheel to crossfade quiet tuba sustain samples to loud tuba sustain samples.
+It could also be used to crossfade wavetable samples, use one control to blend
+multiple microphone perspectives etc.
+When there are multiple regions under the same note wtih `xfin_loccN`, `xfin_hiccN`,
+[xfout_loccN / xfout_hiccN] used to determine which regions
+are currently heard (and at what volume),
+all regions will be triggered - but some of them may play at zero volume,
+and therefore be inaudible. In some cases where these controls
+are not used for dynamic expressive performance but rather for setting a static
+mix (for example of microphone perspectives), it can make sense to use them
+alongside [loccN / hiccN] to keep the regions which would be at zero
+volume from being triggered and consuming resources.
+
+## Practical Considerations
+
+Xfin/xfout cannot use custom curves and the default curves used cannot be redefined.
+If custom curves are required (for example to fade in a layers starting with a
+non-zero volume), [amplitude] can be used instead, with amplitude_onccN and
+amplitude_curveccN.
+
+[loccN / hiccN]:             loccN.md
+[xfout_loccN / xfout_hiccN]: xfout_loccN.md
+[amplitude]:                 amplitude.md
