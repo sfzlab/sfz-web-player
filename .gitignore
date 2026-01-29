@@ -3,3 +3,4 @@ dist
 coverage
 node_modules
 tests/scripts/sfizz_preprocessor
+sfizz/

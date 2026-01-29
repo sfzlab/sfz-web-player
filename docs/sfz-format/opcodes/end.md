@@ -1,0 +1,42 @@
+---
+template: "sfz/opcode.j2"
+opcode_name: "end"
+---
+`end` is inclusive, so if set to 133000, the sample will play all samples up to and
+including 133000. The player will reproduce the whole sample if `end` is not specified.
+In other words, in most cases, this does not need to be set.
+
+If `end` value is -1, the sample will not play. Marking a region end with -1 can
+be used to use a silent region to turn off other regions by using the [group]
+and [off_by] opcodes. In certain cases, possibly due to ill-formed WAV files,
+setting end to -1 can cause errors, but setting [loop_mode] to **no_loop** or
+**one_shot** seems to be a workaround.
+
+A region which does not play is still triggered, however, which means it can mute
+other regions. When using [sample]=*silence it is very useful to set `end`=-1
+(or a zero-duration volume envelope with zero sutain) so the silence region does not
+continue to play and does not use up a polyphony voice. Another way to accomplish
+the same thing is to use an ampeg envelope wiht zero [ampeg_attack],
+[ampeg_decay] and [ampeg_sustain].
+
+Note that the WAV specification numbers samples starting with 0, though many audio editors
+incorrectly display sample numbers starting at 1. This means a 1-second file containing
+44100 samples will have samples numbering from 0 to 44099, and specifying end=44100 for
+such a file would be invalid.
+
+## Examples
+
+```sfz
+end=133000
+end=4432425
+end=-1
+```
+
+
+[ampeg_attack]:  ampeg_attack.md
+[ampeg_decay]:   ampeg_decay.md
+[ampeg_sustain]: ampeg_sustain.md
+[group]:         group.md
+[loop_mode]:     loop_mode.md
+[off_by]:        off_by.md
+[sample]:        sample.md
